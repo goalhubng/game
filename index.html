@@ -95,7 +95,7 @@
     }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-    .tools { display: flex; justify-content: center; gap: 44px; padding: 6px 0 22px; }
+    .tools { display: flex; justify-content: center; gap: 30px; padding: 6px 0 22px; }
     .tool {
       position: relative; width: 60px; height: 60px; border-radius: 50%;
       background: var(--btn); color: var(--ink);
@@ -140,6 +140,16 @@
     .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
     .switch.on { background: var(--accent); }
     .switch.on::after { transform: translateX(20px); }
+
+    .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    .album { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; max-height: 55vh; overflow: auto; padding: 2px; }
+    .pic { aspect-ratio: 1; border-radius: 14px; background: var(--btn); box-shadow: inset 0 0 0 2px var(--line);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; }
+    .pic span { font-size: 30px; line-height: 1; }
+    .pic small { font-size: 10px; font-weight: 800; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px; }
+    .pic.locked span { filter: brightness(0); opacity: .16; }
+    .pic:disabled { cursor: default; }
+    .pic .dots { font-size: 9px; color: #3b8fd9; min-height: 10px; }
 
     /* Home */
     .home { position: absolute; inset: 0; z-index: 25; display: none; flex-direction: column; background: var(--panel);
@@ -193,6 +203,10 @@
     <button class="tool" id="gridBtn" aria-label="Toggle grid">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/></svg>
     </button>
+    <button class="tool" id="undoBtn" aria-label="Undo last bump">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+      <span class="badge" id="undoBadge">1</span>
+    </button>
     <button class="tool" id="hintBtn" aria-label="Hint">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/><path d="M10 10.5l1 1.5 1-1.5 1 1.5 1-1.5"/></svg>
       <span class="badge" id="hintBadge">3</span>
@@ -221,9 +235,10 @@
     <p class="tagline">Slide every line out. Find the order.</p>
     <div class="demo" id="demo"><canvas id="demoCv"></canvas><div class="demo-name" id="demoName"></div></div>
     <button class="play" id="playBtn"><b>Play</b><span id="menuLevel">Level 1</span></button>
-    <div class="row2">
+    <div class="row3">
       <button class="cta2" id="levelsBtn">Levels<small id="levelsSub">0 cleared</small></button>
-      <button class="cta2" id="dailyBtn">Daily puzzle<small id="dailySub">New today</small></button>
+      <button class="cta2" id="dailyBtn">Daily<small id="dailySub">New today</small></button>
+      <button class="cta2" id="albumBtn">Album<small id="albumSub">0 found</small></button>
     </div>
     <div class="stats" id="stats"></div>
   </section>
@@ -234,6 +249,16 @@
       <h2>Levels</h2>
       <div class="levels" id="levelsGrid"></div>
       <button class="cta alt" id="levelsClose">Close</button>
+    </div>
+  </div>
+
+  <!-- Album -->
+  <div class="veil" id="albumVeil">
+    <div class="sheet">
+      <h2>Album</h2>
+      <p id="albumCount"></p>
+      <div class="album" id="albumGrid"></div>
+      <button class="cta alt" id="albumClose">Close</button>
     </div>
   </div>
 
@@ -257,7 +282,8 @@
     <div class="sheet">
       <h2>Out of drops</h2>
       <p>Before you tap, hold a line down to see where it will go.</p>
-      <button class="cta" id="retryBtn">Try again</button>
+      <button class="cta" id="loseUndo">Undo last bump 💧</button>
+      <button class="cta2" id="retryBtn" style="width:100%;margin-top:10px">Try again</button>
       <button class="cta alt" id="loseHome">Home</button>
     </div>
   </div>
@@ -281,9 +307,10 @@
 
   // ================= Persistence =================
   const KEY = 'laneOut.v2';
-  const save = { level: 1, maxLevel: 1, theme: null, sound: true, vibe: true, best: {}, daily: {}, seenZoomTip: false };
+  const save = { level: 1, maxLevel: 1, theme: null, sound: true, vibe: true, best: {}, daily: {}, album: {}, seenZoomTip: false, seenBothTip: false };
   try { Object.assign(save, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
   save.maxLevel = Math.max(save.maxLevel || 1, save.level || 1);
+  save.album = save.album || {};
   const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} };
 
   // ================= Sound =================
@@ -628,7 +655,8 @@
     const alive = new Set(lines.map((_, i) => i));
     let depth = 0, initialFree = -1;
     while (alive.size) {
-      const free = [...alive].filter(i => laneFree(lines[i].cells, lines[i].dir, occ, cols, rows, i));
+      const free = [...alive].filter(i => laneFree(lines[i].cells, lines[i].dir, occ, cols, rows, i)
+        || (lines[i].both && laneFree([lines[i].cells[0]], lines[i].tdir, occ, cols, rows, i)));
       if (!free.length) return { solvable: false, depth, initialFree };
       if (initialFree < 0) initialFree = free.length;
       for (const i of free) { lines[i].cells.forEach(([c, r]) => occ[r * cols + c] = -1); alive.delete(i); }
@@ -671,6 +699,20 @@
     best.lines = lines;
   }
 
+  // Two-headed lines can leave from either end. That only adds ways out, so the board stays
+  // solvable; the challenge is picking the right end. Favour lines whose back end starts blocked.
+  function markTwoHeaded(lines, cols, rows, rate, R) {
+    if (!rate) return;
+    const occ = new Int32Array(cols * rows).fill(-1);
+    lines.forEach((l, i) => l.cells.forEach(([c, r]) => occ[r * cols + c] = i));
+    lines.forEach((l, i) => {
+      if (l.cells.length < 3) return;
+      const tdir = [l.cells[0][0] - l.cells[1][0], l.cells[0][1] - l.cells[1][1]];
+      const tailBlocked = !laneFree([l.cells[0]], tdir, occ, cols, rows, i);
+      if (R() < rate * (tailBlocked ? 1.6 : 0.4)) { l.both = true; l.tdir = tdir; }
+    });
+  }
+
   function generateLevel(level, opts = {}) {
     const cfg = levelConfig(level, opts);
     const baseSeed = (opts.daily || opts.demo) ? opts.seed : level * 7919 + 13;
@@ -688,7 +730,13 @@
       const score = st.depth - 6 * st.initialFree / lines.length - 4 * singles / lines.length;
       if (!best || score > best.score) best = { lines, score, depth: st.depth, initialFree: st.initialFree };
     }
-    if (!opts.demo) mergeSingles(best, cfg);
+    if (!opts.demo) {
+      mergeSingles(best, cfg);
+      const rate = opts.daily ? 0.12 : level >= 6 ? Math.min(0.14, 0.06 + (level - 6) * 0.003) : 0;
+      markTwoHeaded(best.lines, cfg.cols, cfg.rows, rate, mulberry(baseSeed ^ 0x2c1b3c6d));
+      const st = analyse(best.lines, cfg.cols, cfg.rows);
+      best.depth = st.depth; best.initialFree = st.initialFree;
+    }
     return { cols: cfg.cols, rows: cfg.rows, lines: best.lines, depth: best.depth, initialFree: best.initialFree,
       name: cfg.name, emoji: cfg.emoji, draw: cfg.draw, level };
   }
@@ -705,6 +753,7 @@
   let particles = [];
   let layout = { cs: 20, ox: 0, oy: 0 };
   const view = { s: 1, x: 0, y: 0 };
+  let undos = 1, bumps = [];
   let busyEnd = false, removed = 0, streak = 0, lastClear = 0, revealT = -1, shake = 0;
   let colors = {};
 
@@ -741,6 +790,18 @@
     }
     return -1;
   }
+  function tailBlocker(l) {
+    const [tc, tr] = l.cells[0];
+    let k = 1;
+    for (let c = tc + l.tdir[0], r = tr + l.tdir[1]; c >= 0 && r >= 0 && c < G.cols && r < G.rows; c += l.tdir[0], r += l.tdir[1], k++) {
+      const o = occ[r * G.cols + c];
+      if (o >= 0 && o !== l.id) return k;
+    }
+    return -1;
+  }
+  const freeEnd = (l) => laneBlocker(l) < 0 ? 'head' : (l.both && tailBlocker(l) < 0 ? 'tail' : null);
+  // Make the chosen end of a two-headed line its head (the drawing shows both arrows either way).
+  function swapEnds(l) { l.cells = l.cells.slice().reverse(); const d = l.dir; l.dir = l.tdir; l.tdir = d; }
   const laneCell = (l, k) => {
     const [hc, hr] = l.cells[l.cells.length - 1];
     return (hr + l.dir[1] * k) * G.cols + (hc + l.dir[0] * k);
@@ -756,9 +817,9 @@
     if (mode === 'level') { save.level = n; save.maxLevel = Math.max(save.maxLevel, n); persist(); }
     else dailyKey = todayKey();
     G = generateLevel(n, mode === 'daily' ? { daily: true, seed: hashStr('daily:' + dailyKey) } : {});
-    lines = G.lines.map((l, i) => ({ id: i, cells: l.cells, dir: l.dir, state: 'idle', s: 0, v: 0, t: 0, flash: 0, path: null }));
+    lines = G.lines.map((l, i) => ({ id: i, cells: l.cells, dir: l.dir, both: !!l.both, tdir: l.tdir, state: 'idle', s: 0, v: 0, t: 0, flash: 0, glow: 0, path: null }));
     rebuildOcc();
-    drops = 3; hints = 3; hintId = -1; guide = null; pressed = -1; particles = [];
+    drops = 3; hints = 3; undos = 1; bumps = []; hintId = -1; guide = null; pressed = -1; particles = [];
     busyEnd = false; removed = 0; streak = 0; revealT = -1; shake = 0;
     view.s = 1; view.x = 0; view.y = 0; zoomAnim = null;
     $('levelTitle').textContent = mode === 'daily' ? 'Daily puzzle' : `Level ${n}`;
@@ -771,6 +832,7 @@
       3: 'Hold a line to see where it will go.'
     };
     let tip = mode === 'level' ? tips[n] : null;
+    if (!tip && !save.seenBothTip && lines.some(l => l.both)) { tip = 'Lines with two arrows can leave either way. Tap near the end you want.'; save.seenBothTip = true; persist(); }
     if (!tip && G.cols >= 16 && !save.seenZoomTip) { tip = 'Pinch, scroll or double-tap to zoom in.'; save.seenZoomTip = true; persist(); }
     if (tip) toast(tip, 3200);
   }
@@ -791,6 +853,8 @@
     $('leftCount').textContent = `${lines.length - removed} left`;
     const b = $('hintBadge');
     b.textContent = hints; b.classList.toggle('zero', hints === 0);
+    const u = $('undoBadge');
+    u.textContent = undos; u.classList.toggle('zero', undos === 0 || !bumps.length);
   }
   let toastTimer = 0;
   function toast(msg, ms = 1600) {
@@ -866,8 +930,9 @@
   }
 
   // ================= Actions =================
-  function tapLine(l) {
+  function tapLine(l, end = 'head') {
     if (l.state !== 'idle' || busyEnd) return;
+    if (l.both && end === 'tail') swapEnds(l);
     const k = laneBlocker(l);
     l.path = buildPath(l);
     if (hintId === l.id) hintId = -1;
@@ -887,20 +952,42 @@
       const other = lines.find(o => o.id === occ[laneCell(l, k)]);
       if (other) other.flash = 1.1;
       l.flash = 1.6;
-      drops--; streak = 0;
+      drops--; streak = 0; bumps.push(l.id);
       thud(); vibe([25, 30, 25]);
       shake = 1;
       renderDrops();
       const el = $('drops').children[Math.max(0, drops)];
       if (el) el.classList.add('shake');
-      if (drops <= 0) { busyEnd = true; setTimeout(() => $('loseVeil').classList.add('show'), 700); }
+      renderHud();
+      if (drops <= 0) {
+        busyEnd = true;
+        setTimeout(() => {
+          if (drops > 0) return;
+          $('loseUndo').hidden = !(undos > 0 && bumps.length);
+          $('loseVeil').classList.add('show');
+        }, 700);
+      }
     }
+  }
+
+  function useUndo() {
+    if (undos <= 0) { toast('Undo is used up on this board'); return; }
+    if (!bumps.length) { toast('Undo gives back the 💧 from your last bump'); return; }
+    const id = bumps.pop();
+    undos--; drops = Math.min(3, drops + 1);
+    const l = lines[id];
+    if (l) { l.flash = 0; l.glow = 1.2; }
+    busyEnd = false;
+    $('loseVeil').classList.remove('show');
+    renderDrops(); renderHud();
+    pluck(noteHz(4), 0.08); pluck(noteHz(7), 0.07, 0.07);
+    toast('Bump taken back 💧');
   }
 
   function useHint() {
     if (busyEnd) return;
     if (hints <= 0) { toast('No hints left on this board'); return; }
-    const free = lines.filter(l => l.state === 'idle' && laneBlocker(l) < 0);
+    const free = lines.filter(l => l.state === 'idle' && freeEnd(l));
     if (!free.length) return;
     let best = free[0], bestScore = -1;
     for (const f of free) {
@@ -913,6 +1000,7 @@
       }
       if (score > bestScore) { bestScore = score; best = f; }
     }
+    if (freeEnd(best) === 'tail') swapEnds(best);
     hints--; hintId = best.id; hintUntil = performance.now() + 4500;
     if (view.s > 1.01) { const [c, r] = best.cells[best.cells.length - 1]; panTo(c, r); }
     hintSound(); renderHud();
@@ -935,6 +1023,13 @@
       save.maxLevel = Math.max(save.maxLevel, n + 1);
       text = drops === 3 ? 'No bumps at all.' : `Level ${n} cleared. Replay it without a bump for all three drops.`;
       $('nextBtn').textContent = 'Next level';
+    }
+    let isNew = false;
+    if (G.emoji) {
+      const prev = save.album[G.emoji];
+      isNew = !prev;
+      save.album[G.emoji] = { name: G.name, level: mode === 'level' ? save.level : (prev ? prev.level : null), drops: Math.max(prev ? prev.drops : 0, drops) };
+      if (isNew) text = `New picture for your album! ${text}`;
     }
     persist();
     $('winPic').textContent = G.emoji || '🎉';
@@ -968,6 +1063,15 @@
     return best;
   }
 
+  // For a two-headed line, the half of the line you touch picks the end it leaves from.
+  function endFor(l, sx, sy) {
+    if (!l.both) return 'head';
+    const [wx, wy] = toWorld(sx, sy);
+    let bi = 0, bd = Infinity;
+    l.cells.forEach(([c, r], i) => { const d = Math.hypot(px(c) - wx, py(r) - wy); if (d < bd) { bd = d; bi = i; } });
+    return bi < (l.cells.length - 1) / 2 ? 'tail' : 'head';
+  }
+
   const ptrs = new Map();
   let gest = null, lastEmptyTap = 0;
   const local = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
@@ -981,9 +1085,9 @@
     if (ptrs.size === 1) {
       const l = busyEnd ? null : lineAt(x, y);
       pressed = l ? l.id : -1;
-      gest = { type: 'tap', x, y, l, long: false, timer: 0 };
+      gest = { type: 'tap', x, y, l, end: l ? endFor(l, x, y) : 'head', long: false, timer: 0 };
       if (l) gest.timer = setTimeout(() => {
-        if (gest && gest.type === 'tap' && gest.l && gest.l.state === 'idle') { gest.long = true; guide = { id: gest.l.id }; vibe(8); }
+        if (gest && gest.type === 'tap' && gest.l && gest.l.state === 'idle') { gest.long = true; guide = { id: gest.l.id, end: gest.end }; vibe(8); }
       }, 300);
     } else if (ptrs.size === 2) {
       if (gest) clearTimeout(gest.timer);
@@ -1020,7 +1124,7 @@
     if (gest.type === 'tap') {
       clearTimeout(gest.timer);
       if (!cancelled && !gest.long) {
-        if (gest.l) tapLine(gest.l);
+        if (gest.l) tapLine(gest.l, gest.end);
         else {
           const now = performance.now();
           if (now - lastEmptyTap < 320) { zoomTo(gest.x, gest.y, view.s > 1.01 ? 1 : 2.5); lastEmptyTap = 0; }
@@ -1072,14 +1176,21 @@
     ctx.stroke();
     if (!withHead) return;
     const h = pts[pts.length - 1];
-    const hx = px(h[0]), hy = py(h[1]);
+    arrowHead(ctx, px(h[0]), py(h[1]), dx, dy, cs, width, color);
+    if (l.both && pts.length > 1) {
+      const t0 = pts[0], t1 = pts[1];
+      const ex = t0[0] - t1[0], ey = t0[1] - t1[1], n = Math.hypot(ex, ey) || 1;
+      arrowHead(ctx, px(t0[0]), py(t0[1]), ex / n, ey / n, cs, width, color);
+    }
+  }
+  function arrowHead(ctx, hx, hy, dx, dy, cs, width, color) {
     const tip = Math.min(cs * 0.36, 11), back = cs * 0.02, half = Math.max(width * 1.7, Math.min(cs * 0.17, 6));
     ctx.beginPath();
     ctx.moveTo(hx + dx * tip, hy + dy * tip);
     ctx.lineTo(hx - dx * back - dy * half, hy - dy * back + dx * half);
     ctx.lineTo(hx - dx * back + dy * half, hy - dy * back - dx * half);
     ctx.closePath();
-    ctx.fillStyle = color; ctx.lineWidth = width * 0.5;
+    ctx.fillStyle = color; ctx.strokeStyle = color; ctx.lineWidth = width * 0.5;
     ctx.fill(); ctx.stroke();
   }
 
@@ -1134,16 +1245,18 @@
     if (guide) {
       const l = lines[guide.id];
       if (l && l.state === 'idle') {
-        const k = laneBlocker(l);
-        const [hc, hr] = l.cells[l.cells.length - 1];
+        const fromTail = l.both && guide.end === 'tail';
+        const k = fromTail ? tailBlocker(l) : laneBlocker(l);
+        const [hc, hr] = fromTail ? l.cells[0] : l.cells[l.cells.length - 1];
+        const d = fromTail ? l.tdir : l.dir;
         const steps = k < 0 ? Math.max(G.cols, G.rows) : k - 0.5;
         ctx.save();
         ctx.setLineDash([cs * 0.22, cs * 0.26]);
         ctx.strokeStyle = k < 0 ? colors.accent : colors.danger;
         ctx.lineWidth = Math.max(1.6 / view.s, lw * 0.9); ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(px(hc + l.dir[0] * 0.5), py(hr + l.dir[1] * 0.5));
-        ctx.lineTo(px(hc + l.dir[0] * steps), py(hr + l.dir[1] * steps));
+        ctx.moveTo(px(hc + d[0] * 0.5), py(hr + d[1] * 0.5));
+        ctx.lineTo(px(hc + d[0] * steps), py(hr + d[1] * steps));
         ctx.stroke();
         ctx.restore();
       }
@@ -1162,8 +1275,20 @@
           const pulse = 0.5 + 0.5 * Math.sin(now / 150);
           ctx.globalAlpha = 0.18 + 0.22 * pulse;
           drawLine(l, l.cells, 0, colors.accent, lw * 4, false);
+          if (l.both) {
+            // Mark which end is free.
+            const [hc, hr] = l.cells[l.cells.length - 1];
+            ctx.beginPath(); ctx.arc(px(hc + l.dir[0] * 0.3), py(hr + l.dir[1] * 0.3), cs * (0.45 + 0.15 * pulse), 0, Math.PI * 2);
+            ctx.fillStyle = colors.accent; ctx.fill();
+          }
           ctx.globalAlpha = 1;
           color = colors.accent;
+        }
+        if (l.glow > 0) {
+          l.glow = Math.max(0, l.glow - dt);
+          ctx.globalAlpha = Math.min(1, l.glow) * 0.45;
+          drawLine(l, l.cells, 0, colors.accent, lw * 4, false);
+          ctx.globalAlpha = 1;
         }
         if (guide && guide.id === l.id) { color = colors.accent; width = lw * 1.45; }
         else if (pressed === l.id) width = lw * 1.45;
@@ -1239,6 +1364,28 @@
     if (perfect) parts.push(`${perfect} perfect`);
     if (streak) parts.push(`🔥 ${streak}-day daily streak`);
     $('stats').textContent = parts.length ? parts.join(' · ') : 'Your progress is saved on this device.';
+    const found = PICTURES.filter(([e]) => save.album[e]).length;
+    $('albumSub').textContent = `${found} / ${PICTURES.length}`;
+  }
+  function renderAlbum() {
+    const grid = $('albumGrid');
+    grid.innerHTML = '';
+    let found = 0;
+    for (const [emoji, name] of PICTURES) {
+      const got = save.album[emoji];
+      if (got) found++;
+      const b = document.createElement('button');
+      b.className = 'pic' + (got ? '' : ' locked');
+      b.disabled = !(got && got.level);
+      b.setAttribute('aria-label', got ? `${name}${got.level ? `, level ${got.level}` : ', daily puzzle'}` : 'Not found yet');
+      b.innerHTML = `<span>${emoji}</span><small>${got ? name : '???'}</small>` +
+        `<small class="dots">${got ? `${got.level ? 'Lv ' + got.level : 'Daily'} ${'●'.repeat(got.drops)}` : ''}</small>`;
+      if (got && got.level) b.addEventListener('click', () => { $('albumVeil').classList.remove('show'); startLevel(got.level); });
+      grid.appendChild(b);
+    }
+    $('albumCount').textContent = found
+      ? `${found} of ${PICTURES.length} pictures found. Tap one to replay its level.`
+      : 'Clear a board to reveal its picture. Every picture you find is kept here.';
   }
 
   // ---------- Home page with a self-playing demo board ----------
@@ -1345,6 +1492,10 @@
   $('themeBtn').addEventListener('click', () => applyTheme(THEMES[(THEMES.indexOf(save.theme || initialTheme) + 1) % THEMES.length]));
   $('gridBtn').addEventListener('click', () => { showGrid = !showGrid; $('gridBtn').classList.toggle('on', showGrid); });
   $('hintBtn').addEventListener('click', useHint);
+  $('undoBtn').addEventListener('click', useUndo);
+  $('loseUndo').addEventListener('click', useUndo);
+  $('albumBtn').addEventListener('click', () => { renderAlbum(); $('albumVeil').classList.add('show'); });
+  $('albumClose').addEventListener('click', () => $('albumVeil').classList.remove('show'));
   $('homeBtn').addEventListener('click', showHome);
   $('winHome').addEventListener('click', () => { if (mode === 'level') save.level = Math.max(save.level, Math.min(save.maxLevel, save.level + 1)); persist(); G = null; showHome(); });
   $('loseHome').addEventListener('click', () => { G = null; showHome(); });
@@ -1377,7 +1528,7 @@
   requestAnimationFrame(frame);
 
   // Hooks for automated checks.
-  window.__laneOut = { generateLevel, analyse, levelConfig, debug: () => ({ layout, view, removed, cols: G.cols, rows: G.rows, lines: lines.map(l => ({ id: l.id, state: l.state, cells: l.cells, dir: l.dir })) }) };
+  window.__laneOut = { generateLevel, analyse, levelConfig, debug: () => ({ layout, view, removed, cols: G.cols, rows: G.rows, lines: lines.map(l => ({ id: l.id, state: l.state, cells: l.cells, dir: l.dir, both: l.both, tdir: l.tdir })) }) };
 })();
 </script>
 </body>
