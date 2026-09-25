@@ -30,6 +30,7 @@
     }
     @keyframes drift { to { transform: translate(4%, -3%) rotate(6deg); } }
     @media (prefers-reduced-motion: reduce) { body::before, .moves-ring.low { animation: none; } }
+    html { background: #020704; }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     body {
       background: radial-gradient(circle at 18% 12%, rgba(0, 240, 255, 0.15) 0%, transparent 40%),
@@ -60,77 +61,139 @@
     .view-screen.active { display: flex !important; }
     #game-view.active { display: grid !important; }
 
+    /* ---------- LOBBY ---------- */
     .home-container { width: 100%; max-width: 820px; display: flex; flex-direction: column; gap: 16px; }
-    .hero-banner-card {
-      background: linear-gradient(135deg, rgba(0, 200, 117, 0.35) 0%, rgba(13, 56, 34, 0.65) 100%);
-      backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.28); border-radius: 28px; padding: 24px 28px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55); display: flex; justify-content: space-between; align-items: center;
+    .hero {
+      position: relative; overflow: hidden; border-radius: 30px; border: 1px solid rgba(255,255,255,0.22);
+      background: linear-gradient(180deg, #ff9a5c 0%, #ff5c8a 38%, #7a3ca8 72%, #2a1a52 100%);
+      box-shadow: 0 6px 0 rgba(0,0,0,0.35), 0 25px 50px rgba(0,0,0,0.55);
     }
-    .hero-text h1 { font-size: 30px; font-weight: 900; margin-bottom: 4px; }
-    .hero-text p { font-size: 13px; color: #c4ecd7; margin-bottom: 14px; }
-    .tour-progress-bar { width: 100%; max-width: 320px; height: 9px; background: rgba(0, 0, 0, 0.45); border-radius: 8px; margin-bottom: 16px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.12); }
-    .tour-progress-fill { height: 100%; width: 2%; background: linear-gradient(90deg, var(--gold), var(--danfo-amber)); border-radius: 8px; }
+    .hero-scene { position: relative; height: 150px; }
+    .sun { position: absolute; left: 50%; top: 22px; width: 90px; height: 90px; margin-left: -45px; border-radius: 50%;
+      background: radial-gradient(circle, #fff3b0 0%, #ffd54a 55%, rgba(255,190,26,0) 72%); }
+    .skyline { position: absolute; left: 0; right: 0; bottom: 34px; width: 100%; height: 90px; }
+    .road { position: absolute; left: 0; right: 0; bottom: 0; height: 36px; background: linear-gradient(180deg, #2b2f36, #1b1e23); border-top: 3px solid #4a4f58; overflow: hidden; }
+    .road-dash { position: absolute; left: 0; top: 15px; width: 200%; height: 4px;
+      background: repeating-linear-gradient(90deg, #ffd54a 0 26px, transparent 26px 52px); animation: roadMove 1.2s linear infinite; }
+    @keyframes roadMove { to { transform: translateX(-52px); } }
+    .hero-bus { position: absolute; bottom: 14px; left: 0; font-size: 58px; line-height: 1; filter: drop-shadow(0 6px 6px rgba(0,0,0,0.5));
+      animation: busDrive 11s linear infinite, busBob 0.5s ease-in-out infinite alternate; white-space: nowrap; }
+    @keyframes busDrive { from { left: 105%; } to { left: -35%; } }
+    @keyframes busBob { to { translate: 0 -3px; } }
+    .scene-palm { position: absolute; bottom: 30px; font-size: 44px; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4)); }
+    .scene-palm.p1 { left: 6%; } .scene-palm.p2 { right: 5%; font-size: 36px; }
+    .hero-body { position: relative; padding: 18px 24px 22px; background: linear-gradient(180deg, rgba(20,10,40,0.2), rgba(8,26,16,0.92) 40%); }
+    .eyebrow { font-size: 11px; font-weight: 900; color: var(--gold); letter-spacing: 1.5px; text-transform: uppercase; }
+    .hero-body h1 { font-family: var(--display); font-size: 30px; font-weight: 700; margin: 2px 0 2px; }
+    .hero-body p { font-size: 13px; color: #c4ecd7; margin-bottom: 12px; }
+    .tour-progress-bar { width: 100%; height: 10px; background: rgba(0, 0, 0, 0.5); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+    .tour-progress-fill { height: 100%; width: 2%; background: linear-gradient(90deg, #ff2a7a, var(--gold)); border-radius: 8px; box-shadow: 0 0 10px var(--gold-glow); }
+    .play-btn {
+      display: inline-flex; align-items: center; gap: 10px; border: none; cursor: pointer; font-family: var(--display); font-weight: 700; font-size: 20px; color: #fff;
+      padding: 14px 30px; border-radius: 22px; background: linear-gradient(180deg, #5cff9d 0%, #00c86b 55%, #00a258 100%);
+      box-shadow: 0 6px 0 #006b39, 0 14px 28px rgba(0, 200, 107, 0.45), inset 0 2px 0 rgba(255,255,255,0.5);
+      text-shadow: 0 2px 0 rgba(0,90,45,0.6); animation: breathe 2.2s ease-in-out infinite; transition: transform 0.12s;
+    }
+    .play-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #006b39; }
+    .play-icon { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.3); display: grid; place-items: center; font-size: 14px; }
+    @keyframes breathe { 50% { transform: scale(1.04); } }
     .btn-danfo {
-      background: linear-gradient(180deg, #ffca2c 0%, #f9bc08 100%); color: #000; font-weight: 900; font-size: 15px;
-      padding: 13px 26px; border-radius: 18px; border: none; cursor: pointer; box-shadow: 0 10px 25px rgba(249, 188, 8, 0.45);
-      display: inline-flex; align-items: center; gap: 8px; transition: transform 0.2s;
+      background: linear-gradient(180deg, #ffd54a 0%, #f9a908 100%); color: #3a2400; font-weight: 900; font-size: 15px;
+      padding: 13px 26px; border-radius: 18px; border: none; cursor: pointer; box-shadow: 0 4px 0 #b36b00, 0 10px 22px rgba(249, 169, 8, 0.35);
+      display: inline-flex; align-items: center; gap: 8px; transition: transform 0.15s;
     }
-    .btn-danfo:hover { transform: scale(1.04); }
-    .hero-danfo-art { font-size: 75px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6)); }
+    .btn-danfo:hover { transform: translateY(-2px); }
+
+    .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .stat { background: var(--glass-dense); border: 1px solid var(--glass-border); border-radius: 18px; padding: 10px 8px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+    .stat-icon { font-size: 20px; }
+    .stat b { font-family: var(--display); font-size: 20px; font-weight: 700; line-height: 1.1; }
+    .stat small { white-space: nowrap; font-size: 10px; font-weight: 800; color: #8fa89b; text-transform: uppercase; letter-spacing: 0.6px; }
 
     .mode-hub-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
     .hub-tile {
-      background: var(--glass-surface); backdrop-filter: blur(28px); border: 1px solid var(--glass-border); border-radius: 22px;
-      padding: 16px 8px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: transform 0.2s;
+      position: relative; border: none; color: #fff; cursor: pointer; border-radius: 22px; padding: 14px 8px 12px;
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px;
+      background: linear-gradient(180deg, var(--c1), var(--c2)); box-shadow: 0 5px 0 rgba(0,0,0,0.35), 0 12px 24px rgba(0,0,0,0.35), inset 0 2px 0 rgba(255,255,255,0.35);
+      transition: transform 0.15s;
     }
-    .hub-tile:hover { border-color: var(--primary); transform: translateY(-4px); }
-    .hub-tile-icon { font-size: 32px; margin-bottom: 6px; }
-    .hub-tile-title { font-size: 13px; font-weight: 900; }
-    .hub-tile-sub { font-size: 10px; color: #9bc2ad; }
+    .hub-tile:hover { transform: translateY(-4px) rotate(-1deg); }
+    .hub-tile:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.35); }
+    .hub-tile-icon { font-size: 28px; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 4px;
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 60%); box-shadow: inset 0 -3px 6px rgba(0,0,0,0.2); }
+    .hub-tile-title { font-family: var(--display); font-size: 15px; font-weight: 700; text-shadow: 0 2px 0 rgba(0,0,0,0.25); }
+    .hub-tile-sub { font-size: 10px; font-weight: 800; opacity: 0.85; }
+    .hub-dot { position: absolute; top: 8px; right: 10px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #ff2a2a; border: 2px solid #fff;
+      font-size: 11px; font-weight: 900; display: grid; place-items: center; animation: dotPop 1.4s ease-in-out infinite; }
+    .hub-dot[hidden] { display: none; }
+    @keyframes dotPop { 50% { transform: scale(1.18); } }
 
     .home-split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .home-card { background: var(--glass-surface); border: 1px solid var(--glass-border); border-radius: 24px; padding: 20px; }
+    .home-card { background: linear-gradient(160deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)), var(--glass-dense); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; }
     .home-card-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 900; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
     .quest-item { background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 11px 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 
+    /* ---------- MAP ---------- */
     .map-header-panel {
-      width: 100%; max-width: 650px; background: var(--glass-dense); backdrop-filter: blur(30px);
-      border: 1px solid var(--glass-border-light); border-radius: 24px; padding: 14px 20px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;
+      width: 100%; max-width: 650px; border-radius: 24px; padding: 14px 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px;
+      background: linear-gradient(135deg, var(--map-a, #0e5a6b), var(--map-b, #07303a)); border: 1px solid rgba(255,255,255,0.25);
+      box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 18px 36px rgba(0,0,0,0.5);
     }
-    .sector-nav-row { display: flex; justify-content: space-between; align-items: center; }
-    .sector-btn {
-      background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: #fff; padding: 6px 14px; border-radius: 16px; font-weight: 800; font-size: 12px; cursor: pointer; transition: all 0.2s;
-    }
-    .sector-btn:hover { background: rgba(255,255,255,0.2); border-color: var(--primary); }
+    .sector-nav-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .round-btn { width: 44px; height: 44px; flex: none; border-radius: 50%; border: 2px solid rgba(255,255,255,0.7); cursor: pointer; color: #3a2400; font-size: 16px; font-weight: 900;
+      background: linear-gradient(180deg, #ffd54a, #f9a908); box-shadow: 0 4px 0 #b36b00; transition: transform 0.12s; }
+    .round-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #b36b00; }
+    .round-btn:disabled { filter: grayscale(1); opacity: 0.4; cursor: default; }
+    .sector-heading { text-align: center; min-width: 0; }
+    .sector-kicker { font-size: 11px; font-weight: 900; letter-spacing: 1.4px; color: var(--gold); }
+    .sector-heading h2 { font-family: var(--display); font-size: 20px; font-weight: 700; line-height: 1.15; }
+    .sector-region { font-size: 11px; color: rgba(255,255,255,0.75); font-weight: 700; }
+    .map-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .sector-btn { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.25); color: #fff; padding: 8px 14px; border-radius: 16px; font-weight: 800; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+    .sector-btn:hover { background: rgba(0,0,0,0.45); border-color: var(--gold); }
     .saga-scroll-viewport {
-      width: 100%; max-width: 650px; height: 68vh; overflow-y: scroll; overflow-x: hidden; border: 1.5px solid var(--glass-border-light); border-radius: 30px;
-      background: linear-gradient(180deg, rgba(16, 52, 30, 0.85) 0%, rgba(9, 30, 18, 0.9) 50%, rgba(20, 52, 32, 0.9) 100%);
-      box-shadow: 0 25px 60px rgba(0,0,0,0.8), inset 0 0 50px rgba(0,0,0,0.6); position: relative; scrollbar-width: none;
+      width: 100%; max-width: 650px; height: max(320px, calc(100vh - 370px)); height: max(320px, calc(100dvh - 370px)); overflow-y: scroll; overflow-x: hidden; border-radius: 30px; position: relative; scrollbar-width: none;
+      border: 1.5px solid rgba(255,255,255,0.25); box-shadow: 0 25px 60px rgba(0,0,0,0.7), inset 0 0 60px rgba(0,0,0,0.45);
+      background: radial-gradient(circle at 20% 15%, rgba(255,255,255,0.08) 0 2px, transparent 3px) 0 0 / 46px 46px,
+                  radial-gradient(circle at 70% 60%, rgba(255,255,255,0.05) 0 3px, transparent 4px) 0 0 / 70px 70px,
+                  linear-gradient(180deg, var(--map-a, #0e5a6b), var(--map-b, #07303a));
     }
     .saga-scroll-viewport::-webkit-scrollbar { display: none; }
-    .saga-track-container { display: flex; flex-direction: column-reverse; gap: 32px; padding: 60px 20px 100px 20px; }
-    .stage-row { display: flex; align-items: center; position: relative; }
-    .stage-row.pos-0 { justify-content: flex-start; padding-left: 60px; }
+    .saga-track-container { position: relative; display: flex; flex-direction: column-reverse; gap: 34px; padding: 70px 20px 110px 20px; }
+    .road-svg { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 0; overflow: visible; }
+    .road-svg path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .road-edge { stroke: rgba(255,255,255,0.18); stroke-width: 38; }
+    .road-base { stroke: #2b2f36; stroke-width: 30; }
+    .road-done { stroke: #ff5c9a; stroke-width: 30; opacity: 0.55; }
+    .road-dash { stroke: #ffd54a; stroke-width: 3; stroke-dasharray: 12 14; }
+    .stage-row { display: flex; align-items: center; position: relative; z-index: 1; min-height: 84px; }
+    .stage-row.pos-0 { justify-content: flex-start; padding-left: 13%; }
     .stage-row.pos-1 { justify-content: center; }
-    .stage-row.pos-2 { justify-content: flex-end; padding-right: 60px; }
-    .map-node { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s; }
-    .map-node:hover { transform: scale(1.1); }
+    .stage-row.pos-2 { justify-content: flex-end; padding-right: 13%; }
+    .map-deco { position: absolute; top: 50%; transform: translateY(-50%); font-size: 34px; opacity: 0.85; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4)); pointer-events: none; }
+    .map-node { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; background: none; border: none; color: #fff; padding: 0; transition: transform 0.15s; }
+    .map-node:hover { transform: scale(1.08); }
     .node-circle {
-      width: 68px; height: 68px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #00ff9d 0%, #00a85a 60%, #004d29 100%);
-      border: 3px solid rgba(255, 255, 255, 0.85); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 17px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65);
+      width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 22px;
+      background: radial-gradient(circle at 35% 28%, #ffb3d0 0%, #ff4d8d 45%, #c4004f 100%);
+      border: 3px solid #fff; box-shadow: 0 5px 0 #7a0031, 0 10px 18px rgba(0,0,0,0.45), inset 0 -4px 8px rgba(0,0,0,0.2);
+      text-shadow: 0 2px 0 rgba(0,0,0,0.35);
     }
-    .map-node.boss .node-circle { background: radial-gradient(circle at 35% 30%, #ff5294 0%, #ff005d 65%, #660026 100%); border-color: var(--gold); }
-    .map-node.locked .node-circle { background: radial-gradient(circle at 35% 30%, #29382e 0%, #151e18 100%); border-color: #3b4e42; color: #5d7064; cursor: not-allowed; }
-    .map-node.cleared .node-circle { background: radial-gradient(circle at 35% 30%, #00e68a 0%, #008751 70%, #004227 100%); }
-    .map-node.current .node-circle { border-color: var(--gold); box-shadow: 0 0 24px var(--gold-glow); }
-    .node-label {
-      position: absolute; bottom: -20px; background: rgba(3, 12, 7, 0.85); border: 1px solid var(--glass-border); padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 800; white-space: nowrap;
-    }
+    .map-node.current .node-circle { width: 76px; height: 76px; font-size: 26px; background: radial-gradient(circle at 35% 28%, #fff3b0 0%, #ffc41a 45%, #e08a00 100%); box-shadow: 0 5px 0 #8a5200, 0 0 0 6px rgba(255,213,74,0.35), 0 0 30px var(--gold-glow); color: #5a3500; text-shadow: 0 1px 0 rgba(255,255,255,0.6); animation: breathe 1.6s ease-in-out infinite; }
+    .map-node.boss .node-circle { width: 74px; height: 74px; font-size: 30px; background: radial-gradient(circle at 35% 28%, #ff9a9a 0%, #e0202a 50%, #7a0008 100%); border-color: var(--gold); box-shadow: 0 5px 0 #4a0005, 0 10px 18px rgba(0,0,0,0.5); }
+    .map-node.locked .node-circle { background: radial-gradient(circle at 35% 28%, #7d8a84 0%, #4a5650 55%, #2c3530 100%); border-color: #9aa7a1; color: #c8d2cd; box-shadow: 0 5px 0 #1c2420, 0 8px 14px rgba(0,0,0,0.4); }
+    .map-node.locked { cursor: not-allowed; }
+    .node-lock { position: absolute; right: -4px; bottom: 16px; font-size: 16px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.6)); }
+    .node-stars { position: absolute; top: -14px; display: flex; gap: 1px; font-size: 15px; z-index: 2; }
+    .node-stars span { color: #3a4640; text-shadow: 0 2px 0 rgba(0,0,0,0.6); }
+    .node-stars span.on { color: var(--gold); text-shadow: 0 2px 0 #8a5200, 0 0 6px var(--gold-glow); }
+    .node-stars span:nth-child(2) { transform: translateY(-5px); }
+    .node-label { margin-top: 8px; background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.2); padding: 3px 9px; border-radius: 12px; font-size: 10px; font-weight: 800; white-space: nowrap; }
     .danfo-token {
-      position: absolute; top: -26px; background: var(--danfo-amber); color: #000; font-size: 11px; font-weight: 900; padding: 3px 8px; border-radius: 9px;
-      border: 2px solid #000; display: flex; align-items: center; gap: 4px; z-index: 5;
+      position: absolute; top: -46px; font-size: 34px; line-height: 1; z-index: 5; white-space: nowrap;
+      filter: drop-shadow(0 5px 4px rgba(0,0,0,0.5)); animation: hop 0.9s ease-in-out infinite;
     }
+    @keyframes hop { 50% { transform: translateY(-8px); } }
 
     #game-view { width: 100%; grid-template-columns: 280px auto 280px; gap: 24px; align-items: start; justify-content: center; }
     .portal-sidebar { display: flex; flex-direction: column; gap: 16px; }
@@ -255,7 +318,14 @@
     .modal-overlay.active { display: flex !important; }
     .modal-overlay.active .modal-card { animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
     @keyframes popIn { from { transform: scale(0.85); opacity: 0; } }
-    #resStars { font-size: 46px !important; letter-spacing: 6px; text-shadow: 0 0 20px var(--gold-glow); }
+    #resStars { font-size: 52px !important; letter-spacing: 8px; min-height: 64px; }
+    .rs-star { display: inline-block; color: #33413a; text-shadow: 0 3px 0 rgba(0,0,0,0.5); }
+    .rs-star.on { color: var(--gold); text-shadow: 0 3px 0 #b36b00, 0 0 24px var(--gold-glow); animation: starPop 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.5) both; }
+    .rs-star:nth-child(2) { font-size: 1.25em; transform: translateY(-8px); }
+    .rs-star:nth-child(2).on { animation-name: starPopMid; }
+    @keyframes starPop { from { transform: scale(0) rotate(-40deg); opacity: 0; } }
+    @keyframes starPopMid { from { transform: translateY(-8px) scale(0) rotate(-40deg); opacity: 0; } to { transform: translateY(-8px); } }
+    #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000001; }
     .modal-card {
       background: rgba(10, 32, 21, 0.94); border: 1.5px solid var(--glass-border-light); border-radius: 28px; padding: 24px; width: 90%; max-width: 440px; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,0.9); max-height: 85vh; overflow-y: auto;
     }
@@ -336,27 +406,39 @@
   <!-- 1. HOMEPAGE VIEW -->
   <div id="home-view" class="view-screen active">
     <div class="home-container">
-      <div class="hero-banner-card">
-        <div class="hero-text">
-          <span style="font-size:11px; font-weight:900; color:var(--gold); letter-spacing:1.5px; text-transform:uppercase;">1,000-STAGE EXPEDITION</span>
-          <h1 id="homeStageTitle">Marina Coast (Lv 1)</h1>
-          <p id="homeStageProgressText">Stage 1 of 1,000 • Continental Tour Active</p>
-          <div class="tour-progress-bar"><div class="tour-progress-fill" id="homeProgressFill"></div></div>
-          <button class="btn-danfo" onclick="launchLevel(userSave.unlocked)"><span>🚌 RESUME JOURNEY</span></button>
+      <section class="hero">
+        <div class="hero-scene" aria-hidden="true">
+          <div class="sun"></div>
+          <svg class="skyline" viewBox="0 0 400 90" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><g fill="#0a2418"><rect x="0" y="55" width="26" height="35" rx="2"/><rect x="28" y="29" width="18" height="61" rx="2"/><rect x="48" y="57" width="33" height="33" rx="2"/><rect x="84" y="27" width="30" height="63" rx="2"/><rect x="118" y="35" width="34" height="55" rx="2"/><rect x="156" y="33" width="28" height="57" rx="2"/><rect x="185" y="4" width="20" height="86" rx="2"/><rect x="207" y="4" width="30" height="86" rx="2"/><rect x="239" y="50" width="27" height="40" rx="2"/><rect x="269" y="63" width="16" height="27" rx="2"/><rect x="288" y="42" width="30" height="48" rx="2"/><rect x="321" y="39" width="18" height="51" rx="2"/><rect x="343" y="55" width="27" height="35" rx="2"/><rect x="372" y="48" width="16" height="42" rx="2"/><rect x="392" y="31" width="34" height="59" rx="2"/><rect x="193" y="0" width="2" height="6"/></g><g fill="#ffd54a" opacity="0.55"><rect x="11" y="61" width="3" height="4"/><rect x="4" y="70" width="3" height="4"/><rect x="4" y="79" width="3" height="4"/><rect x="11" y="79" width="3" height="4"/><rect x="32" y="44" width="3" height="4"/><rect x="39" y="44" width="3" height="4"/><rect x="39" y="71" width="3" height="4"/><rect x="39" y="80" width="3" height="4"/><rect x="73" y="63" width="3" height="4"/><rect x="59" y="72" width="3" height="4"/><rect x="66" y="72" width="3" height="4"/><rect x="102" y="33" width="3" height="4"/><rect x="109" y="33" width="3" height="4"/><rect x="95" y="42" width="3" height="4"/><rect x="102" y="42" width="3" height="4"/><rect x="88" y="51" width="3" height="4"/><rect x="109" y="51" width="3" height="4"/><rect x="95" y="60" width="3" height="4"/><rect x="102" y="60" width="3" height="4"/><rect x="102" y="69" width="3" height="4"/><rect x="102" y="78" width="3" height="4"/><rect x="122" y="41" width="3" height="4"/><rect x="129" y="41" width="3" height="4"/><rect x="136" y="41" width="3" height="4"/><rect x="122" y="50" width="3" height="4"/><rect x="136" y="50" width="3" height="4"/><rect x="122" y="68" width="3" height="4"/><rect x="129" y="77" width="3" height="4"/><rect x="136" y="77" width="3" height="4"/><rect x="160" y="39" width="3" height="4"/><rect x="160" y="57" width="3" height="4"/><rect x="174" y="66" width="3" height="4"/><rect x="160" y="75" width="3" height="4"/><rect x="167" y="75" width="3" height="4"/><rect x="174" y="75" width="3" height="4"/><rect x="174" y="84" width="3" height="4"/><rect x="189" y="19" width="3" height="4"/><rect x="196" y="19" width="3" height="4"/><rect x="196" y="82" width="3" height="4"/><rect x="211" y="10" width="3" height="4"/><rect x="225" y="10" width="3" height="4"/><rect x="232" y="19" width="3" height="4"/><rect x="211" y="28" width="3" height="4"/><rect x="225" y="37" width="3" height="4"/><rect x="225" y="46" width="3" height="4"/><rect x="232" y="46" width="3" height="4"/><rect x="218" y="64" width="3" height="4"/><rect x="232" y="73" width="3" height="4"/><rect x="218" y="82" width="3" height="4"/><rect x="257" y="56" width="3" height="4"/><rect x="243" y="65" width="3" height="4"/><rect x="250" y="83" width="3" height="4"/><rect x="273" y="78" width="3" height="4"/><rect x="306" y="48" width="3" height="4"/><rect x="313" y="48" width="3" height="4"/><rect x="292" y="57" width="3" height="4"/><rect x="299" y="57" width="3" height="4"/><rect x="292" y="75" width="3" height="4"/><rect x="306" y="84" width="3" height="4"/><rect x="325" y="54" width="3" height="4"/><rect x="332" y="54" width="3" height="4"/><rect x="332" y="63" width="3" height="4"/><rect x="354" y="61" width="3" height="4"/><rect x="361" y="61" width="3" height="4"/><rect x="376" y="54" width="3" height="4"/><rect x="383" y="63" width="3" height="4"/><rect x="376" y="81" width="3" height="4"/><rect x="403" y="46" width="3" height="4"/><rect x="417" y="46" width="3" height="4"/><rect x="396" y="55" width="3" height="4"/><rect x="410" y="55" width="3" height="4"/><rect x="410" y="64" width="3" height="4"/><rect x="410" y="73" width="3" height="4"/><rect x="396" y="82" width="3" height="4"/><rect x="403" y="82" width="3" height="4"/></g></svg>
+          <span class="scene-palm p1">🌴</span><span class="scene-palm p2">🌴</span>
+          <div class="road"><div class="road-dash"></div></div>
+          <div class="hero-bus" id="heroDanfoIcon">🚌</div>
         </div>
-        <div class="hero-danfo-art" id="heroDanfoIcon">🚌</div>
+        <div class="hero-body">
+          <span class="eyebrow">1,000-Stage Expedition</span>
+          <h1 id="homeStageTitle">Marina Crossing</h1>
+          <p id="homeStageProgressText">Stage 1 of 1,000</p>
+          <div class="tour-progress-bar"><div class="tour-progress-fill" id="homeProgressFill"></div></div>
+          <button class="play-btn" onclick="launchLevel(userSave.unlocked)"><span class="play-icon">▶</span>PLAY LEVEL <span id="homePlayLvl">1</span></button>
+        </div>
+      </section>
+
+      <div class="stat-row">
+        <div class="stat"><span class="stat-icon">⭐</span><b id="homeStars">0</b><small>Stars</small></div>
+        <div class="stat"><span class="stat-icon">🔨</span><b id="homeHammers">3</b><small>Hammers</small></div>
+        <div class="stat"><span class="stat-icon">🖐️</span><b id="homeSwaps">2</b><small>Swaps</small></div>
+        <div class="stat"><span class="stat-icon">⚡</span><b id="homeBlitz">0</b><small>Blitz best</small></div>
       </div>
 
-      <!-- 8-TILE ACTION HUB -->
       <div class="mode-hub-grid">
-        <div class="hub-tile" onclick="navigate('map-view')"><div class="hub-tile-icon">🗺️</div><div class="hub-tile-title">1,000 Map</div><div class="hub-tile-sub">10 Mega Sectors</div></div>
-        <div class="hub-tile" onclick="openLuckyWheel()"><div class="hub-tile-icon">🎡</div><div class="hub-tile-title">Lucky Spin</div><div class="hub-tile-sub">Daily Boosters</div></div>
-        <div class="hub-tile" onclick="openTransitPass()"><div class="hub-tile-icon">📅</div><div class="hub-tile-title">Transit Pass</div><div class="hub-tile-sub">7-Day Streak</div></div>
-        <div class="hub-tile" onclick="openTrophies()"><div class="hub-tile-icon">🏆</div><div class="hub-tile-title">Trophies</div><div class="hub-tile-sub">Milestones</div></div>
-        <div class="hub-tile" onclick="openGarage()"><div class="hub-tile-icon">🚌</div><div class="hub-tile-title">Pimp Danfo</div><div class="hub-tile-sub">Skins & Horns</div></div>
-        <div class="hub-tile" onclick="startQuickBlitz()"><div class="hub-tile-icon">⚡</div><div class="hub-tile-title">Quick Blitz</div><div class="hub-tile-sub">60-Sec Rush</div></div>
-        <div class="hub-tile" onclick="openModal('shopModal')"><div class="hub-tile-icon">🛒</div><div class="hub-tile-title">Sweet Shop</div><div class="hub-tile-sub">Lives & Tools</div></div>
-        <div class="hub-tile" onclick="openScrapbook()"><div class="hub-tile-icon">📖</div><div class="hub-tile-title">Scrapbook</div><div class="hub-tile-sub">Souvenirs</div></div>
+        <button class="hub-tile" style="--c1:#2fb8ff; --c2:#1a5fe0;" onclick="navigate('map-view')"><span class="hub-tile-icon">🗺️</span><span class="hub-tile-title">1,000 Map</span><span class="hub-tile-sub">10 Mega Sectors</span></button>
+        <button class="hub-tile" style="--c1:#ffa94d; --c2:#f0473c;" onclick="openLuckyWheel()"><span class="hub-dot" id="dotSpin" hidden>!</span><span class="hub-tile-icon">🎡</span><span class="hub-tile-title">Lucky Spin</span><span class="hub-tile-sub">Daily Boosters</span></button>
+        <button class="hub-tile" style="--c1:#b77bff; --c2:#6a2ce0;" onclick="openTransitPass()"><span class="hub-dot" id="dotPass" hidden>!</span><span class="hub-tile-icon">📅</span><span class="hub-tile-title">Transit Pass</span><span class="hub-tile-sub">7-Day Streak</span></button>
+        <button class="hub-tile" style="--c1:#ffd54a; --c2:#e08a00;" onclick="openTrophies()"><span class="hub-dot" id="dotTrophies" hidden></span><span class="hub-tile-icon">🏆</span><span class="hub-tile-title">Trophies</span><span class="hub-tile-sub">Milestones</span></button>
+        <button class="hub-tile" style="--c1:#45e08f; --c2:#009a52;" onclick="openGarage()"><span class="hub-tile-icon">🚌</span><span class="hub-tile-title">Pimp Danfo</span><span class="hub-tile-sub">Skins &amp; Horns</span></button>
+        <button class="hub-tile" style="--c1:#ff6ba6; --c2:#d10050;" onclick="startQuickBlitz()"><span class="hub-tile-icon">⚡</span><span class="hub-tile-title">Quick Blitz</span><span class="hub-tile-sub">60-Sec Rush</span></button>
+        <button class="hub-tile" style="--c1:#2fe0c8; --c2:#00887f;" onclick="openModal('shopModal')"><span class="hub-tile-icon">🛒</span><span class="hub-tile-title">Sweet Shop</span><span class="hub-tile-sub">Lives &amp; Tools</span></button>
+        <button class="hub-tile" style="--c1:#ff9a6b; --c2:#c7432a;" onclick="openScrapbook()"><span class="hub-dot" id="dotScrap" hidden></span><span class="hub-tile-icon">📖</span><span class="hub-tile-title">Scrapbook</span><span class="hub-tile-sub">Souvenirs</span></button>
       </div>
 
       <div class="home-split-row">
@@ -376,17 +458,18 @@
   <div id="map-view" class="view-screen">
     <div class="map-header-panel">
       <div class="sector-nav-row">
-        <button class="sector-btn" onclick="changeSector(-1)">◀ PREV</button>
-        <div style="text-align:center;">
-          <h2 style="font-size: 16px; font-weight: 900; color:var(--gold);" id="sectorTitleTxt">SECTOR 1 (1 - 100)</h2>
-          <span style="font-size: 11px; color: #8fa89b;" id="sectorSubtitleTxt">Lagos Coastal Expressway</span>
+        <button class="round-btn" id="sectorPrevBtn" onclick="changeSector(-1)" aria-label="Previous sector">◀</button>
+        <div class="sector-heading">
+          <span class="sector-kicker" id="sectorTitleTxt">SECTOR 1 · STAGES 1–100</span>
+          <h2 id="sectorSubtitleTxt">🌴 Lagos Coastal Expressway</h2>
+          <span class="sector-region" id="sectorRegionTxt">South-West Atlantic Corridor</span>
         </div>
-        <button class="sector-btn" onclick="changeSector(1)">NEXT ▶</button>
+        <button class="round-btn" id="sectorNextBtn" onclick="changeSector(1)" aria-label="Next sector">▶</button>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="map-actions">
         <div class="pill coins" id="mapStarsTotal">⭐ 0 / 3000</div>
-        <button class="sector-btn" style="border-color:var(--gold); color:var(--gold);" onclick="jumpToCurrentLevelSector()">📍 JUMP TO YOU</button>
-        <button class="btn-danfo" style="padding: 7px 16px; font-size: 12px;" onclick="launchLevel(userSave.unlocked)">▶ PLAY LVL <span id="mapBtnLvl">1</span></button>
+        <button class="sector-btn" onclick="jumpToCurrentLevelSector()">📍 Find me</button>
+        <button class="btn-danfo" style="padding: 9px 16px; font-size: 13px;" onclick="launchLevel(userSave.unlocked)">▶ PLAY <span id="mapBtnLvl">1</span></button>
       </div>
     </div>
     <div class="saga-scroll-viewport" id="sagaViewport"><div class="saga-track-container" id="sagaTrack"></div></div>
@@ -560,6 +643,7 @@
   </div>
 
   <div id="toast"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
 
   <script>
     function toast(msg) {
@@ -693,6 +777,7 @@
     function navigate(viewId) {
       initAudio();
       const leavingGame = viewId !== 'game-view' && document.getElementById('game-view')?.classList.contains('active');
+      if (leavingGame && winPending) finalizeWin();
       if (leavingGame && levelInProgress()) {
         if (!confirm("Quit this stage? You'll lose a life.")) return;
         isVictoryLocked = true; state = 'OVER'; loseLife(); persistState();
@@ -905,21 +990,45 @@
       currentMapSector = Math.min(10, Math.floor((userSave.unlocked - 1) / 100) + 1);
       renderSectorTrack();
       setTimeout(() => {
-        document.querySelector('.map-node.current')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
+        const vp = document.getElementById('sagaViewport'), node = document.querySelector('.map-node.current');
+        if (!vp || !node) return;
+        const nr = node.getBoundingClientRect(), vr = vp.getBoundingClientRect();
+        vp.scrollTo({ top: vp.scrollTop + nr.top - vr.top - vp.clientHeight / 2 + nr.height / 2, behavior: 'smooth' });
+      }, 60);
     }
     window.jumpToCurrentLevelSector = jumpToCurrentLevelSector;
 
+    const SECTOR_THEMES = [
+      { a: '#0f6275', b: '#07303a', deco: ['🌴', '🏖️', '⛵', '🐚'] },
+      { a: '#3a6b22', b: '#15300c', deco: ['🌳', '🍫', '🥭', '🌿'] },
+      { a: '#7a5018', b: '#2e1c07', deco: ['👑', '🛶', '🌿', '🏺'] },
+      { a: '#4a5366', b: '#1b1f27', deco: ['⛰️', '⛏️', '🌲', '🪨'] },
+      { a: '#15608f', b: '#082640', deco: ['🌊', '🐟', '🛶', '🌾'] },
+      { a: '#23744a', b: '#0d311e', deco: ['🕌', '🪨', '🌳', '🏛️'] },
+      { a: '#5e377a', b: '#221330', deco: ['💎', '⛰️', '🐎', '🌵'] },
+      { a: '#806b20', b: '#34290a', deco: ['🚂', '🌾', '🐄', '🌻'] },
+      { a: '#8f5a26', b: '#3a220b', deco: ['🏜️', '🧵', '🕌', '🐫'] },
+      { a: '#9c531b', b: '#431f07', deco: ['🐪', '🌵', '☀️', '🏜️'] }
+    ];
+
     function renderSectorTrack() {
       const sector = SECTOR_DATA[currentMapSector - 1];
+      const theme = SECTOR_THEMES[currentMapSector - 1];
       const startLvl = (currentMapSector - 1) * 100 + 1;
       const endLvl = currentMapSector * 100;
-      safeSetText('sectorTitleTxt', `SECTOR ${currentMapSector} (${startLvl} - ${endLvl})`);
+      const mapView = document.getElementById('map-view');
+      if (mapView) { mapView.style.setProperty('--map-a', theme.a); mapView.style.setProperty('--map-b', theme.b); }
+      safeSetText('sectorTitleTxt', `SECTOR ${currentMapSector} · STAGES ${startLvl}–${endLvl}`);
       safeSetText('sectorSubtitleTxt', `${sector.icon} ${sector.name}`);
+      safeSetText('sectorRegionTxt', sector.region);
+      const prev = document.getElementById('sectorPrevBtn'), next = document.getElementById('sectorNextBtn');
+      if (prev) prev.disabled = currentMapSector <= 1;
+      if (next) next.disabled = currentMapSector >= 10;
 
       const track = document.getElementById('sagaTrack');
       if (!track) return;
       track.innerHTML = '';
+      const bus = DANFO_SKINS[userSave.equippedSkin]?.icon || '🚌';
 
       for (let lvl = startLvl; lvl <= endLvl; lvl++) {
         const isBoss = (lvl % 10 === 0);
@@ -929,18 +1038,53 @@
         row.className = `stage-row ${pos}`;
         const isLocked = lvl > userSave.unlocked;
         const isCurrent = lvl === userSave.unlocked;
-        const isCleared = (userSave.stars[lvl] || 0) > 0;
-        row.innerHTML = `
-          <div class="map-node ${isLocked ? 'locked' : ''} ${isBoss ? 'boss' : ''} ${isCurrent ? 'current' : ''} ${isCleared ? 'cleared' : ''}" onclick="launchLevel(${lvl})">
-            ${isCurrent ? `<div class="danfo-token">${DANFO_SKINS[userSave.equippedSkin]?.icon || '🚌'} YOU</div>` : ''}
-            <div class="node-circle">${isBoss ? '⚠️' : lvl}</div>
-            <div style="font-size:10px; color:var(--gold); margin-top:2px;">${isLocked ? '🔒' : starString(userSave.stars[lvl] || 0)}</div>
-            <div class="node-label">${getStageConfig(lvl).name}</div>
-          </div>
-        `;
+        const stars = userSave.stars[lvl] || 0;
+        const shortName = getStageConfig(lvl).name.replace(/^⚠️\s*/, '').replace(/\s*\(Lv \d+\)$/, '');
+        // Scenery on the side of the road away from the node
+        const deco = lvl % 2 ? `<span class="map-deco" style="${pos === 'pos-2' ? 'left: 7%' : 'right: 7%'}">${theme.deco[lvl % theme.deco.length]}</span>` : '';
+        row.innerHTML = `${deco}
+          <button class="map-node ${isLocked ? 'locked' : ''} ${isBoss ? 'boss' : ''} ${isCurrent ? 'current' : ''} ${stars ? 'cleared' : ''}" onclick="launchLevel(${lvl})" aria-label="Stage ${lvl}${isLocked ? ' (locked)' : ''}">
+            ${isCurrent ? `<span class="danfo-token">${bus}</span>` : ''}
+            ${stars ? `<span class="node-stars">${[0, 1, 2].map(i => `<span class="${i < stars ? 'on' : ''}">★</span>`).join('')}</span>` : ''}
+            <span class="node-circle">${isBoss ? '👹' : lvl}</span>
+            ${isLocked ? '<span class="node-lock">🔒</span>' : ''}
+            ${isBoss || isCurrent ? `<span class="node-label">${isBoss ? `Boss · ${lvl}` : shortName}</span>` : ''}
+          </button>`;
         track.appendChild(row);
       }
+      requestAnimationFrame(drawRoad);
     }
+
+    // Winding road through the stage nodes; the stretch you've driven is tinted pink.
+    function drawRoad() {
+      const track = document.getElementById('sagaTrack');
+      if (!track || !track.offsetParent) return;
+      track.querySelector('.road-svg')?.remove();
+      const circles = [...track.querySelectorAll('.node-circle')];
+      if (circles.length < 2) return;
+      const tr = track.getBoundingClientRect();
+      const pts = circles.map(n => { const b = n.getBoundingClientRect(); return [b.left - tr.left + b.width / 2, b.top - tr.top + b.height / 2]; });
+      const pathTo = end => {
+        let d = `M ${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+        for (let i = 1; i <= end; i++) {
+          const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], my = (y0 + y1) / 2;
+          d += ` C ${x0.toFixed(1)} ${my.toFixed(1)}, ${x1.toFixed(1)} ${my.toFixed(1)}, ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+        }
+        return d;
+      };
+      const full = pathTo(pts.length - 1);
+      const startLvl = (currentMapSector - 1) * 100 + 1;
+      const doneIdx = Math.min(pts.length - 1, userSave.unlocked - startLvl);
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('class', 'road-svg'); svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('width', track.scrollWidth); svg.setAttribute('height', track.scrollHeight);
+      [['road-edge', full], ['road-base', full], ...(doneIdx > 0 ? [['road-done', pathTo(doneIdx)]] : []), ['road-dash', full]].forEach(([cls, d]) => {
+        const path = document.createElementNS(svgNS, 'path'); path.setAttribute('class', cls); path.setAttribute('d', d); svg.appendChild(path);
+      });
+      track.prepend(svg);
+    }
+    window.addEventListener('resize', () => requestAnimationFrame(drawRoad));
 
     function starString(n) { return '★'.repeat(n) + '☆'.repeat(3 - n); }
     function totalStars() { return Object.values(userSave.stars).reduce((a, b) => a + (Number(b) || 0), 0); }
@@ -984,10 +1128,23 @@
       renderBounties();
       safeSetText('mapStarsTotal', `⭐ ${totalStars()} / ${TOTAL_STAGES * 3}`);
       const cfg = getStageConfig(userSave.unlocked);
-      safeSetText('homeStageTitle', cfg.name);
+      safeSetText('homeStageTitle', cfg.name.replace(/^⚠️\s*/, '').replace(/\s*\(Lv \d+\)$/, ''));
+      safeSetText('homePlayLvl', userSave.unlocked);
+      safeSetText('homeStars', totalStars());
+      safeSetText('homeHammers', userSave.hammers);
+      safeSetText('homeSwaps', userSave.swaps);
+      safeSetText('homeBlitz', (userSave.blitzHiScore || 0).toLocaleString());
+      const today = new Date().toDateString();
+      const setDot = (id, show, txt = '!') => { const d = document.getElementById(id); if (d) { d.hidden = !show; d.innerText = txt; } };
+      setDot('dotSpin', userSave.lastSpinDate !== today);
+      setDot('dotPass', userSave.lastDailyClaimDate !== today);
+      const trophiesReady = TROPHIES.filter(t => t.check() && !userSave.claimedAchievements.includes(t.id)).length;
+      setDot('dotTrophies', trophiesReady > 0, trophiesReady);
+      const souvenirsReady = SOUVENIRS.filter((_, i) => souvenirUnlocked(i) && !(userSave.claimedSouvenirs || []).includes(i)).length;
+      setDot('dotScrap', souvenirsReady > 0, souvenirsReady);
       safeSetText('mapBtnLvl', userSave.unlocked);
       const pct = Math.min(100, Math.round((userSave.unlocked / TOTAL_STAGES) * 100));
-      safeSetText('homeStageProgressText', `Stage ${userSave.unlocked} of ${TOTAL_STAGES} • ${pct}% Continental Tour Completed`);
+      safeSetText('homeStageProgressText', `Stage ${userSave.unlocked} of ${TOTAL_STAGES} • ${SECTOR_DATA[Math.min(9, Math.floor((userSave.unlocked - 1) / 100))].name} • ${pct}% complete`);
       const fill = document.getElementById('homeProgressFill');
       if (fill) fill.style.width = `${pct}%`;
       updateLivesTimer();
@@ -1196,7 +1353,9 @@
     let bossCurrentHP = 0; let activeBooster = null;
     let selectedTile = null; let swapAnim = null; let pendingClear = []; let lastSwap = null;
     let lastInteraction = Date.now(); let hintMove = null; let dragStart = null;
-    let effects = [];
+    let effects = []; let particles = []; let shake = 0; let displayScore = 0;
+    let winPending = false; let rushBonus = 0; let rushTimer = 0;
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
     class Candy {
       constructor(type, r, c, special = 'NONE') {
@@ -1272,7 +1431,6 @@
     }
 
     function updateHUD() {
-      safeSetText('scoreVal', score.toLocaleString());
       // The bar runs to the 3-star score; markers sit at 1, 2 and 3 stars.
       const maxScore = currentCfg.target * 1.5;
       const bar = document.getElementById('scoreProgress');
@@ -1332,7 +1490,8 @@
       currentLvl = lvl;
       currentCfg = getStageConfig(lvl);
       score = 0; moves = currentCfg.moves; combo = 0; isVictoryLocked = false; state = 'IDLE';
-      selectedTile = null; swapAnim = null; pendingClear = []; lastSwap = null; effects = []; hintMove = null;
+      selectedTile = null; swapAnim = null; pendingClear = []; lastSwap = null; effects = []; particles = []; hintMove = null;
+      winPending = false; rushBonus = 0; displayScore = 0; shake = 0; safeSetText('scoreVal', '0');
       lastInteraction = Date.now(); activateBooster(null);
 
       safeSetText('dossierTitle', currentCfg.name);
@@ -1363,6 +1522,12 @@
       }
       buildLayout(lvl);
       fillBoard();
+      // Candies tumble in column by column at the start of a stage
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+        const cd = grid[r][c];
+        if (cd) { cd.y = cd.targetY - VIRTUAL_SIZE - c * 16 - (ROWS - r) * 8; cd.vy = 0; }
+      }
+      state = 'DROPPING';
       updateHUD();
       navigate('game-view');
       playEquippedHorn();
@@ -1468,8 +1633,9 @@
         } else {
           const [bomb, bp] = bombs[0]; const other = bomb === A ? B : A;
           bomb.special = 'NONE'; pendingClear.push(key(bp.r, bp.c));
-          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c]?.type === other.type) pendingClear.push(key(r, c));
-          addFlash('bomb', bp.r, bp.c);
+          const targets = [];
+          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c]?.type === other.type) { pendingClear.push(key(r, c)); targets.push(key(r, c)); }
+          addFlash('bomb', bp.r, bp.c, targets);
         }
       } else if (A.special !== 'NONE' && B.special !== 'NONE') {
         triggered = true;
@@ -1554,7 +1720,7 @@
         for (const row of grid) for (const x of row) if (x && x.type >= 0) counts[x.type] = (counts[x.type] || 0) + 1;
         const best = Object.keys(counts).sort((p, q) => counts[q] - counts[p])[0];
         for (let rr = 0; rr < ROWS; rr++) for (let cc = 0; cc < COLS; cc++) if (String(grid[rr][cc]?.type) === best) out.push(key(rr, cc));
-        addFlash('bomb', r, c);
+        addFlash('bomb', r, c, out.slice());
       }
       return out;
     }
@@ -1562,16 +1728,18 @@
     function smashCone(r, c) {
       coneGrid[r][c]--;
       sfxClunk();
-      if (coneGrid[r][c] === 0) { userSave.conesSmashed = (userSave.conesSmashed || 0) + 1; addFlash('wrap', r, c); }
+      burst(c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE + TILE_SIZE / 2, '#ff7a1a', coneGrid[r][c] === 0 ? 16 : 6, 4);
+      if (coneGrid[r][c] === 0) { userSave.conesSmashed = (userSave.conesSmashed || 0) + 1; shake = Math.max(shake, 4); }
     }
 
     // Returns the extra cells to hit if this was a special candy.
     function damageCell(r, c, mult) {
       if (coneGrid[r][c] > 0) { smashCone(r, c); return []; }
-      if (cageGrid[r][c]) { cageGrid[r][c] = false; sfxClink(); return []; }
+      if (cageGrid[r][c]) { cageGrid[r][c] = false; sfxClink(); burst(c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE + TILE_SIZE / 2, '#dfe7ef', 12, 4); return []; }
       const cd = grid[r][c];
       if (!cd) return [];
       grid[r][c] = null;
+      popCandy(cd, r, c);
       score += 60 * mult;
       if (jellyGrid[r][c] > 0) jellyGrid[r][c] = 0;
       if (chocGrid[r][c]) chocGrid[r][c] = false;
@@ -1690,12 +1858,28 @@
             const item = grid[r][c];
             if (item && item.y < item.targetY) {
               item.vy += 1.8; item.y += item.vy;
-              if (item.y >= item.targetY) { item.y = item.targetY; item.vy = 0; }
+              if (item.y >= item.targetY) { if (item.vy > 5) item.squash = 1; item.y = item.targetY; item.vy = 0; }
               moving = true;
             }
           }
         }
         if (!moving) state = 'CLEARING';
+      } else if (state === 'RUSH') {
+        // Sugar Rush: each leftover move becomes a striped candy, then they all go off
+        if (++rushTimer % 6 !== 0) return;
+        const pool = grid.flat().filter(cd => cd && cd.special === 'NONE' && !cageGrid[cd.r][cd.c]);
+        if (moves > 0 && pool.length) {
+          const cd = pool[Math.floor(Math.random() * pool.length)];
+          cd.special = Math.random() < 0.5 ? 'STRIPE_H' : 'STRIPE_V';
+          moves--; score += 150; rushBonus += 150;
+          burst(cd.x + TILE_SIZE / 2, cd.y + TILE_SIZE / 2, '#ffffff', 12, 3);
+          effects.push({ kind: 'ring', x: cd.x + TILE_SIZE / 2, y: cd.y + TILE_SIZE / 2, color: '#ffbe1a', life: 1 });
+          sfxSparkle(); updateHUD();
+        } else {
+          moves = 0; updateHUD();
+          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c] && grid[r][c].special !== 'NONE') pendingClear.push(key(r, c));
+          combo = 0; lastSwap = null; state = 'CLEARING';
+        }
       } else if (state === 'IDLE' && !isVictoryLocked && !hintMove && Date.now() - lastInteraction > 6000) {
         hintMove = findMove();
       }
@@ -1722,31 +1906,47 @@
 
     const EXTRA_MOVES_COST = 500;
 
+    function finalizeWin() {
+      winPending = false; isVictoryLocked = true; state = 'OVER';
+      displayScore = score; safeSetText('scoreVal', score.toLocaleString());
+      const stars = score >= currentCfg.target * 1.5 ? 3 : (score >= currentCfg.target * 1.25 ? 2 : 1);
+      const firstClear = !userSave.stars[currentLvl];
+      userSave.stars[currentLvl] = Math.max(userSave.stars[currentLvl] || 0, stars);
+      if (currentLvl === userSave.unlocked && userSave.unlocked < TOTAL_STAGES) userSave.unlocked++;
+      userSave.hiScore = Math.max(userSave.hiScore, score);
+      userSave.activeLevel = null;
+      const reward = (firstClear ? 150 : 40) + (userSave.perks.magnet ? (firstClear ? 75 : 20) : 0);
+      userSave.coins += reward; persistState(); updateHUD();
+      sfxWin();
+      safeSetText('resTitle', currentCfg.isBoss ? "BOSS DEFEATED!" : "STAGE CLEARED!");
+      setResultStars(stars);
+      if (!reducedMotion) launchConfetti();
+      safeSetText('resSubtitle', `Final Score: ${score.toLocaleString()}${rushBonus ? ` (Sugar Rush +${rushBonus.toLocaleString()})` : ''} • +${reward} 🪙`);
+      const next = currentLvl + 1;
+      setResultActions([
+        ...(next <= TOTAL_STAGES ? [[`NEXT STAGE ${next} ▶`, () => { closeModal('gameResultModal'); launchLevel(next); }, true]] : []),
+        ['🗺️ Back to Map', dismissResult, next > TOTAL_STAGES]
+      ]);
+      openModal('gameResultModal');
+    }
+
+    function setResultStars(n) {
+      const el = document.getElementById('resStars');
+      if (!el) return;
+      el.innerHTML = [0, 1, 2].map(i => `<span class="rs-star ${i < n ? 'on' : ''}" style="animation-delay:${0.2 + i * 0.3}s">★</span>`).join('');
+      for (let i = 0; i < n; i++) setTimeout(() => sfxPop(3 + i * 2), 300 + i * 300);
+    }
+
     function evaluateEnd() {
-      if (isVictoryLocked || state === 'OVER') return;
+      if (state === 'OVER') return;
+      if (winPending) { finalizeWin(); return; }
+      if (isVictoryLocked) return;
       if (isBlitzActive) { ensurePlayableBoard(); state = 'IDLE'; return; }
       if (score >= currentCfg.target && objectiveDone()) {
-        isVictoryLocked = true; state = 'OVER';
-        const rush = moves * 150;
-        score += rush;
-        const stars = score >= currentCfg.target * 1.5 ? 3 : (score >= currentCfg.target * 1.25 ? 2 : 1);
-        const firstClear = !userSave.stars[currentLvl];
-        userSave.stars[currentLvl] = Math.max(userSave.stars[currentLvl] || 0, stars);
-        if (currentLvl === userSave.unlocked && userSave.unlocked < TOTAL_STAGES) userSave.unlocked++;
-        userSave.hiScore = Math.max(userSave.hiScore, score);
-        userSave.activeLevel = null;
-        const reward = (firstClear ? 150 : 40) + (userSave.perks.magnet ? (firstClear ? 75 : 20) : 0);
-        userSave.coins += reward; persistState(); updateHUD();
-        sfxWin();
-        safeSetText('resTitle', currentCfg.isBoss ? "BOSS DEFEATED!" : "STAGE CLEARED!");
-        safeSetText('resStars', starString(stars));
-        safeSetText('resSubtitle', `Final Score: ${score.toLocaleString()}${rush ? ` (Sugar Rush +${rush.toLocaleString()})` : ''} • +${reward} 🪙`);
-        const next = currentLvl + 1;
-        setResultActions([
-          ...(next <= TOTAL_STAGES ? [[`NEXT STAGE ${next} ▶`, () => { closeModal('gameResultModal'); launchLevel(next); }, true]] : []),
-          ['🗺️ Back to Map', dismissResult, next > TOTAL_STAGES]
-        ]);
-        openModal('gameResultModal');
+        isVictoryLocked = true; winPending = true;
+        userSave.activeLevel = null; persistState();
+        if (moves > 0) { state = 'RUSH'; rushTimer = 0; triggerCultureCallout('SUGAR RUSH! 🍬'); return; }
+        finalizeWin();
       } else if (moves <= 0) {
         state = 'OVER'; isVictoryLocked = true;
         loseLife();
@@ -1754,7 +1954,7 @@
         persistState();
         sfxLose();
         safeSetText('resTitle', "OUT OF MOVES!");
-        safeSetText('resStars', starString(0));
+        setResultStars(0);
         safeSetText('resSubtitle', score >= currentCfg.target ? `Score reached, but ${objectiveText().toLowerCase()} first! (-1 ❤️)` : `Final Score: ${score.toLocaleString()} / ${currentCfg.target.toLocaleString()} (-1 ❤️)`);
         setResultActions([
           [`+5 MOVES (${EXTRA_MOVES_COST} 🪙, keep your life)`, buyExtraMoves, true],
@@ -1809,7 +2009,48 @@
       const [r, c] = unkey(k);
       effects.push({ kind: 'text', text, x: c * TILE_SIZE + TILE_SIZE / 2, y: r * TILE_SIZE + TILE_SIZE / 2, life: 1 });
     }
-    function addFlash(kind, r, c) { effects.push({ kind, r, c, life: 1 }); }
+    function addFlash(kind, r, c, targets) {
+      effects.push({ kind, r, c, targets, life: 1 });
+      shake = Math.max(shake, { row: 4, col: 4, wrap: 8, bomb: 11 }[kind] || 0);
+    }
+
+    function burst(x, y, color, n = 10, speed = 4) {
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * Math.PI * 2, v = speed * (0.4 + Math.random());
+        particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, size: 2 + Math.random() * 4, color, life: 1,
+          decay: 0.022 + Math.random() * 0.02, star: Math.random() < 0.35, rot: Math.random() * 6 });
+      }
+      if (particles.length > 600) particles.splice(0, particles.length - 600);
+    }
+
+    // Candy "explodes": a swelling ghost of the candy, a colour ring and a spray of sugar bits
+    function popCandy(cd, r, c) {
+      const cx = c * TILE_SIZE + TILE_SIZE / 2, cy = r * TILE_SIZE + TILE_SIZE / 2;
+      const color = cd.type >= 0 ? CANDIES[cd.type].color : '#ffffff';
+      effects.push({ kind: 'ghost', cd: { type: cd.type, special: cd.special, x: c * TILE_SIZE, y: r * TILE_SIZE }, life: 1 });
+      effects.push({ kind: 'ring', x: cx, y: cy, color, life: 1 });
+      burst(cx, cy, color, 9, 3.5);
+    }
+
+    function launchConfetti() {
+      const cv = document.getElementById('confetti');
+      if (!cv) return;
+      const cx = cv.getContext('2d'); const W = cv.width = innerWidth, H = cv.height = innerHeight;
+      const colors = CANDIES.map(c => c.color).concat(['#ffffff']);
+      const bits = Array.from({ length: 160 }, (_, i) => ({
+        x: i % 2 ? W * 0.15 : W * 0.85, y: H * 0.6, vx: (i % 2 ? 1 : -1) * (4 + Math.random() * 9), vy: -(10 + Math.random() * 12),
+        s: 6 + Math.random() * 7, c: colors[Math.floor(Math.random() * colors.length)], r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4
+      }));
+      let frames = 0;
+      (function tick() {
+        cx.clearRect(0, 0, W, H);
+        for (const b of bits) {
+          b.x += b.vx; b.y += b.vy; b.vy += 0.3; b.vx *= 0.985; b.r += b.vr;
+          cx.save(); cx.translate(b.x, b.y); cx.rotate(b.r); cx.fillStyle = b.c; cx.fillRect(-b.s / 2, -b.s / 4, b.s, b.s / 2); cx.restore();
+        }
+        if (++frames < 200) requestAnimationFrame(tick); else cx.clearRect(0, 0, W, H);
+      })();
+    }
 
     // 4K LIQUID GLASS CANVAS RENDER
     function drawShape(shape, cx, cy, s) {
@@ -1884,6 +2125,8 @@
     function render() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, VIRTUAL_SIZE, VIRTUAL_SIZE);
+      const now = performance.now();
+      if (shake > 0.3 && !reducedMotion) { ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake); shake *= 0.88; } else shake = 0;
       const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
 
       for (let r = 0; r < ROWS; r++) {
@@ -1918,7 +2161,19 @@
         }
       }
       // Candies are drawn in a second pass so ones falling past a cone stay visible.
-      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r]?.[c]) drawCandy(grid[r][c]);
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+        const it = grid[r]?.[c];
+        if (!it) continue;
+        let sx = 1, sy = 1, rot = 0;
+        if (it.squash > 0) { sx = 1 + 0.22 * it.squash; sy = 1 - 0.22 * it.squash; it.squash = Math.max(0, it.squash - 0.09); }
+        if (selectedTile && selectedTile.r === r && selectedTile.c === c && state === 'IDLE') { const k = 1.1 + 0.05 * Math.sin(now / 110); sx *= k; sy *= k; }
+        if (hintMove && state === 'IDLE' && hintMove.some(p => p.r === r && p.c === c)) rot = Math.sin(now / 80) * 0.18;
+        if (it.special !== 'NONE' && state === 'IDLE') { const k = 1 + 0.03 * Math.sin(now / 200 + r + c); sx *= k; sy *= k; }
+        if (sx !== 1 || sy !== 1 || rot) {
+          const cx = it.x + TILE_SIZE / 2, by = it.y + TILE_SIZE * 0.85;
+          ctx.save(); ctx.translate(cx, by); ctx.rotate(rot); ctx.scale(sx, sy); ctx.translate(-cx, -by); drawCandy(it); ctx.restore();
+        } else drawCandy(it);
+      }
 
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
@@ -1936,28 +2191,91 @@
             ctx.strokeStyle = activeBooster === 'SWAP' ? "#00f0ff" : "#ffbe1a"; ctx.lineWidth = 3; ctx.stroke();
           }
           if (hintMove && state === 'IDLE' && hintMove.some(p => p.r === r && p.c === c)) {
-            ctx.strokeStyle = `rgba(255,255,255,${0.25 + 0.6 * pulse})`; ctx.lineWidth = 3;
+            ctx.strokeStyle = `rgba(255,255,255,${0.15 + 0.35 * pulse})`; ctx.lineWidth = 2;
             roundRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8, 10); ctx.stroke();
           }
         }
       }
 
-      effects = effects.filter(fx => (fx.life -= 0.025) > 0);
+      const DECAY = { ghost: 0.11, ring: 0.07, text: 0.022, row: 0.045, col: 0.045, wrap: 0.04, bomb: 0.03 };
+      effects = effects.filter(fx => (fx.life -= DECAY[fx.kind] || 0.03) > 0);
+      const center = k => { const [r, c] = unkey(k); return [c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE + TILE_SIZE / 2]; };
       for (const fx of effects) {
-        ctx.globalAlpha = Math.max(0, fx.life);
-        if (fx.kind === 'text') {
-          ctx.fillStyle = "#ffbe1a"; ctx.font = "900 20px sans-serif"; ctx.textAlign = "center";
-          ctx.strokeStyle = "rgba(0,0,0,0.7)"; ctx.lineWidth = 4;
-          const y = fx.y - (1 - fx.life) * 40;
-          ctx.strokeText(fx.text, fx.x, y); ctx.fillText(fx.text, fx.x, y);
-        } else {
-          ctx.fillStyle = "rgba(255,255,255,0.5)";
-          if (fx.kind === 'row') ctx.fillRect(0, fx.r * TILE_SIZE + TILE_SIZE * 0.3, VIRTUAL_SIZE, TILE_SIZE * 0.4);
-          else if (fx.kind === 'col') ctx.fillRect(fx.c * TILE_SIZE + TILE_SIZE * 0.3, 0, TILE_SIZE * 0.4, VIRTUAL_SIZE);
-          else if (fx.kind === 'wrap') ctx.fillRect((fx.c - 1) * TILE_SIZE, (fx.r - 1) * TILE_SIZE, TILE_SIZE * 3, TILE_SIZE * 3);
-          else if (fx.kind === 'bomb') { ctx.beginPath(); ctx.arc(fx.c * TILE_SIZE + TILE_SIZE / 2, fx.r * TILE_SIZE + TILE_SIZE / 2, (1.2 - fx.life) * VIRTUAL_SIZE, 0, Math.PI * 2); ctx.fill(); }
+        const L = Math.max(0, fx.life), t = 1 - L;
+        ctx.save();
+        if (fx.kind === 'ghost') {
+          const cx = fx.cd.x + TILE_SIZE / 2, cy = fx.cd.y + TILE_SIZE / 2, k = 1 + t * 0.6;
+          ctx.globalAlpha = L; ctx.translate(cx, cy); ctx.scale(k, k); ctx.translate(-cx, -cy);
+          drawCandy(fx.cd);
+        } else if (fx.kind === 'ring') {
+          ctx.globalAlpha = L; ctx.strokeStyle = fx.color; ctx.lineWidth = 4 * L;
+          ctx.beginPath(); ctx.arc(fx.x, fx.y, TILE_SIZE * (0.25 + t * 0.55), 0, Math.PI * 2); ctx.stroke();
+        } else if (fx.kind === 'text') {
+          ctx.globalAlpha = L;
+          ctx.font = "700 24px Fredoka, sans-serif"; ctx.textAlign = "center";
+          ctx.strokeStyle = "#8c0038"; ctx.lineWidth = 5; ctx.fillStyle = "#fff";
+          const y = fx.y - t * 50, k = Math.min(1, t * 6) * (1 + 0.15 * Math.sin(t * 10));
+          ctx.translate(fx.x, y); ctx.scale(k, k);
+          ctx.strokeText(fx.text, 0, 0); ctx.fillText(fx.text, 0, 0);
+        } else if (fx.kind === 'row' || fx.kind === 'col') {
+          // Laser beam that shoots out from the striped candy in both directions
+          const [cx, cy] = center(key(fx.r, fx.c));
+          const reach = Math.min(1, t * 5) * VIRTUAL_SIZE, w = TILE_SIZE * 0.7 * L;
+          const horiz = fx.kind === 'row';
+          const g = horiz ? ctx.createLinearGradient(0, cy - w, 0, cy + w) : ctx.createLinearGradient(cx - w, 0, cx + w, 0);
+          g.addColorStop(0, 'rgba(0,240,255,0)'); g.addColorStop(0.35, 'rgba(0,240,255,0.6)'); g.addColorStop(0.5, 'rgba(255,255,255,1)');
+          g.addColorStop(0.65, 'rgba(255,42,122,0.6)'); g.addColorStop(1, 'rgba(255,42,122,0)');
+          ctx.fillStyle = g;
+          if (horiz) ctx.fillRect(cx - reach, cy - w, reach * 2, w * 2); else ctx.fillRect(cx - w, cy - reach, w * 2, reach * 2);
+          if (Math.random() < 0.6) burst(horiz ? cx + (Math.random() - 0.5) * reach * 2 : cx, horiz ? cy : cy + (Math.random() - 0.5) * reach * 2, '#ffffff', 1, 2);
+        } else if (fx.kind === 'wrap') {
+          // Shockwave
+          const [cx, cy] = center(key(fx.r, fx.c));
+          ctx.globalAlpha = L * 0.5; ctx.fillStyle = '#fff4c2';
+          ctx.beginPath(); ctx.arc(cx, cy, TILE_SIZE * 1.6 * Math.min(1, t * 4), 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = L; ctx.strokeStyle = '#ffbe1a'; ctx.lineWidth = 10 * L;
+          ctx.beginPath(); ctx.arc(cx, cy, TILE_SIZE * (0.5 + t * 2.4), 0, Math.PI * 2); ctx.stroke();
+        } else if (fx.kind === 'bomb') {
+          // Lightning from the colour bomb to every candy it takes out
+          const [bx, by] = center(key(fx.r, fx.c));
+          ctx.globalAlpha = L * 0.35; ctx.fillStyle = '#fff';
+          ctx.beginPath(); ctx.arc(bx, by, TILE_SIZE * (0.6 + t * 1.5), 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = L; ctx.lineCap = 'round';
+          for (const k of (fx.targets || [])) {
+            const [tx, ty] = center(k);
+            ctx.beginPath(); ctx.moveTo(bx, by);
+            for (let i = 1; i < 6; i++) {
+              const f = i / 6;
+              ctx.lineTo(bx + (tx - bx) * f + (Math.random() - 0.5) * 16, by + (ty - by) * f + (Math.random() - 0.5) * 16);
+            }
+            ctx.lineTo(tx, ty);
+            ctx.strokeStyle = 'rgba(180,120,255,0.6)'; ctx.lineWidth = 6; ctx.stroke();
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+          }
         }
-        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+
+      // Sugar bits and sparkles
+      particles = particles.filter(pt => (pt.life -= pt.decay) > 0);
+      for (const pt of particles) {
+        pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.18; pt.vx *= 0.98; pt.rot += 0.2;
+        ctx.globalAlpha = Math.min(1, pt.life * 1.5); ctx.fillStyle = pt.color;
+        if (pt.star) {
+          const s = pt.size * 1.6;
+          ctx.save(); ctx.translate(pt.x, pt.y); ctx.rotate(pt.rot);
+          ctx.beginPath(); ctx.moveTo(0, -s); ctx.lineTo(s * 0.25, 0); ctx.lineTo(0, s); ctx.lineTo(-s * 0.25, 0); ctx.closePath(); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(-s, 0); ctx.lineTo(0, s * 0.25); ctx.lineTo(s, 0); ctx.lineTo(0, -s * 0.25); ctx.closePath(); ctx.fill();
+          ctx.restore();
+        } else { ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size * pt.life, 0, Math.PI * 2); ctx.fill(); }
+      }
+      ctx.globalAlpha = 1;
+
+      // Score counts up instead of jumping
+      if (currentCfg && displayScore !== score) {
+        const d = score - displayScore;
+        displayScore = Math.abs(d) < 3 ? score : displayScore + Math.round(d * 0.18);
+        safeSetText('scoreVal', displayScore.toLocaleString());
       }
     }
 
