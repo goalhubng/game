@@ -350,6 +350,17 @@
     #toast.show { opacity: 1; transform: translate(-50%, 0); }
     .btn-action:disabled, .shop-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     #resActions { display: flex; flex-direction: column; gap: 10px; }
+    .menu-stack { display: flex; flex-direction: column; gap: 10px; }
+    .menu-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .menu-row .dock-btn { justify-content: center; }
+    .settings-card { text-align: left; }
+    .set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 4px; border-bottom: 1px solid rgba(255,255,255,0.08); font-weight: 800; font-size: 14px; cursor: pointer; }
+    .set-row small { display: block; font-size: 11px; font-weight: 600; color: #8fa89b; }
+    .set-row input[type=range] { width: 45%; accent-color: var(--gold); }
+    .set-row input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--primary); }
+    .danger-btn { width: 100%; justify-content: center; margin-top: 14px; border-color: rgba(255,80,80,0.5); color: #ff9a9a; }
+    .danger-btn.armed { background: #8c0018; color: #fff; border-color: #ff6b6b; }
+    button:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
     .quest-item .shop-btn { padding: 6px 11px; font-size: 11px; }
 
     @media (max-width: 1060px) {
@@ -391,7 +402,7 @@
       </div>
       <div class="pill coins" onclick="openModal('shopModal')">🪙 <span id="coinsVal">2,450</span></div>
       <button class="pill" onclick="toggleAudio()"><span id="audioIcon">🔊</span></button>
-      <button class="pill" onclick="toggleBGM()"><span id="bgmIcon" class="music-icon">🎵</span></button>
+      <button class="pill" onclick="openSettings()" aria-label="Settings">⚙️</button>
     </div>
   </header>
 
@@ -490,7 +501,7 @@
           <span class="lv-badge" id="hudLevel">LV 1</span>
           <span class="stage-name" id="hudStageName">Marina Crossing</span>
         </div>
-        <button class="icon-btn" onclick="toggleAudio()" aria-label="Toggle sound"><span id="audioIcon2">🔊</span></button>
+        <button class="icon-btn" onclick="openPause()" aria-label="Pause">⏸</button>
       </div>
 
       <div class="hud-card">
@@ -625,6 +636,39 @@
     </div>
   </div>
 
+  <div id="pauseModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 style="font-size:28px; font-weight:900; color:var(--gold);">PAUSED</h2>
+      <p id="pauseInfo" style="color:#b8e2cd; font-size:13px; margin: 6px 0 16px;"></p>
+      <div class="menu-stack">
+        <button class="btn-action" onclick="resumeGame()">▶ RESUME</button>
+        <div class="menu-row">
+          <button class="dock-btn" onclick="toggleAudio(); syncPauseButtons()"><span id="pauseSound">🔊 Sound on</span></button>
+          <button class="dock-btn" onclick="toggleBGM(); syncPauseButtons()"><span id="pauseMusic">🎵 Music on</span></button>
+        </div>
+        <div class="menu-row">
+          <button class="dock-btn" onclick="restartStage()">🔁 Restart</button>
+          <button class="dock-btn" onclick="closeModal('pauseModal'); openSettings()">⚙️ Settings</button>
+        </div>
+        <button class="dock-btn" style="justify-content:center;" onclick="resumeGame(); navigate('map-view')">🗺️ Quit to map</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-card settings-card">
+      <h2 style="font-size:24px; font-weight:900; color:var(--gold); margin-bottom:12px;">SETTINGS</h2>
+      <label class="set-row" for="setSfx"><span>🔊 Sound effects</span><input type="range" id="setSfx" min="0" max="100" step="5"></label>
+      <label class="set-row" for="setMusicVol"><span>🎵 Music volume</span><input type="range" id="setMusicVol" min="0" max="100" step="5"></label>
+      <label class="set-row" for="setMusicOn"><span>🎶 Play music</span><input type="checkbox" id="setMusicOn"></label>
+      <label class="set-row" for="setVibrate"><span>📳 Vibration <small>(Android)</small></span><input type="checkbox" id="setVibrate"></label>
+      <label class="set-row" for="setReduceFx"><span>✨ Reduce effects <small>(less shaking &amp; confetti)</small></span><input type="checkbox" id="setReduceFx"></label>
+      <label class="set-row" for="setHints"><span>👆 Show move hints</span><input type="checkbox" id="setHints"></label>
+      <button id="resetBtn" class="dock-btn danger-btn" onclick="resetProgress()">🗑️ Reset all progress</button>
+      <button class="btn-action" style="margin-top:12px;" onclick="closeSettings()">DONE</button>
+    </div>
+  </div>
+
   <div id="quitModal" class="modal-overlay">
     <div class="modal-card">
       <h2 style="font-size:26px; font-weight:900; color:var(--gold);">QUIT THIS STAGE?</h2>
@@ -713,14 +757,16 @@
     }
 
     const REFILL_INTERVAL = 20 * 60 * 1000;
-    let userSave = {
+    const freshSave = () => ({
       unlocked: 1, stars: {}, hiScore: 0, coins: 2450, blitzHiScore: 0, lives: 5, lastLifeLostTime: null,
       hammers: 3, swaps: 2, lastSpinDate: null, activeLevel: null,
+      settings: { sfxVol: 1, musicVol: 0.7, vibrate: true, reduceFx: false, hints: true },
       conesSmashed: 0, coneBountyBase: 0, passBountyDate: null, bombsMade: 0, claimedSouvenirs: [],
       equippedSkin: 'classic', ownedSkins: ['classic'], equippedHorn: 'classic', ownedHorns: ['classic'],
       perks: { turbo: false, bumper: false, magnet: false }, souvenirsClaimed: false,
       dailyStreak: 1, lastDailyClaimDate: null, claimedAchievements: []
-    };
+    });
+    let userSave = freshSave();
 
     try {
       const stored = JSON.parse(localStorage.getItem('sugar_scramble_save_1000_fixed'));
@@ -739,6 +785,7 @@
     if (!userSave.perks) userSave.perks = { turbo: false, bumper: false, magnet: false };
     if (!Array.isArray(userSave.claimedAchievements)) userSave.claimedAchievements = [];
     if (!Array.isArray(userSave.claimedSouvenirs)) userSave.claimedSouvenirs = [];
+    userSave.settings = Object.assign({ sfxVol: 1, musicVol: 0.7, vibrate: true, reduceFx: false, hints: true }, userSave.settings || {});
 
     function persistState() {
       try { localStorage.setItem('sugar_scramble_save_1000_fixed', JSON.stringify(userSave)); } catch(e) {}
@@ -784,6 +831,70 @@
     }
     window.launchLevel = launchLevel;
 
+    // PAUSE MENU
+    let gamePaused = false;
+    function syncPauseButtons() {
+      safeSetText('pauseSound', soundOn ? '🔊 Sound on' : '🔇 Sound off');
+      safeSetText('pauseMusic', bgmOn ? '🎵 Music on' : '🎵 Music off');
+    }
+    function openPause() {
+      if (!currentCfg) return;
+      gamePaused = true;
+      safeSetText('pauseInfo', isBlitzActive ? `Quick Blitz • ${blitzTime}s left • ${score.toLocaleString()} pts`
+        : `Stage ${currentLvl} • ${moves} moves left • ${objectiveText()}`);
+      syncPauseButtons();
+      openModal('pauseModal');
+    }
+    function resumeGame() { gamePaused = false; closeModal('pauseModal'); lastInteraction = Date.now(); }
+    function restartStage() {
+      closeModal('pauseModal'); gamePaused = false;
+      if (isBlitzActive) { startQuickBlitz(); return; }
+      if (levelInProgress()) { pendingNav = 'restart'; openModal('quitModal'); return; }
+      launchLevel(currentLvl);
+    }
+    window.openPause = openPause; window.resumeGame = resumeGame; window.restartStage = restartStage; window.syncPauseButtons = syncPauseButtons;
+
+    // SETTINGS
+    function openSettings() {
+      const st = userSave.settings;
+      document.getElementById('setSfx').value = Math.round(st.sfxVol * 100);
+      document.getElementById('setMusicVol').value = Math.round(st.musicVol * 100);
+      document.getElementById('setMusicOn').checked = bgmOn;
+      document.getElementById('setVibrate').checked = st.vibrate;
+      document.getElementById('setReduceFx').checked = st.reduceFx;
+      document.getElementById('setHints').checked = st.hints;
+      disarmReset();
+      openModal('settingsModal');
+    }
+    function closeSettings() { closeModal('settingsModal'); persistState(); }
+    function applySettingsInput(e) {
+      const st = userSave.settings, id = e.target.id;
+      if (id === 'setSfx') { st.sfxVol = e.target.value / 100; if (sfxBus) sfxBus.gain.value = st.sfxVol; if (e.type === 'change') sfxPop(3); }
+      if (id === 'setMusicVol') { st.musicVol = e.target.value / 100; if (musicBus) musicBus.gain.value = 0.45 * st.musicVol; }
+      if (id === 'setMusicOn' && e.type === 'change' && e.target.checked !== bgmOn) toggleBGM();
+      if (id === 'setVibrate') { st.vibrate = e.target.checked; if (e.type === 'change') buzz(40); }
+      if (id === 'setReduceFx') st.reduceFx = e.target.checked;
+      if (id === 'setHints') { st.hints = e.target.checked; hintMove = null; }
+    }
+    ['input', 'change'].forEach(ev => document.getElementById('settingsModal').addEventListener(ev, applySettingsInput));
+    let resetArmed = null;
+    function disarmReset() { clearTimeout(resetArmed); resetArmed = null; const b = document.getElementById('resetBtn'); if (b) { b.classList.remove('armed'); b.innerText = '🗑️ Reset all progress'; } }
+    function resetProgress() {
+      const b = document.getElementById('resetBtn');
+      if (!resetArmed) {
+        b.classList.add('armed'); b.innerText = '⚠️ Tap again to erase everything';
+        resetArmed = setTimeout(disarmReset, 4000); return;
+      }
+      disarmReset();
+      try { localStorage.removeItem('sugar_scramble_save_1000_fixed'); } catch (e) {}
+      const keep = userSave.settings;
+      userSave = Object.assign(freshSave(), { settings: keep });
+      persistState();
+      if (typeof cloudSaveNow === 'function') cloudSaveNow();
+      closeModal('settingsModal'); navigate('home-view'); toast('Progress reset. Welcome back to Stage 1!');
+    }
+    window.openSettings = openSettings; window.closeSettings = closeSettings; window.resetProgress = resetProgress;
+
     function navigate(viewId) {
       initAudio();
       const leavingGame = viewId !== 'game-view' && document.getElementById('game-view')?.classList.contains('active');
@@ -810,7 +921,9 @@
     function confirmQuit() {
       closeModal('quitModal');
       isVictoryLocked = true; state = 'OVER'; loseLife(); persistState();
-      navigate(pendingNav || 'map-view'); pendingNav = null;
+      const dest = pendingNav || 'map-view'; pendingNav = null;
+      if (dest === 'restart') { if (userSave.lives > 0) launchLevel(currentLvl); else navigate('map-view'); return; }
+      navigate(dest);
     }
     function cancelQuit() { closeModal('quitModal'); pendingNav = null; }
     window.confirmQuit = confirmQuit; window.cancelQuit = cancelQuit;
@@ -1183,8 +1296,8 @@
           const comp = audioCtx.createDynamicsCompressor();
           comp.threshold.value = -14; comp.ratio.value = 6;
           masterGain = audioCtx.createGain(); masterGain.gain.value = soundOn ? 1 : 0;
-          sfxBus = audioCtx.createGain(); sfxBus.gain.value = 1;
-          musicBus = audioCtx.createGain(); musicBus.gain.value = 0.32;
+          sfxBus = audioCtx.createGain(); sfxBus.gain.value = userSave.settings.sfxVol;
+          musicBus = audioCtx.createGain(); musicBus.gain.value = 0.45 * userSave.settings.musicVol;
           sfxBus.connect(masterGain); musicBus.connect(masterGain); masterGain.connect(comp); comp.connect(audioCtx.destination);
           noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
           const d = noiseBuffer.getChannelData(0);
@@ -1240,6 +1353,7 @@
       initAudio();
       if (!bgmOn) stopBGM();
       syncAudioButtons(); persistState();
+      const box = document.getElementById('setMusicOn'); if (box) box.checked = bgmOn;
     }
     window.toggleAudio = toggleAudio; window.toggleBGM = toggleBGM;
 
@@ -1399,7 +1513,8 @@
     let lastInteraction = Date.now(); let hintMove = null; let dragStart = null;
     let effects = []; let particles = []; let shake = 0; let displayScore = 0;
     let winPending = false; let rushBonus = 0; let rushTimer = 0;
-    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const fxReduced = () => prefersReducedMotion || userSave.settings.reduceFx;
 
     class Candy {
       constructor(type, r, c, special = 'NONE') {
@@ -1851,6 +1966,7 @@
       if (cleared > 0) sfxPop(combo);
       if (creates.size) sfxSparkle();
       const callouts = { 2: "SWEET!", 3: "E CHOKE! 🔥", 4: "OYA NA! 💥", 5: "NA WA O! 🤯" };
+      if (combo >= 3) buzz(15 + combo * 5);
       if (combo >= 5) triggerCultureCallout(callouts[5]);
       else if (callouts[combo]) showBanner(callouts[combo]);
       return true;
@@ -1924,7 +2040,7 @@
           for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c] && grid[r][c].special !== 'NONE') pendingClear.push(key(r, c));
           combo = 0; lastSwap = null; state = 'CLEARING';
         }
-      } else if (state === 'IDLE' && !isVictoryLocked && !hintMove && Date.now() - lastInteraction > 6000) {
+      } else if (state === 'IDLE' && !isVictoryLocked && !hintMove && userSave.settings.hints && Date.now() - lastInteraction > 6000) {
         hintMove = findMove();
       }
     }
@@ -1961,10 +2077,10 @@
       userSave.activeLevel = null;
       const reward = (firstClear ? 150 : 40) + (userSave.perks.magnet ? (firstClear ? 75 : 20) : 0);
       userSave.coins += reward; persistState(); updateHUD();
-      sfxWin();
+      sfxWin(); buzz([60, 40, 60, 40, 120]);
       safeSetText('resTitle', currentCfg.isBoss ? "BOSS DEFEATED!" : "STAGE CLEARED!");
       setResultStars(stars);
-      if (!reducedMotion) launchConfetti();
+      if (!fxReduced()) launchConfetti();
       safeSetText('resSubtitle', `Final Score: ${score.toLocaleString()}${rushBonus ? ` (Sugar Rush +${rushBonus.toLocaleString()})` : ''} • +${reward} 🪙`);
       const next = currentLvl + 1;
       setResultActions([
@@ -1996,7 +2112,7 @@
         loseLife();
         userSave.hiScore = Math.max(userSave.hiScore, score);
         persistState();
-        sfxLose();
+        sfxLose(); buzz(220);
         safeSetText('resTitle', "OUT OF MOVES!");
         setResultStars(0);
         safeSetText('resSubtitle', score >= currentCfg.target ? `Score reached, but ${objectiveText().toLowerCase()} first! (-1 ❤️)` : `Final Score: ${score.toLocaleString()} / ${currentCfg.target.toLocaleString()} (-1 ❤️)`);
@@ -2053,7 +2169,13 @@
       const [r, c] = unkey(k);
       effects.push({ kind: 'text', text, x: c * TILE_SIZE + TILE_SIZE / 2, y: r * TILE_SIZE + TILE_SIZE / 2, life: 1 });
     }
+    function buzz(pattern) {
+      if (!userSave.settings.vibrate || fxReduced()) return;
+      try { navigator.vibrate?.(pattern); } catch (e) {}
+    }
+
     function addFlash(kind, r, c, targets) {
+      buzz(kind === 'bomb' ? [30, 30, 60] : (kind === 'wrap' ? 45 : 25));
       effects.push({ kind, r, c, targets, life: 1 });
       shake = Math.max(shake, { row: 4, col: 4, wrap: 8, bomb: 11 }[kind] || 0);
     }
@@ -2170,7 +2292,7 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, VIRTUAL_SIZE, VIRTUAL_SIZE);
       const now = performance.now();
-      if (shake > 0.3 && !reducedMotion) { ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake); shake *= 0.88; } else shake = 0;
+      if (shake > 0.3 && !fxReduced()) { ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake); shake *= 0.88; } else shake = 0;
       const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
 
       for (let r = 0; r < ROWS; r++) {
@@ -2336,6 +2458,7 @@
       safeSetText('hudLevel', '⚡ BLITZ'); safeSetText('hudStageName', '60-second rush');
       updateHUD();
       blitzTimer = setInterval(() => {
+        if (gamePaused) return;
         blitzTime--; safeSetText('movesVal', `${blitzTime}s`);
         if (blitzTime <= 10 && blitzTime > 0) sfxTick();
         document.getElementById('movesRing')?.classList.toggle('low', blitzTime <= 10);
