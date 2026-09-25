@@ -3,45 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#f4ead8" />
+  <meta name="theme-color" content="#f3e9d7" />
   <title>Lane Out</title>
   <style>
     :root, [data-skin="paper"] {
-      --page: #e8dcc6;
-      --panel: #f4ead8;
-      --ink: #5b3f25;
-      --title: #b8782f;
-      --muted: #a08868;
-      --line: #dcc9a8;
+      --page: #e6d9c2;
+      --panel: #f3e9d7;
+      --ink: #6a4a2c;
+      --title: #b87a34;
+      --muted: #a58c6c;
+      --line: #dfcdb0;
       --accent: #2f86d6;
-      --danger: #d64532;
+      --danger: #d4442f;
       --btn: #fbf6ec;
-      --shadow: rgba(91, 63, 37, 0.18);
+      --shadow: rgba(106, 74, 44, 0.2);
     }
     [data-skin="night"] {
       color-scheme: dark;
-      --page: #0f1218;
-      --panel: #171b24;
-      --ink: #d6dde8;
-      --title: #f0b35a;
-      --muted: #7c8799;
-      --line: #2a303d;
+      --page: #0e1116;
+      --panel: #161a21;
+      --ink: #d9d2c5;
+      --title: #e9aa55;
+      --muted: #7d8593;
+      --line: #282e38;
       --accent: #5aa9ff;
-      --danger: #ff6b5a;
-      --btn: #222836;
-      --shadow: rgba(0, 0, 0, 0.45);
+      --danger: #ff6a55;
+      --btn: #20262f;
+      --shadow: rgba(0, 0, 0, 0.5);
     }
-    [data-skin="mint"] {
-      --page: #d6e9df;
-      --panel: #eaf5ef;
-      --ink: #1f4a3a;
-      --title: #2f8a63;
-      --muted: #6f9886;
-      --line: #c3ddd0;
-      --accent: #e0772f;
-      --danger: #d64532;
-      --btn: #f6fbf8;
-      --shadow: rgba(31, 74, 58, 0.16);
+    [data-skin="sage"] {
+      --page: #d5e3d8;
+      --panel: #e8f1ea;
+      --ink: #2d4a3c;
+      --title: #3d8a67;
+      --muted: #75978a;
+      --line: #c7dacd;
+      --accent: #d9702c;
+      --danger: #d4442f;
+      --btn: #f5faf6;
+      --shadow: rgba(45, 74, 60, 0.18);
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
@@ -72,72 +72,68 @@
       .app { border-radius: 34px; height: 94%; box-shadow: 0 30px 70px -20px var(--shadow); }
     }
 
-    .bar { display: grid; grid-template-columns: 44px 1fr 44px 44px; align-items: center; gap: 4px; padding: 12px 14px 8px; border-bottom: 2px solid var(--line); }
-    .bar h1 { margin: 0; text-align: center; font-size: 22px; font-weight: 800; color: var(--title); letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar { display: grid; grid-template-columns: 44px 1fr 44px 44px; align-items: center; gap: 2px; padding: 12px 4px 8px; margin: 0 10px; border-bottom: 2px solid var(--line); }
+    .bar h1 { margin: 0; text-align: center; font-size: 24px; font-weight: 800; color: var(--title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ico { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px; color: var(--muted); }
     .ico:active { transform: scale(.92); }
     .ico svg { width: 24px; height: 24px; }
 
-    .status { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px 0; min-height: 36px; gap: 12px; }
-    .drops { display: flex; gap: 6px; }
-    .drop { width: 18px; height: 24px; transition: transform .25s, opacity .25s; }
-    .drop.lost { opacity: .22; transform: scale(.8); filter: grayscale(1); }
-    .drop.shake { animation: shake .4s; }
-    @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+    .status { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px 0; min-height: 40px; }
+    .drops { display: flex; gap: 7px; }
+    .drop { width: 19px; height: 26px; transition: transform .3s, opacity .3s; }
+    .drop.lost { opacity: .25; transform: scale(.82); filter: grayscale(1); }
+    .drop.shake { animation: shake .45s; }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 60% { transform: translateX(5px); } }
     .left { font-size: 13px; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
-    .progress { flex: 1; height: 6px; border-radius: 6px; background: var(--line); overflow: hidden; max-width: 150px; }
-    .progress i { display: block; height: 100%; width: 0; background: var(--title); transition: width .3s; }
-
-    .tip { margin: 6px 20px 0; font-size: 13px; font-weight: 700; color: var(--muted); text-align: center; min-height: 18px; }
 
     .stage { position: relative; flex: 1; min-height: 0; }
     canvas { display: block; width: 100%; height: 100%; touch-action: none; }
     .toast {
-      position: absolute; left: 50%; top: 8px; transform: translate(-50%, -6px); opacity: 0;
-      background: var(--ink); color: var(--panel); font-weight: 800; font-size: 13px; padding: 8px 14px; border-radius: 999px;
-      pointer-events: none; transition: opacity .2s, transform .2s; white-space: nowrap; z-index: 5;
+      position: absolute; left: 50%; top: 6px; transform: translate(-50%, -6px); opacity: 0; max-width: calc(100% - 32px);
+      background: var(--ink); color: var(--panel); font-weight: 800; font-size: 13px; padding: 9px 15px; border-radius: 999px;
+      pointer-events: none; transition: opacity .25s, transform .25s; text-align: center; z-index: 5;
     }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-    .tools { display: flex; justify-content: center; gap: 36px; padding: 6px 0 18px; }
+    .tools { display: flex; justify-content: center; gap: 44px; padding: 6px 0 22px; }
     .tool {
-      position: relative; width: 58px; height: 58px; border-radius: 50%;
+      position: relative; width: 60px; height: 60px; border-radius: 50%;
       background: var(--btn); color: var(--ink);
       box-shadow: 0 6px 16px -6px var(--shadow), inset 0 0 0 2px var(--line);
-      display: grid; place-items: center;
+      display: grid; place-items: center; transition: transform .12s;
     }
-    .tool:active { transform: scale(.93); }
-    .tool svg { width: 26px; height: 26px; }
+    .tool:active { transform: scale(.92); }
+    .tool svg { width: 27px; height: 27px; }
     .tool.on { color: var(--accent); box-shadow: 0 6px 16px -6px var(--shadow), inset 0 0 0 2px var(--accent); }
     .badge {
-      position: absolute; top: -2px; right: -2px; min-width: 22px; height: 22px; padding: 0 6px;
+      position: absolute; top: -3px; right: -3px; min-width: 22px; height: 22px; padding: 0 6px;
       border-radius: 11px; background: var(--danger); color: #fff; font-size: 12px; font-weight: 900;
       display: grid; place-items: center; border: 2px solid var(--panel);
     }
     .badge.zero { background: var(--muted); }
 
     /* Overlays */
-    .veil { position: absolute; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 24px; background: color-mix(in srgb, var(--page) 55%, transparent); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+    .veil { position: absolute; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 24px; background: color-mix(in srgb, var(--page) 55%, transparent); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
     .veil.show { display: flex; }
     .sheet {
-      width: 100%; max-height: 100%; overflow: auto; background: var(--panel); border-radius: 28px; padding: 26px 22px 20px; text-align: center;
+      width: 100%; max-height: 100%; overflow: auto; background: var(--panel); border-radius: 28px; padding: 28px 22px 20px; text-align: center;
       box-shadow: 0 30px 60px -20px var(--shadow), inset 0 0 0 2px var(--line);
-      animation: pop .28s cubic-bezier(.3,1.5,.6,1);
+      animation: pop .3s cubic-bezier(.3,1.4,.6,1);
     }
     @media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
-    @keyframes pop { from { transform: scale(.86); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .sheet h2 { margin: 0; font-size: 30px; font-weight: 900; color: var(--title); text-wrap: balance; }
+    @keyframes pop { from { transform: scale(.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .sheet h2 { margin: 0; font-size: 32px; font-weight: 900; color: var(--title); text-wrap: balance; }
     .sheet p { margin: 8px 0 0; color: var(--muted); font-weight: 700; font-size: 15px; line-height: 1.45; }
-    .logo { width: 84px; height: 84px; margin: 0 auto 12px; border-radius: 22px; background: var(--btn); box-shadow: inset 0 0 0 2px var(--line); display: grid; place-items: center; }
-    .cta { margin-top: 20px; width: 100%; padding: 16px; border-radius: 16px; background: var(--title); color: #fff; font-size: 18px; font-weight: 900; box-shadow: 0 8px 18px -8px var(--shadow); }
+    .cta { margin-top: 22px; width: 100%; padding: 16px; border-radius: 16px; background: var(--title); color: #fff; font-size: 18px; font-weight: 900; box-shadow: 0 8px 18px -8px var(--shadow); }
     .cta:active { transform: scale(.97); }
     .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-    .cta2 { padding: 13px; border-radius: 14px; background: var(--btn); box-shadow: inset 0 0 0 2px var(--line); font-weight: 900; font-size: 15px; color: var(--ink); }
+    .cta2 { padding: 13px 8px; border-radius: 14px; background: var(--btn); box-shadow: inset 0 0 0 2px var(--line); font-weight: 900; font-size: 15px; color: var(--ink); }
     .cta2 small { display: block; font-size: 11px; color: var(--muted); font-weight: 800; margin-top: 2px; }
     .cta.alt { background: transparent; color: var(--muted); box-shadow: none; margin-top: 6px; padding: 10px; font-size: 15px; }
+    .menu-level { font-size: 16px; color: var(--muted); font-weight: 800; margin-top: 6px; }
     .result-drops { display: flex; justify-content: center; gap: 10px; margin: 14px 0 4px; }
     .result-drops .drop { width: 30px; height: 40px; }
-    .reveal { font-size: 64px; line-height: 1; margin: 6px 0 4px; }
+    .reveal { font-size: 64px; line-height: 1; margin: 0 0 6px; }
     .opt { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; border-bottom: 2px solid var(--line); font-weight: 800; text-align: left; gap: 12px; }
     .opt:last-of-type { border-bottom: 0; }
     .switch { flex: none; width: 50px; height: 30px; border-radius: 15px; background: var(--line); position: relative; transition: background .2s; }
@@ -157,35 +153,30 @@
 <div class="app" id="app">
   <div class="bar">
     <button class="ico" id="homeBtn" aria-label="Menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
     </button>
     <h1 id="levelTitle">Level 1</h1>
     <button class="ico" id="themeBtn" aria-label="Change theme">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.9 1.7-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.8-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10.5" cy="7" r="1.2" fill="currentColor"/><circle cx="15" cy="7.5" r="1.2" fill="currentColor"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.9 1.7-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.8-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.1" fill="currentColor"/><circle cx="10.5" cy="7" r="1.1" fill="currentColor"/><circle cx="15" cy="7.5" r="1.1" fill="currentColor"/></svg>
     </button>
     <button class="ico" id="settingsBtn" aria-label="Settings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><circle cx="12" cy="12" r="3.2"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><circle cx="12" cy="12" r="3.2"/></svg>
     </button>
   </div>
 
   <div class="status">
     <div class="drops" id="drops"></div>
-    <div class="progress"><i id="progFill"></i></div>
     <div class="left" id="leftCount"></div>
   </div>
-  <div class="tip" id="tip"></div>
 
   <div class="stage" id="stage"><canvas id="cv"></canvas><div class="toast" id="toast"></div></div>
 
   <div class="tools">
     <button class="tool" id="gridBtn" aria-label="Toggle grid">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/></svg>
-    </button>
-    <button class="tool" id="zoomBtn" aria-label="Zoom">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/><path id="zoomPlus" d="M10.5 7.5v6M7.5 10.5h6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/></svg>
     </button>
     <button class="tool" id="hintBtn" aria-label="Hint">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/><path d="M10 10.5l1 1.5 1-1.5 1 1.5 1-1.5"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/><path d="M10 10.5l1 1.5 1-1.5 1 1.5 1-1.5"/></svg>
       <span class="badge" id="hintBadge">3</span>
     </button>
   </div>
@@ -193,19 +184,11 @@
   <!-- Menu -->
   <div class="veil show" id="startVeil">
     <div class="sheet">
-      <div class="logo">
-        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M10 44V22h14v14h22" stroke="var(--title)" stroke-width="5"/>
-          <path d="M40 30l6 6-6 6" stroke="var(--title)" stroke-width="5"/>
-          <path d="M32 26V10" stroke="var(--ink)" stroke-width="5"/>
-          <path d="M26 16l6-6 6 6" stroke="var(--ink)" stroke-width="5"/>
-        </svg>
-      </div>
       <h2>Lane Out</h2>
-      <p>Tap each line to slide it out along its arrow. Work out the order.</p>
-      <button class="cta" id="playBtn">Play level 1</button>
+      <div class="menu-level" id="menuLevel">Level 1</div>
+      <button class="cta" id="playBtn">Play</button>
       <div class="row2">
-        <button class="cta2" id="levelsBtn">Levels<small id="levelsSub">1 cleared</small></button>
+        <button class="cta2" id="levelsBtn">Levels<small id="levelsSub">0 cleared</small></button>
         <button class="cta2" id="dailyBtn">Daily puzzle<small id="dailySub">New today</small></button>
       </div>
     </div>
@@ -236,7 +219,7 @@
   <div class="veil" id="loseVeil">
     <div class="sheet">
       <h2>Out of drops</h2>
-      <p>Every 💧 is gone. Before you tap, hold a line down to see where it will go.</p>
+      <p>Before you tap, hold a line down to see where it will go.</p>
       <button class="cta" id="retryBtn">Try again</button>
     </div>
   </div>
@@ -247,9 +230,8 @@
       <h2 style="text-align:center;margin-bottom:8px">Settings</h2>
       <div class="opt"><span>Sound</span><button class="switch on" id="swSound" aria-label="Sound"></button></div>
       <div class="opt"><span>Vibration</span><button class="switch on" id="swVibe" aria-label="Vibration"></button></div>
-      <div class="opt"><span>Colour lines by picture</span><button class="switch on" id="swColor" aria-label="Colour lines"></button></div>
       <div class="opt"><span>Restart level</span><button class="ico" id="restartBtn" aria-label="Restart" style="color:var(--title)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/></svg></button></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/></svg></button></div>
       <button class="cta" id="setClose">Done</button>
     </div>
   </div>
@@ -260,69 +242,83 @@
   'use strict';
 
   // ================= Persistence =================
-  const KEY = 'laneOut.v1';
-  const save = { level: 1, maxLevel: 1, theme: null, sound: true, vibe: true, colorLines: true, best: {}, daily: {}, seenZoomTip: false };
+  const KEY = 'laneOut.v2';
+  const save = { level: 1, maxLevel: 1, theme: null, sound: true, vibe: true, best: {}, daily: {}, seenZoomTip: false };
   try { Object.assign(save, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
   save.maxLevel = Math.max(save.maxLevel || 1, save.level || 1);
   const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} };
 
-  // ================= Audio =================
-  let actx = null;
+  // ================= Sound =================
+  // Soft air whoosh plus a wooden "tock" whose pitch climbs a pentatonic scale during a clean streak.
+  let actx = null, master = null;
   function audio() {
     if (!save.sound) return null;
     try {
-      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      if (!actx) {
+        actx = new (window.AudioContext || window.webkitAudioContext)();
+        master = actx.createDynamicsCompressor();
+        master.connect(actx.destination);
+      }
       if (actx.state === 'suspended') actx.resume();
     } catch (e) { return null; }
     return actx;
   }
-  function whoosh(len, combo) {
-    const a = audio(); if (!a) return;
-    const dur = 0.2 + Math.min(0.25, len * 0.01);
-    const buf = a.createBuffer(1, Math.floor(a.sampleRate * dur), a.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / d.length);
-    const src = a.createBufferSource(); src.buffer = buf;
-    const f = a.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.2;
-    const lift = Math.pow(1.12, Math.min(combo - 1, 10));
-    f.frequency.setValueAtTime(450 * lift, a.currentTime);
-    f.frequency.exponentialRampToValueAtTime(2400 * lift, a.currentTime + dur);
-    const g = a.createGain(); g.gain.value = 0.32;
-    src.connect(f); f.connect(g); g.connect(a.destination); src.start();
-    if (combo >= 3) tone(523.25 * Math.pow(2, Math.min(combo - 3, 12) / 12), 0.12, 0.05, 'sine', 0.02);
-  }
-  function tone(freq, dur, vol, type = 'sine', delay = 0) {
+  const PENTA = [0, 2, 4, 7, 9];
+  const noteHz = (step) => 392 * Math.pow(2, (PENTA[step % 5] + 12 * Math.floor(step / 5)) / 12);
+  function pluck(freq, vol = 0.12, delay = 0, dur = 0.45) {
     const a = audio(); if (!a) return;
     const t = a.currentTime + delay;
-    const o = a.createOscillator(), g = a.createGain();
-    o.type = type; o.frequency.setValueAtTime(freq, t);
-    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur);
+    [[1, vol], [2.01, vol * 0.35], [3.98, vol * 0.12]].forEach(([mul, v]) => {
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(freq * mul, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(v, t + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur / mul);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + dur);
+    });
   }
-  const bumpSound = () => { tone(120, 0.18, 0.3, 'triangle'); tone(80, 0.25, 0.2, 'sine', 0.03); };
-  const lockSound = () => { tone(300, 0.06, 0.12, 'square'); tone(240, 0.08, 0.1, 'square', 0.07); };
-  const unlockSound = () => { tone(990, 0.08, 0.07); tone(1320, 0.12, 0.06, 'sine', 0.05); };
-  const winSound = () => [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => tone(f, 0.3, 0.12, 'sine', i * 0.08));
-  const hintSound = () => { tone(880, 0.12, 0.08); tone(1175, 0.16, 0.07, 'sine', 0.07); };
+  function whoosh(len) {
+    const a = audio(); if (!a) return;
+    const dur = 0.28 + Math.min(0.2, len * 0.008);
+    const buf = a.createBuffer(1, Math.floor(a.sampleRate * dur), a.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) { const x = i / d.length; d[i] = (Math.random() * 2 - 1) * Math.pow(Math.sin(Math.PI * x), 1.6); }
+    const src = a.createBufferSource(); src.buffer = buf;
+    const f = a.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 0.9;
+    f.frequency.setValueAtTime(380, a.currentTime);
+    f.frequency.exponentialRampToValueAtTime(2200, a.currentTime + dur * 0.8);
+    const g = a.createGain(); g.gain.value = 0.22;
+    src.connect(f); f.connect(g); g.connect(master); src.start();
+  }
+  function thud() {
+    const a = audio(); if (!a) return;
+    const t = a.currentTime;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(170, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.18);
+    g.gain.setValueAtTime(0.35, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.26);
+    pluck(155, 0.06, 0.01, 0.2);
+  }
+  const winSound = () => [0, 2, 4, 5, 7, 10].forEach((s, i) => pluck(noteHz(s + 3), 0.1, i * 0.09, 0.9));
+  const hintSound = () => { pluck(noteHz(7), 0.07); pluck(noteHz(9), 0.06, 0.08); };
   const vibe = (p) => { if (save.vibe) try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
 
   // ================= Pictures =================
+  // Emoji chosen for recognisable silhouettes; only their outline is used.
   const PICTURES = [
-    ['🐱', 'Cat'], ['🦋', 'Butterfly'], ['🏆', 'Trophy'], ['🍎', 'Apple'], ['🐶', 'Dog'], ['🐟', 'Fish'], ['🚀', 'Rocket'],
-    ['⭐', 'Star'], ['❤️', 'Heart'], ['🍄', 'Mushroom'], ['🐢', 'Turtle'], ['🦊', 'Fox'], ['🐧', 'Penguin'], ['🎸', 'Guitar'],
-    ['🌵', 'Cactus'], ['🍉', 'Watermelon'], ['🐙', 'Octopus'], ['🦄', 'Unicorn'], ['🏠', 'House'], ['🌙', 'Moon'],
-    ['☂️', 'Umbrella'], ['🐘', 'Elephant'], ['🦉', 'Owl'], ['🍦', 'Ice cream'], ['🎃', 'Pumpkin'], ['🐳', 'Whale'],
-    ['🌻', 'Sunflower'], ['🦀', 'Crab'], ['🐝', 'Bee'], ['🍩', 'Donut'], ['⚓', 'Anchor'], ['🎈', 'Balloon'],
-    ['🦕', 'Dinosaur'], ['🐞', 'Ladybug'], ['🍓', 'Strawberry'], ['👑', 'Crown'], ['🎁', 'Gift'], ['🐼', 'Panda'],
-    ['🦜', 'Parrot'], ['🐸', 'Frog'], ['🍒', 'Cherries'], ['🦒', 'Giraffe'], ['🐌', 'Snail'], ['🍍', 'Pineapple']
+    ['🏆', 'Trophy'], ['🦋', 'Butterfly'], ['🐱', 'Cat'], ['🚀', 'Rocket'], ['🐟', 'Fish'], ['⭐', 'Star'], ['🐢', 'Turtle'],
+    ['🍄', 'Mushroom'], ['🎸', 'Guitar'], ['🦊', 'Fox'], ['🐧', 'Penguin'], ['☂️', 'Umbrella'], ['🐙', 'Octopus'], ['🏠', 'House'],
+    ['🦕', 'Dinosaur'], ['🐘', 'Elephant'], ['🦉', 'Owl'], ['👑', 'Crown'], ['🐳', 'Whale'], ['🌵', 'Cactus'], ['🦀', 'Crab'],
+    ['🐝', 'Bee'], ['⚓', 'Anchor'], ['🎈', 'Balloon'], ['🦒', 'Giraffe'], ['🐌', 'Snail'], ['🍐', 'Pear'], ['🔔', 'Bell'],
+    ['🐇', 'Rabbit'], ['🦩', 'Flamingo'], ['🕊️', 'Dove'], ['✈️', 'Plane'], ['⛵', 'Sailboat'], ['🎄', 'Tree'], ['❤️', 'Heart'],
+    ['🐞', 'Ladybug'], ['🦄', 'Unicorn'], ['🍦', 'Ice cream'], ['🎃', 'Pumpkin'], ['🐿️', 'Squirrel'], ['🦖', 'T-rex'], ['🐸', 'Frog']
   ];
   const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",sans-serif';
   const RS = 10; // raster pixels per cell
 
-  // Draws the emoji to an offscreen canvas and samples coverage and colour per cell.
-  function rasterize(emoji, cols, rowsHint) {
+  function rasterize(emoji, cols) {
     try {
-      // Measure the glyph's real ink box; font metrics include a lot of padding for emoji.
+      // Measure the real ink box: emoji font metrics include a lot of padding.
       const S = 256, sc = document.createElement('canvas'); sc.width = S; sc.height = S;
       const sg = sc.getContext('2d', { willReadFrequently: true });
       sg.font = `160px ${EMOJI_FONT}`; sg.textAlign = 'center'; sg.textBaseline = 'middle';
@@ -346,52 +342,36 @@
       g.fillText(emoji, cx, cy);
       const data = g.getImageData(0, 0, w, h).data;
       const mask = new Uint8Array(cols * rows);
-      const colors = new Array(cols * rows).fill(null);
       let count = 0;
       for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-        let A = 0, R = 0, G = 0, B = 0;
-        for (let y = r * RS; y < (r + 1) * RS; y++) for (let x = c * RS; x < (c + 1) * RS; x++) {
-          const i = (y * w + x) * 4, a = data[i + 3] / 255;
-          A += a; R += data[i] * a; G += data[i + 1] * a; B += data[i + 2] * a;
-        }
-        if (A / (RS * RS) > 0.42) {
-          mask[r * cols + c] = 1; count++;
-          colors[r * cols + c] = [R / A, G / A, B / A];
-        }
+        let A = 0;
+        for (let y = r * RS; y < (r + 1) * RS; y++) for (let x = c * RS; x < (c + 1) * RS; x++) A += data[(y * w + x) * 4 + 3];
+        if (A / (RS * RS * 255) > 0.45) { mask[r * cols + c] = 1; count++; }
       }
       const ratio = count / (cols * rows);
-      // A missing emoji font draws a hollow box or nothing; fall back to built-in shapes then.
-      if (ratio < 0.14 || ratio > 0.97) return null;
-      return { rows, mask, colors, draw: { font, cx, cy } };
+      // No emoji font: a hollow box or nothing is drawn, so use built-in shapes.
+      if (ratio < 0.18 || ratio > 0.97) return null;
+      return { rows, mask, draw: { font, cx, cy } };
     } catch (e) { return null; }
   }
 
-  const ascii = (rows) => (nx, ny) => {
-    const h = rows.length, w = rows[0].length;
-    const r = Math.min(h - 1, Math.floor((ny + 1) / 2 * h));
-    const c = Math.min(w - 1, Math.floor((nx + 1) / 2 * w));
-    return rows[r][c] === '#';
-  };
   const SHAPES = {
     square: () => true,
-    heart: (x, y) => { x *= 1.25; y = -y * 1.25 + 0.3; const a = x * x + y * y - 1; return a * a * a - x * x * y * y * y <= 0; },
+    heart: (x, y) => { x *= 1.22; y = -y * 1.22 + 0.3; const a = x * x + y * y - 1; return a * a * a - x * x * y * y * y <= 0; },
     circle: (x, y) => x * x + y * y <= 1.02,
     diamond: (x, y) => Math.abs(x) + Math.abs(y) <= 1.08,
-    ring: (x, y) => { const r = Math.hypot(x, y); return r <= 1.02 && r >= 0.42; },
-    plus: (x, y) => Math.abs(x) < 0.42 || Math.abs(y) < 0.36,
-    hourglass: (x, y) => Math.abs(x) <= Math.abs(y) * 0.95 + 0.2,
-    house: ascii([
-      '       ##       ', '      ####      ', '     ######     ', '    ########    ', '   ##########   ',
-      '  ############  ', ' ############## ', '################', '  ############  ', '  ############  ',
-      '  ############  ', '  ####    ####  ', '  ####    ####  ', '  ####    ####  '
-    ])
+    hourglass: (x, y) => Math.abs(x) <= Math.abs(y) * 0.95 + 0.22,
+    plus: (x, y) => Math.abs(x) < 0.42 || Math.abs(y) < 0.36
   };
-  const FALLBACK = [['heart', 'Heart'], ['circle', 'Moon'], ['diamond', 'Gem'], ['house', 'House'], ['ring', 'Donut'], ['hourglass', 'Hourglass'], ['plus', 'Cross']];
+  const FALLBACK = [['heart', 'Heart'], ['circle', 'Moon'], ['diamond', 'Gem'], ['hourglass', 'Hourglass'], ['plus', 'Cross']];
+  function shapeMask(f, cols, rows) {
+    const mask = new Uint8Array(cols * rows);
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++)
+      mask[r * cols + c] = f((c + 0.5) / cols * 2 - 1, (r + 0.5) / rows * 2 - 1) ? 1 : 0;
+    return mask;
+  }
 
   // ================= Level generation =================
-  // Solvable by construction. Lines are numbered in placement order; line i's exit lane may only
-  // cross lines numbered above i. Removing lines from the highest number down therefore always
-  // works, so the player can never get stuck.
   function mulberry(seed) {
     return () => {
       seed |= 0; seed = seed + 0x6D2B79F5 | 0;
@@ -404,180 +384,239 @@
   const DIRS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
   function levelConfig(level, opts = {}) {
-    let cols, rows;
-    if (opts.daily) { cols = 26; rows = 30; }
-    else if (level <= 3) { cols = 5 + level; rows = Math.round(cols * 1.2); }
-    else { cols = Math.min(30, 8 + Math.floor((level - 3) * 0.8)); rows = Math.round(cols * 1.15); }
-    const maxLen = opts.daily ? 10 : Math.min(10, 4 + Math.floor(level / 4));
-    const lockRate = opts.daily ? 0.1 : level >= 8 ? Math.min(0.12, 0.03 + (level - 8) * 0.004) : 0;
-
-    let mask = null, colors = null, draw = null, emoji = null, name = 'Block';
-    if (level > 3 || opts.daily) {
-      const pick = opts.daily ? PICTURES[opts.seed % PICTURES.length] : PICTURES[(level * 7 + 3) % PICTURES.length];
-      const ras = rasterize(pick[0], cols, rows);
-      if (ras) { rows = ras.rows; mask = ras.mask; colors = ras.colors; draw = ras.draw; emoji = pick[0]; name = pick[1]; }
-      else {
-        const fb = FALLBACK[level % FALLBACK.length];
-        name = fb[1];
-        mask = shapeMask(SHAPES[fb[0]], cols, rows);
-      }
-    } else {
+    let cols;
+    if (opts.daily) cols = 24;
+    else if (level <= 3) cols = 5 + level;
+    else cols = Math.min(28, 9 + Math.floor((level - 4) * 1.1));
+    let rows = Math.round(cols * 1.15);
+    const maxLen = opts.daily ? 22 : Math.min(24, 5 + level);
+    let mask = null, draw = null, emoji = null, name = 'Warm-up';
+    if (level <= 3 && !opts.daily) {
+      rows = Math.round(cols * 1.2);
       mask = shapeMask(SHAPES.square, cols, rows);
+    } else {
+      const pick = opts.daily ? PICTURES[opts.seed % PICTURES.length] : PICTURES[(level * 5 + 1) % PICTURES.length];
+      const ras = rasterize(pick[0], cols);
+      if (ras) { rows = ras.rows; mask = ras.mask; draw = ras.draw; emoji = pick[0]; name = pick[1]; }
+      else { const fb = FALLBACK[level % FALLBACK.length]; name = fb[1]; mask = shapeMask(SHAPES[fb[0]], cols, rows); }
     }
-    return { cols, rows, mask, colors, draw, emoji, name, maxLen, lockRate };
-  }
-  function shapeMask(f, cols, rows) {
-    const mask = new Uint8Array(cols * rows);
-    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++)
-      mask[r * cols + c] = f((c + 0.5) / cols * 2 - 1, (r + 0.5) / rows * 2 - 1) ? 1 : 0;
-    return mask;
-  }
-
-  function tryGenerate(cfg, R) {
-    const { cols, rows, mask, maxLen } = cfg;
-    const N = cols * rows;
-    const occ = new Int32Array(N).fill(-1);
-    const laneMax = new Int32Array(N).fill(-1); // highest line number whose lane covers this cell
-    const lines = [];
-    const inside = (c, r) => c >= 0 && r >= 0 && c < cols && r < rows;
-    const isFree = (c, r) => inside(c, r) && mask[r * cols + c] === 1 && occ[r * cols + c] < 0;
-    const canJoin = (c, r, i) => isFree(c, r) && laneMax[r * cols + c] < i;
-    const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-
-    // A new line always gets the next (highest) number, so it may sit in anyone's lane;
-    // its own lane just has to be empty.
-    function placeAt(c0, r0, allowSingle) {
-      for (const di of shuffle([0, 1, 2, 3])) {
-        const [dx, dy] = DIRS[di];
-        const lane = [];
-        let ok = true;
-        for (let c = c0 + dx, r = r0 + dy; inside(c, r); c += dx, r += dy) {
-          if (occ[r * cols + c] >= 0) { ok = false; break; }
-          lane.push(r * cols + c);
-        }
-        if (!ok) continue;
-        const laneSet = new Set(lane);
-        const body = [[c0, r0]];
-        const used = new Set([r0 * cols + c0]);
-        const nc = c0 - dx, nr = r0 - dy;
-        if (isFree(nc, nr) && !laneSet.has(nr * cols + nc)) {
-          body.push([nc, nr]); used.add(nr * cols + nc);
-          const target = 2 + Math.floor(Math.pow(R(), 0.7) * (maxLen - 1));
-          let dir = [-dx, -dy];
-          while (body.length < target) {
-            const [lc, lr] = body[body.length - 1];
-            const left = [dir[1], -dir[0]], right = [-dir[1], dir[0]];
-            const opts = R() < 0.5 ? [dir, R() < 0.5 ? left : right] : shuffle([left, right, dir]);
-            let moved = false;
-            for (const o of opts) {
-              const c = lc + o[0], r = lr + o[1], id = r * cols + c;
-              if (isFree(c, r) && !used.has(id) && !laneSet.has(id)) { body.push([c, r]); used.add(id); dir = o; moved = true; break; }
-            }
-            if (!moved) break;
-          }
-        } else if (!allowSingle) continue;
-        const i = lines.length;
-        const cells = body.reverse();
-        for (const [c, r] of cells) occ[r * cols + c] = i;
-        for (const id of lane) laneMax[id] = i;
-        lines.push({ cells, dir: [dx, dy] });
-        return true;
-      }
-      return false;
-    }
-
-    // 1) Centre-out placement: inner lines first, outer lines later cover their lanes.
-    const cands = [];
+    // Drop lone cells that would become stray dots.
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
       if (!mask[r * cols + c]) continue;
-      cands.push({ c, r, k: Math.hypot((c + 0.5) / cols - 0.5, (r + 0.5) / rows - 0.5) + R() * 0.25 });
+      let n = 0;
+      for (const [dx, dy] of DIRS) { const x = c + dx, y = r + dy; if (x >= 0 && y >= 0 && x < cols && y < rows && mask[y * cols + x]) n++; }
+      if (!n) mask[r * cols + c] = 0;
     }
-    cands.sort((a, b) => a.k - b.k);
-    for (const cell of cands) if (isFree(cell.c, cell.r)) placeAt(cell.c, cell.r, false);
+    return { cols, rows, mask, draw, emoji, name, maxLen };
+  }
 
-    // 2) Densify: grow tails, splice detours, then seed new lines in leftover holes; repeat.
-    const growCap = maxLen + 3;
-    for (let round = 0; round < 6; round++) {
-      for (let changed = true; changed;) {
-        changed = false;
-        for (let i = 0; i < lines.length; i++) {
-          const L = lines[i];
-          if (L.cells.length >= growCap) continue;
-          // tail growth
-          const [tc, tr] = L.cells[0];
-          for (const [dx, dy] of shuffle(DIRS.slice())) {
-            const c = tc + dx, r = tr + dy;
-            if (canJoin(c, r, i)) { L.cells.unshift([c, r]); occ[r * cols + c] = i; changed = true; break; }
+  // Step 1: cut the picture into long, tidy paths that cover every cell.
+  function partition(cfg, R) {
+    const { cols, rows, mask, maxLen } = cfg;
+    const N = cols * rows;
+    const owner = new Int32Array(N).fill(-1);
+    const inside = (c, r) => c >= 0 && r >= 0 && c < cols && r < rows;
+    const open = (c, r) => inside(c, r) && mask[r * cols + c] && owner[r * cols + c] < 0;
+    const freeN = (c, r) => { let n = 0; for (const [dx, dy] of DIRS) if (open(c + dx, r + dy)) n++; return n; };
+    const paths = [];
+
+    function extend(path, id, target) {
+      let dir = null, run = 0, runMax = 2 + Math.floor(R() * 6);
+      if (path.length >= 2) {
+        const a = path[path.length - 2], b = path[path.length - 1];
+        dir = [b[0] - a[0], b[1] - a[1]]; run = 1;
+      }
+      while (path.length < target) {
+        const [lc, lr] = path[path.length - 1];
+        const opts = DIRS.filter(([dx, dy]) => open(lc + dx, lr + dy));
+        if (!opts.length) break;
+        let pick = null;
+        const straight = dir && opts.find(([dx, dy]) => dx === dir[0] && dy === dir[1]);
+        if (straight && run < runMax && R() < 0.82) pick = straight;
+        else {
+          // Prefer the neighbour with the fewest open neighbours so no pockets get stranded.
+          let best = Infinity;
+          for (const o of opts) {
+            if (straight && o === straight && run >= runMax && opts.length > 1) continue;
+            owner[(lr + o[1]) * cols + lc + o[0]] = id;
+            const f = freeN(lc + o[0], lr + o[1]) + R() * 0.9;
+            owner[(lr + o[1]) * cols + lc + o[0]] = -1;
+            if (f < best) { best = f; pick = o; }
           }
-          // detour: a-b becomes a-e1-e2-b (never touching the neck-head pair, so arrows stay straight)
-          for (let j = 0; j + 2 < L.cells.length && L.cells.length < growCap; j++) {
-            const [ac, ar] = L.cells[j], [bc, br] = L.cells[j + 1];
-            const dx = bc - ac, dy = br - ar;
-            const perps = R() < 0.5 ? [[dy, -dx], [-dy, dx]] : [[-dy, dx], [dy, -dx]];
-            for (const [px, py] of perps) {
-              const e1 = [ac + px, ar + py], e2 = [bc + px, br + py];
-              if (canJoin(e1[0], e1[1], i) && canJoin(e2[0], e2[1], i)) {
-                L.cells.splice(j + 1, 0, e1, e2);
-                occ[e1[1] * cols + e1[0]] = i; occ[e2[1] * cols + e2[0]] = i;
-                changed = true; break;
-              }
-            }
+        }
+        if (!dir || pick[0] !== dir[0] || pick[1] !== dir[1]) { run = 1; runMax = 2 + Math.floor(R() * 6); } else run++;
+        dir = pick;
+        const c = lc + pick[0], r = lr + pick[1];
+        owner[r * cols + c] = id; path.push([c, r]);
+      }
+    }
+
+    for (;;) {
+      let best = Infinity, starts = [];
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        if (!open(c, r)) continue;
+        const f = freeN(c, r);
+        if (f < best) { best = f; starts = [[c, r]]; } else if (f === best) starts.push([c, r]);
+      }
+      if (!starts.length) break;
+      const s = starts[Math.floor(R() * starts.length)];
+      const id = paths.length;
+      const path = [s];
+      owner[s[1] * cols + s[0]] = id;
+      const target = Math.max(2, Math.floor(3 + R() * (maxLen - 2)));
+      extend(path, id, target);
+      if (path.length < target) { path.reverse(); extend(path, id, target); }
+      paths.push(path);
+    }
+
+    // Merge single cells into a neighbouring path end where possible.
+    for (let pass = 0; pass < 3; pass++) {
+      for (let i = 0; i < paths.length; i++) {
+        const p = paths[i];
+        if (!p || p.length !== 1) continue;
+        const [c, r] = p[0];
+        for (const [dx, dy] of DIRS) {
+          if (!inside(c + dx, r + dy)) continue;
+          const j = owner[(r + dy) * cols + c + dx];
+          if (j < 0 || j === i || !paths[j] || paths[j].length >= maxLen + 4) continue;
+          const q = paths[j];
+          const first = q[0], last = q[q.length - 1];
+          if (first[0] === c + dx && first[1] === r + dy) { q.unshift([c, r]); }
+          else if (last[0] === c + dx && last[1] === r + dy) { q.push([c, r]); }
+          else continue;
+          owner[r * cols + c] = j; paths[i] = null; break;
+        }
+      }
+    }
+    return paths.filter(Boolean);
+  }
+
+  const laneFree = (cells, dir, occ, cols, rows, self) => {
+    const [hc, hr] = cells[cells.length - 1];
+    for (let c = hc + dir[0], r = hr + dir[1]; c >= 0 && r >= 0 && c < cols && r < rows; c += dir[0], r += dir[1]) {
+      const o = occ[r * cols + c];
+      if (o >= 0 && o !== self) return false;
+    }
+    return true;
+  };
+  const headDir = (cells, fallback) => cells.length >= 2
+    ? [cells[cells.length - 1][0] - cells[cells.length - 2][0], cells[cells.length - 1][1] - cells[cells.length - 2][1]]
+    : fallback;
+
+  // Step 2: point each path, preferring the end that looks deeper into the picture (harder),
+  // then repair until a full clearing order exists.
+  function orientAndRepair(cfg, paths, R, bias) {
+    const { cols, rows, mask } = cfg;
+    const maskAhead = (cell, dir) => {
+      let n = 0;
+      for (let c = cell[0] + dir[0], r = cell[1] + dir[1]; c >= 0 && r >= 0 && c < cols && r < rows; c += dir[0], r += dir[1]) if (mask[r * cols + c]) n++;
+      return n;
+    };
+    const lines = paths.map(p => {
+      if (p.length === 1) {
+        const opts = DIRS.slice().sort((a, b) => maskAhead(p[0], b) - maskAhead(p[0], a));
+        return { cells: p, dir: R() < bias ? opts[0] : opts[Math.floor(R() * 4)] };
+      }
+      const rev = p.slice().reverse();
+      const dA = headDir(p), dB = headDir(rev);
+      const aDeep = maskAhead(p[p.length - 1], dA) >= maskAhead(rev[rev.length - 1], dB);
+      const useA = R() < bias ? aDeep : !aDeep;
+      return useA ? { cells: p, dir: dA } : { cells: rev, dir: dB };
+    });
+
+    const N = cols * rows;
+    for (let guard = 0; guard < 5000; guard++) {
+      // Greedy clearing is safe: removing a line only ever frees lanes.
+      const occ = new Int32Array(N).fill(-1);
+      const alive = new Set(lines.map((_, i) => i));
+      lines.forEach((l, i) => l.cells.forEach(([c, r]) => occ[r * cols + c] = i));
+      for (let progress = true; progress;) {
+        progress = false;
+        for (const i of alive) {
+          if (laneFree(lines[i].cells, lines[i].dir, occ, cols, rows, i)) {
+            lines[i].cells.forEach(([c, r]) => occ[r * cols + c] = -1); alive.delete(i); progress = true;
           }
         }
       }
-      let added = false;
-      for (const cell of shuffle(cands.slice())) if (isFree(cell.c, cell.r) && placeAt(cell.c, cell.r, round >= 3)) added = true;
-      if (!added) break;
-    }
+      if (!alive.size) return lines;
+      const stuck = [...alive];
+      for (let i = stuck.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [stuck[i], stuck[j]] = [stuck[j], stuck[i]]; }
 
-    let maskCount = 0, filled = 0;
-    for (let id = 0; id < N; id++) { if (mask[id]) { maskCount++; if (occ[id] >= 0) filled++; } }
-    let blocked = 0;
-    for (let i = 0; i < lines.length; i++) if (laneBlocker(lines[i], occ, cols, rows, i) >= 0) blocked++;
-    const singles = lines.filter(l => l.cells.length === 1).length;
-    return {
-      cols, rows, lines, fill: filled / maskCount,
-      score: filled / maskCount + 0.2 * blocked / Math.max(1, lines.length) - 0.3 * singles / Math.max(1, lines.length)
-    };
+      // a) flip a stuck line if its other end can leave
+      let fixed = false;
+      for (const i of stuck) {
+        const L = lines[i];
+        if (L.cells.length < 2) continue;
+        const rev = L.cells.slice().reverse(), d = headDir(rev);
+        if (laneFree(rev, d, occ, cols, rows, i)) { lines[i] = { cells: rev, dir: d }; fixed = true; break; }
+      }
+      if (fixed) continue;
+      // b) peel an end cell off a stuck line if it can leave in some direction
+      for (const i of stuck) {
+        const L = lines[i];
+        if (L.cells.length < 3) continue;
+        for (const atHead of [false, true]) {
+          const cell = atHead ? L.cells[L.cells.length - 1] : L.cells[0];
+          for (const d of DIRS) {
+            if (!laneFree([cell], d, occ, cols, rows, i)) continue;
+            const rest = atHead ? L.cells.slice(0, -1) : L.cells.slice(1);
+            lines[i] = { cells: rest, dir: headDir(rest, L.dir) };
+            lines.push({ cells: [cell], dir: d });
+            fixed = true; break;
+          }
+          if (fixed) break;
+        }
+        if (fixed) break;
+      }
+      if (fixed) continue;
+      // c) always works: the top-most stuck cell can leave upward on its own
+      let top = null;
+      for (const i of stuck) lines[i].cells.forEach((cell, k) => { if (!top || cell[1] < top.cell[1]) top = { i, k, cell }; });
+      const L = lines[top.i];
+      const a = L.cells.slice(0, top.k), b = L.cells.slice(top.k + 1);
+      lines.splice(top.i, 1);
+      if (a.length) lines.push({ cells: a, dir: headDir(a, [a[0][0] - top.cell[0], a[0][1] - top.cell[1]]) });
+      if (b.length) lines.push({ cells: b, dir: headDir(b, [b[0][0] - top.cell[0], b[0][1] - top.cell[1]]) });
+      lines.push({ cells: [top.cell], dir: [0, -1] });
+    }
+    return null;
   }
 
-  // Lane distance (1-based) to the first blocking cell, or -1 when the lane is clear.
-  function laneBlocker(line, occ, cols, rows, selfId) {
-    const [hc, hr] = line.cells[line.cells.length - 1];
-    const [dx, dy] = line.dir;
-    let k = 1;
-    for (let c = hc + dx, r = hr + dy; c >= 0 && r >= 0 && c < cols && r < rows; c += dx, r += dy, k++) {
-      const o = occ[r * cols + c];
-      if (o >= 0 && o !== selfId) return k;
+  // Layers: how many rounds of "clear everything currently free" the board needs.
+  function analyse(lines, cols, rows) {
+    const occ = new Int32Array(cols * rows).fill(-1);
+    lines.forEach((l, i) => l.cells.forEach(([c, r]) => occ[r * cols + c] = i));
+    const alive = new Set(lines.map((_, i) => i));
+    let depth = 0, initialFree = -1;
+    while (alive.size) {
+      const free = [...alive].filter(i => laneFree(lines[i].cells, lines[i].dir, occ, cols, rows, i));
+      if (!free.length) return { solvable: false, depth, initialFree };
+      if (initialFree < 0) initialFree = free.length;
+      for (const i of free) { lines[i].cells.forEach(([c, r]) => occ[r * cols + c] = -1); alive.delete(i); }
+      depth++;
     }
-    return -1;
+    return { solvable: true, depth, initialFree };
   }
 
   function generateLevel(level, opts = {}) {
     const cfg = levelConfig(level, opts);
     const baseSeed = opts.daily ? opts.seed : level * 7919 + 13;
+    const bias = opts.daily ? 0.85 : level <= 2 ? 0.35 : Math.min(0.9, 0.55 + level * 0.02);
     const tries = cfg.cols > 20 ? 3 : 5;
     let best = null;
     for (let a = 0; a < tries; a++) {
-      const g = tryGenerate(cfg, mulberry(baseSeed + a * 104729));
-      if (!best || g.score > best.score) best = g;
+      const R = mulberry(baseSeed + a * 104729);
+      const lines = orientAndRepair(cfg, partition(cfg, R), R, bias);
+      if (!lines) continue;
+      const st = analyse(lines, cfg.cols, cfg.rows);
+      if (!st.solvable) continue;
+      const singles = lines.filter(l => l.cells.length === 1).length;
+      // Harder boards need more rounds and start with a smaller share of free lines.
+      const score = st.depth - 6 * st.initialFree / lines.length - 4 * singles / lines.length;
+      if (!best || score > best.score) best = { lines, score, depth: st.depth, initialFree: st.initialFree };
     }
-    // Locks: line i may require up to (lines above i) clears, which the reverse order always provides.
-    const R = mulberry(baseSeed ^ 0x5bd1e995);
-    const n = best.lines.length;
-    best.lines.forEach((l, i) => {
-      l.lock = 0;
-      const room = n - 1 - i;
-      if (cfg.lockRate && l.cells.length >= 3 && room >= 3 && R() < cfg.lockRate) {
-        l.lock = 2 + Math.floor(R() * Math.min(10, room - 1));
-      }
-      if (cfg.colors) {
-        let r = 0, g = 0, b = 0, k = 0;
-        for (const [c, rr] of l.cells) { const col = cfg.colors[rr * cfg.cols + c]; if (col) { r += col[0]; g += col[1]; b += col[2]; k++; } }
-        l.rgb = k ? [r / k, g / k, b / k] : null;
-      }
-    });
-    return Object.assign(best, { name: cfg.name, emoji: cfg.emoji, draw: cfg.draw, level });
+    return { cols: cfg.cols, rows: cfg.rows, lines: best.lines, depth: best.depth, initialFree: best.initialFree,
+      name: cfg.name, emoji: cfg.emoji, draw: cfg.draw, level };
   }
 
   // ================= Game state =================
@@ -587,38 +626,28 @@
   let G = null, lines = [], occ = null;
   let mode = 'level', dailyKey = '';
   let drops = 3, hints = 3, showGrid = false;
-  let hintId = -1, hintUntil = 0, guide = null;
-  let particles = [], floaters = [];
+  let hintId = -1, hintUntil = 0, guide = null, pressed = -1;
+  let particles = [];
   let layout = { cs: 20, ox: 0, oy: 0 };
   const view = { s: 1, x: 0, y: 0 };
-  let busyEnd = false, removed = 0, combo = 0, lastClear = 0, revealT = -1;
+  let busyEnd = false, removed = 0, streak = 0, lastClear = 0, revealT = -1, shake = 0;
   let colors = {};
 
+  function readColors() {
+    const s = getComputedStyle(document.documentElement);
+    const g = (n) => s.getPropertyValue(n).trim();
+    colors = { ink: g('--ink'), accent: g('--accent'), danger: g('--danger'), line: g('--line'), panel: g('--panel'), muted: g('--muted'), title: g('--title') };
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', colors.panel);
+  }
   function hexRgb(h) {
     h = h.trim().replace('#', '');
     if (h.length === 3) h = h.split('').map(x => x + x).join('');
     return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16));
   }
-  function readColors() {
-    const s = getComputedStyle(document.documentElement);
-    const g = (n) => s.getPropertyValue(n).trim();
-    colors = { ink: g('--ink'), accent: g('--accent'), danger: g('--danger'), line: g('--line'), panel: g('--panel'), muted: g('--muted'), title: g('--title') };
-    colors.inkRgb = hexRgb(colors.ink); colors.panelRgb = hexRgb(colors.panel);
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', colors.panel);
-    for (const l of lines) l.color = lineColor(l);
-  }
-  const lum = ([r, g, b]) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-  const mixRgb = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
-  const rgbStr = (c) => `rgb(${c.map(v => Math.round(v)).join(',')})`;
-  // Keep picture colours readable against the board in every theme.
-  function lineColor(l) {
-    if (!l.rgb || !save.colorLines) return colors.ink;
-    const bg = lum(colors.panelRgb);
-    let c = l.rgb;
-    if (bg > 0.5) { c = mixRgb(c, colors.inkRgb, 0.18); for (let i = 0; i < 6 && lum(c) > 0.58; i++) c = mixRgb(c, colors.inkRgb, 0.3); }
-    else { c = mixRgb(c, [255, 255, 255], 0.08); for (let i = 0; i < 6 && lum(c) < 0.42; i++) c = mixRgb(c, [255, 255, 255], 0.3); }
-    return rgbStr(c);
+  function mix(a, b, t) {
+    try { const A = hexRgb(a), B = hexRgb(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',')})`; }
+    catch (e) { return a; }
   }
 
   function rebuildOcc() {
@@ -628,7 +657,19 @@
       for (const [c, r] of l.cells) occ[r * G.cols + c] = l.id;
     }
   }
-  const locked = (l) => l.lock > 0 && removed < l.lock;
+  function laneBlocker(l) {
+    const [hc, hr] = l.cells[l.cells.length - 1];
+    let k = 1;
+    for (let c = hc + l.dir[0], r = hr + l.dir[1]; c >= 0 && r >= 0 && c < G.cols && r < G.rows; c += l.dir[0], r += l.dir[1], k++) {
+      const o = occ[r * G.cols + c];
+      if (o >= 0 && o !== l.id) return k;
+    }
+    return -1;
+  }
+  const laneCell = (l, k) => {
+    const [hc, hr] = l.cells[l.cells.length - 1];
+    return (hr + l.dir[1] * k) * G.cols + (hc + l.dir[0] * k);
+  };
 
   function todayKey() {
     const d = new Date();
@@ -640,25 +681,22 @@
     if (mode === 'level') { save.level = n; save.maxLevel = Math.max(save.maxLevel, n); persist(); }
     else dailyKey = todayKey();
     G = generateLevel(n, mode === 'daily' ? { daily: true, seed: hashStr('daily:' + dailyKey) } : {});
-    lines = G.lines.map((l, i) => ({ id: i, cells: l.cells, dir: l.dir, lock: l.lock, rgb: l.rgb, state: 'idle', s: 0, v: 0, t: 0, flash: 0, shake: 0, path: null }));
-    for (const l of lines) l.color = lineColor(l);
+    lines = G.lines.map((l, i) => ({ id: i, cells: l.cells, dir: l.dir, state: 'idle', s: 0, v: 0, t: 0, flash: 0, path: null }));
     rebuildOcc();
-    drops = 3; hints = mode === 'daily' ? 5 : 3; hintId = -1; guide = null; particles = []; floaters = [];
-    busyEnd = false; removed = 0; combo = 0; revealT = -1;
-    view.s = 1; view.x = 0; view.y = 0; updateZoomIcon();
-    $('levelTitle').textContent = mode === 'daily' ? `Daily ${dailyKey.slice(5).replace('-', '/')}` : `Level ${n}`;
+    drops = 3; hints = 3; hintId = -1; guide = null; pressed = -1; particles = [];
+    busyEnd = false; removed = 0; streak = 0; revealT = -1; shake = 0;
+    view.s = 1; view.x = 0; view.y = 0; zoomAnim = null;
+    $('levelTitle').textContent = mode === 'daily' ? 'Daily puzzle' : `Level ${n}`;
     ['winVeil', 'loseVeil', 'levelsVeil', 'startVeil'].forEach(v => $(v).classList.remove('show'));
+    fit(); renderDrops(); renderHud();
     const tips = {
       1: 'Tap a line. It slides out the way its arrow points.',
-      2: 'If another line is in the way, you lose a 💧.',
-      3: 'Hold a line down to see where it will go.',
-      4: 'Clear every line to reveal the picture.',
-      8: '🔒 A locked line opens after you clear that many other lines.'
+      2: 'A line that hits another one costs a 💧.',
+      3: 'Hold a line to see where it will go.'
     };
     let tip = mode === 'level' ? tips[n] : null;
-    if (!tip && G.cols >= 16 && !save.seenZoomTip) { tip = 'Pinch or scroll to zoom. Drag to move around.'; save.seenZoomTip = true; persist(); }
-    $('tip').textContent = tip || `${G.emoji ? G.emoji + ' ' : ''}${G.name} · ${lines.length} lines`;
-    fit(); renderDrops(); renderHud();
+    if (!tip && G.cols >= 16 && !save.seenZoomTip) { tip = 'Pinch, scroll or double-tap to zoom in.'; save.seenZoomTip = true; persist(); }
+    if (tip) toast(tip, 3200);
   }
 
   function renderDrops() {
@@ -674,28 +712,27 @@
     return s;
   }
   function renderHud() {
-    const left = lines.length - removed;
-    $('leftCount').textContent = `${left} left`;
-    $('progFill').style.width = (lines.length ? removed / lines.length * 100 : 0) + '%';
+    $('leftCount').textContent = `${lines.length - removed} left`;
     const b = $('hintBadge');
     b.textContent = hints; b.classList.toggle('zero', hints === 0);
   }
   let toastTimer = 0;
-  function toast(msg) {
+  function toast(msg, ms = 1600) {
     const t = $('toast');
     t.textContent = msg; t.classList.add('show');
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1400);
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms);
   }
 
   // ================= Layout & view =================
+  let zoomAnim = null;
   function fit() {
     const r = stage.getBoundingClientRect();
     dpr = window.devicePixelRatio || 1;
     W = r.width; H = r.height;
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     if (!G) return;
-    const pad = 14;
-    const cs = Math.max(6, Math.min(64, Math.min((W - pad * 2) / G.cols, (H - pad * 2) / G.rows)));
+    const pad = 16;
+    const cs = Math.max(6, Math.min(56, Math.min((W - pad * 2) / G.cols, (H - pad * 2) / G.rows)));
     layout = { cs, ox: (W - cs * G.cols) / 2, oy: (H - cs * G.rows) / 2 };
     clampView();
   }
@@ -716,125 +753,98 @@
     if (view.s <= 1.001) { view.s = 1; view.x = 0; view.y = 0; return; }
     if (!G) return;
     const bw = layout.cs * G.cols, bh = layout.cs * G.rows;
-    const minX = W * 0.5 - (layout.ox + bw) * view.s, maxX = W * 0.5 - layout.ox * view.s;
-    const minY = H * 0.5 - (layout.oy + bh) * view.s, maxY = H * 0.5 - layout.oy * view.s;
-    view.x = Math.max(minX, Math.min(maxX, view.x));
-    view.y = Math.max(minY, Math.min(maxY, view.y));
+    view.x = Math.max(W * 0.5 - (layout.ox + bw) * view.s, Math.min(W * 0.5 - layout.ox * view.s, view.x));
+    view.y = Math.max(H * 0.5 - (layout.oy + bh) * view.s, Math.min(H * 0.5 - layout.oy * view.s, view.y));
   }
-  function zoomAt(sx, sy, ns) {
+  // Computes the clamped view for a zoom around (sx, sy) and optionally animates to it.
+  function zoomTo(sx, sy, ns, animate = true) {
+    const from = { ...view };
     const [wx, wy] = toWorld(sx, sy);
     view.s = Math.max(1, Math.min(5, ns));
     view.x = sx - wx * view.s; view.y = sy - wy * view.s;
-    clampView(); updateZoomIcon();
+    clampView();
+    if (animate) { const to = { ...view }; Object.assign(view, from); zoomAnim = { from, to, t: 0 }; }
   }
-  function updateZoomIcon() {
-    const zoomed = view.s > 1.01;
-    $('zoomBtn').classList.toggle('on', zoomed);
-    $('zoomPlus').setAttribute('d', zoomed ? 'M7.5 10.5h6' : 'M10.5 7.5v6M7.5 10.5h6');
+  function panTo(c, r) {
+    const from = { ...view };
+    view.x = W / 2 - px(c) * view.s; view.y = H / 2 - py(r) * view.s;
+    clampView();
+    const to = { ...view }; Object.assign(view, from); zoomAnim = { from, to, t: 0 };
   }
 
-  // Full travel path: body cells, then the lane extended well past the board edge.
   function buildPath(l) {
     const P = l.cells.map(([c, r]) => [c, r]);
     const [hc, hr] = l.cells[l.cells.length - 1];
-    const [dx, dy] = l.dir;
     const extra = Math.max(G.cols, G.rows) + l.cells.length + 4;
-    for (let i = 1; i <= extra; i++) P.push([hc + dx * i, hr + dy * i]);
+    for (let i = 1; i <= extra; i++) P.push([hc + l.dir[0] * i, hr + l.dir[1] * i]);
     return P;
   }
   function stepsToExit(l) {
     const [hc, hr] = l.cells[l.cells.length - 1];
-    const [dx, dy] = l.dir;
     let k = 0;
-    for (let c = hc, r = hr; c >= 0 && r >= 0 && c < G.cols && r < G.rows; c += dx, r += dy) k++;
+    for (let c = hc, r = hr; c >= 0 && r >= 0 && c < G.cols && r < G.rows; c += l.dir[0], r += l.dir[1]) k++;
     return k - 1 + l.cells.length + 1;
-  }
-  function laneCell(l, k) {
-    const [hc, hr] = l.cells[l.cells.length - 1];
-    return (hr + l.dir[1] * k) * G.cols + (hc + l.dir[0] * k);
   }
 
   // ================= Actions =================
   function tapLine(l) {
     if (l.state !== 'idle' || busyEnd) return;
-    if (locked(l)) {
-      l.shake = 1; lockSound(); vibe(15);
-      const need = l.lock - removed;
-      toast(`🔒 Clear ${need} more line${need === 1 ? '' : 's'} to open this one`);
-      return;
-    }
-    const k = laneBlocker(l, occ, G.cols, G.rows, l.id);
+    const k = laneBlocker(l);
     l.path = buildPath(l);
     if (hintId === l.id) hintId = -1;
     if (k < 0) {
-      l.state = 'exit'; l.s = 0; l.v = 14; l.goal = stepsToExit(l);
+      l.state = 'exit'; l.s = 0; l.v = 6; l.goal = stepsToExit(l);
       removed++;
       const now = performance.now();
-      combo = now - lastClear < 1400 ? combo + 1 : 1;
+      streak = now - lastClear < 2200 ? streak + 1 : 0;
       lastClear = now;
-      if (combo >= 3) {
-        const [hc, hr] = l.cells[l.cells.length - 1];
-        floaters.push({ x: px(hc), y: py(hr), text: `×${combo}`, life: 1 });
-      }
-      const opened = lines.filter(o => o.lock && o.state === 'idle' && o.lock === removed);
-      if (opened.length) { setTimeout(unlockSound, 120); opened.forEach(o => { o.flash = 0; o.unlockGlow = 1; }); }
       rebuildOcc();
-      whoosh(l.cells.length, combo); vibe(8);
+      whoosh(l.cells.length);
+      pluck(noteHz(Math.min(streak, 14)), 0.09, 0.02);
+      vibe(6);
       renderHud();
     } else {
-      l.state = 'bump'; l.t = 0; l.reach = Math.max(0.25, k - 1 + 0.3);
+      l.state = 'bump'; l.t = 0; l.reach = Math.max(0.2, k - 1 + 0.22);
       const other = lines.find(o => o.id === occ[laneCell(l, k)]);
-      if (other) other.flash = 1;
-      l.flash = 1.4;
-      drops--; combo = 0;
-      bumpSound(); vibe([30, 40, 30]);
+      if (other) other.flash = 1.1;
+      l.flash = 1.6;
+      drops--; streak = 0;
+      thud(); vibe([25, 30, 25]);
+      shake = 1;
       renderDrops();
       const el = $('drops').children[Math.max(0, drops)];
       if (el) el.classList.add('shake');
-      if (drops <= 0) { busyEnd = true; setTimeout(() => $('loseVeil').classList.add('show'), 650); }
+      if (drops <= 0) { busyEnd = true; setTimeout(() => $('loseVeil').classList.add('show'), 700); }
     }
   }
 
-  function freeLines() {
-    return lines.filter(l => l.state === 'idle' && !locked(l) && laneBlocker(l, occ, G.cols, G.rows, l.id) < 0);
-  }
   function useHint() {
     if (busyEnd) return;
     if (hints <= 0) { toast('No hints left on this board'); return; }
-    const free = freeLines();
+    const free = lines.filter(l => l.state === 'idle' && laneBlocker(l) < 0);
     if (!free.length) return;
-    // Prefer the free line that unblocks the most others.
     let best = free[0], bestScore = -1;
     for (const f of free) {
       const set = new Set(f.cells.map(([c, r]) => r * G.cols + c));
       let score = 0;
       for (const o of lines) {
         if (o.state !== 'idle' || o === f) continue;
-        const k = laneBlocker(o, occ, G.cols, G.rows, o.id);
+        const k = laneBlocker(o);
         if (k > 0 && set.has(laneCell(o, k))) score++;
       }
       if (score > bestScore) { bestScore = score; best = f; }
     }
-    hints--; hintId = best.id; hintUntil = performance.now() + 4000;
-    // Bring the hinted line into view when zoomed.
-    if (view.s > 1.01) {
-      const [c, r] = best.cells[best.cells.length - 1];
-      view.x = W / 2 - px(c) * view.s; view.y = H / 2 - py(r) * view.s; clampView();
-    }
+    hints--; hintId = best.id; hintUntil = performance.now() + 4500;
+    if (view.s > 1.01) { const [c, r] = best.cells[best.cells.length - 1]; panTo(c, r); }
     hintSound(); renderHud();
   }
 
   function checkWin() {
-    if (busyEnd) return;
-    if (!lines.every(l => l.state === 'gone')) return;
+    if (busyEnd || !lines.every(l => l.state === 'gone')) return;
     busyEnd = true;
-    winSound(); vibe([20, 50, 20, 50, 40]);
-    view.s = 1; view.x = 0; view.y = 0; updateZoomIcon();
+    winSound(); vibe([15, 40, 15, 40, 30]);
+    zoomTo(W / 2, H / 2, 1);
     revealT = 0;
-    for (let i = 0; i < 100; i++) {
-      particles.push({ x: W / 2, y: H / 2, vx: (Math.random() - 0.5) * 14, vy: (Math.random() - 0.9) * 12, life: 1, size: 4 + Math.random() * 5,
-        color: ['#3b8fd9', colors.title, colors.accent, '#e25c4a', '#4cb783'][i % 5], rot: Math.random() * 6 });
-    }
     let text;
     if (mode === 'daily') {
       save.daily[dailyKey] = Math.max(save.daily[dailyKey] || 0, drops);
@@ -844,24 +854,28 @@
       const n = save.level;
       save.best[n] = Math.max(save.best[n] || 0, drops);
       save.maxLevel = Math.max(save.maxLevel, n + 1);
-      text = drops === 3 ? 'You didn\'t bump a single line.' : `Level ${n} cleared. Replay it without a bump for a perfect score.`;
+      text = drops === 3 ? 'No bumps at all.' : `Level ${n} cleared. Replay it without a bump for all three drops.`;
       $('nextBtn').textContent = 'Next level';
     }
     persist();
     $('winPic').textContent = G.emoji || '🎉';
-    $('winTitle').textContent = drops === 3 ? `Perfect ${G.name.toLowerCase()}!` : `${G.name} cleared!`;
+    $('winTitle').textContent = drops === 3 ? 'Perfect!' : 'Board clear!';
     const wd = $('winDrops'); wd.innerHTML = '';
     for (let i = 0; i < 3; i++) wd.appendChild(dropSvg(i >= drops));
     $('winText').textContent = text;
-    setTimeout(() => $('winVeil').classList.add('show'), 1500);
+    setTimeout(() => {
+      for (let i = 0; i < 70; i++) particles.push({ x: W / 2, y: H * 0.45, vx: (Math.random() - 0.5) * 11, vy: (Math.random() - 1) * 10, life: 1, size: 4 + Math.random() * 4,
+        color: ['#3b8fd9', colors.title, colors.ink, '#e25c4a', '#4cb783'][i % 5], rot: Math.random() * 6 });
+    }, 500);
+    setTimeout(() => $('winVeil').classList.add('show'), 1700);
   }
 
-  // ================= Input: tap, long-press, pan, pinch, wheel =================
+  // ================= Input =================
   function lineAt(sx, sy) {
     const [wx, wy] = toWorld(sx, sy);
     const { cs, ox, oy } = layout;
     const fc = (wx - ox) / cs - 0.5, fr = (wy - oy) / cs - 0.5;
-    const rad = Math.max(0.8, 16 / (cs * view.s)); // at least ~16 screen px of slack
+    const rad = Math.max(0.8, 15 / (cs * view.s));
     const span = Math.ceil(rad);
     let best = null, bd = rad;
     const c0 = Math.round(fc), r0 = Math.round(fr);
@@ -876,7 +890,7 @@
   }
 
   const ptrs = new Map();
-  let gest = null;
+  let gest = null, lastEmptyTap = 0;
   const local = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
 
   cv.addEventListener('pointerdown', (e) => {
@@ -887,13 +901,14 @@
     ptrs.set(e.pointerId, [x, y]);
     if (ptrs.size === 1) {
       const l = busyEnd ? null : lineAt(x, y);
-      gest = { type: 'tap', x, y, l, vx: view.x, vy: view.y, long: false, timer: 0 };
+      pressed = l ? l.id : -1;
+      gest = { type: 'tap', x, y, l, long: false, timer: 0 };
       if (l) gest.timer = setTimeout(() => {
-        if (gest && gest.type === 'tap' && gest.l && gest.l.state === 'idle') { gest.long = true; guide = { id: gest.l.id }; vibe(10); }
-      }, 320);
+        if (gest && gest.type === 'tap' && gest.l && gest.l.state === 'idle') { gest.long = true; guide = { id: gest.l.id }; vibe(8); }
+      }, 300);
     } else if (ptrs.size === 2) {
       if (gest) clearTimeout(gest.timer);
-      guide = null;
+      guide = null; pressed = -1;
       const [a, b] = [...ptrs.values()];
       gest = { type: 'pinch', d0: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, s0: view.s, mid: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], vx: view.x, vy: view.y };
     }
@@ -909,17 +924,16 @@
       const ns = Math.max(1, Math.min(5, gest.s0 * d / gest.d0));
       const wx = (gest.mid[0] - gest.vx) / gest.s0, wy = (gest.mid[1] - gest.vy) / gest.s0;
       view.s = ns; view.x = mid[0] - wx * ns; view.y = mid[1] - wy * ns;
-      clampView(); updateZoomIcon();
+      zoomAnim = null; clampView();
     } else if (gest.type === 'tap') {
       if (!gest.long && Math.hypot(x - gest.x, y - gest.y) > 9) {
-        clearTimeout(gest.timer);
+        clearTimeout(gest.timer); pressed = -1;
         gest = view.s > 1.01 ? { type: 'pan', x: gest.x, y: gest.y, vx: view.x, vy: view.y } : { type: 'none' };
       }
     } else if (gest.type === 'pan') {
-      view.x = gest.vx + (x - gest.x); view.y = gest.vy + (y - gest.y); clampView();
+      view.x = gest.vx + (x - gest.x); view.y = gest.vy + (y - gest.y); zoomAnim = null; clampView();
     }
   });
-  let lastEmptyTap = 0;
   function endPointer(e, cancelled) {
     if (!ptrs.has(e.pointerId)) return;
     ptrs.delete(e.pointerId);
@@ -930,22 +944,23 @@
         if (gest.l) tapLine(gest.l);
         else {
           const now = performance.now();
-          if (now - lastEmptyTap < 320) { zoomAt(gest.x, gest.y, view.s > 1.01 ? 1 : 2.6); lastEmptyTap = 0; }
+          if (now - lastEmptyTap < 320) { zoomTo(gest.x, gest.y, view.s > 1.01 ? 1 : 2.5); lastEmptyTap = 0; }
           else lastEmptyTap = now;
         }
       }
-      guide = null; gest = null;
+      guide = null; gest = null; pressed = -1;
     } else if (gest.type === 'pinch') {
       if (ptrs.size === 0) gest = null;
       else { const [p] = [...ptrs.values()]; gest = { type: 'pan', x: p[0], y: p[1], vx: view.x, vy: view.y }; }
-    } else if (ptrs.size === 0) { gest = null; guide = null; }
+    } else if (ptrs.size === 0) { gest = null; guide = null; pressed = -1; }
   }
   cv.addEventListener('pointerup', (e) => endPointer(e, false));
   cv.addEventListener('pointercancel', (e) => endPointer(e, true));
   cv.addEventListener('wheel', (e) => {
     e.preventDefault();
     const [x, y] = local(e);
-    zoomAt(x, y, view.s * Math.exp(-e.deltaY * 0.0022));
+    zoomAnim = null;
+    zoomTo(x, y, view.s * Math.exp(-e.deltaY * 0.0022), false);
   }, { passive: false });
 
   // ================= Drawing =================
@@ -954,70 +969,38 @@
     const t = s - i;
     return [P[i][0] + (P[i + 1][0] - P[i][0]) * t, P[i][1] + (P[i + 1][1] - P[i][1]) * t];
   }
-  function strokeCells(P, s, len, color, width, dir) {
+  // Draws a line occupying path positions [s, s + len - 1] with its arrowhead at the front.
+  function drawLine(l, P, s, color, width, withHead = true) {
     const { cs } = layout;
-    let pts;
-    if (P.length === 1) pts = [[P[0][0] - dir[0] * 0.42, P[0][1] - dir[1] * 0.42], P[0]];
-    else if (len === 1) { const h = pointAt(P, s); pts = [[h[0] - dir[0] * 0.42, h[1] - dir[1] * 0.42], h]; }
-    else {
+    const len = l.cells.length;
+    let pts, dx = l.dir[0], dy = l.dir[1];
+    if (len === 1) {
+      const h = P.length > 1 ? pointAt(P, s) : P[0];
+      pts = [[h[0] - dx * 0.38, h[1] - dy * 0.38], h];
+    } else {
       const a = s, b = s + len - 1;
       pts = [pointAt(P, a)];
       for (let i = Math.floor(a) + 1; i < b; i++) pts.push(P[i]);
       pts.push(pointAt(P, b));
+      const j = Math.max(0, Math.min(P.length - 2, Math.floor(b + 1e-6)));
+      if (P.length > len) { dx = P[j + 1][0] - P[j][0]; dy = P[j + 1][1] - P[j][1]; }
     }
     ctx.beginPath();
     ctx.moveTo(px(pts[0][0]), py(pts[0][1]));
     for (let i = 1; i < pts.length; i++) ctx.lineTo(px(pts[i][0]), py(pts[i][1]));
-    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'square'; ctx.lineJoin = 'miter';
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     ctx.stroke();
-    return pts[pts.length - 1];
-  }
-  function drawLine(l, P, s, color, width, withHead = true) {
-    const { cs } = layout;
-    const len = l.cells.length;
-    const head = strokeCells(P, s, len, color, width, l.dir);
     if (!withHead) return;
-    let dx = l.dir[0], dy = l.dir[1];
-    if (P.length > 1 && len > 1) {
-      const b = s + len - 1;
-      const j = Math.max(0, Math.min(P.length - 2, Math.floor(b + 1e-6)));
-      dx = P[j + 1][0] - P[j][0]; dy = P[j + 1][1] - P[j][1];
-    }
-    const hx = px(head[0]), hy = py(head[1]);
-    const tip = cs * 0.46, back = cs * 0.02, half = Math.max(width * 1.8, cs * 0.24);
+    const h = pts[pts.length - 1];
+    const hx = px(h[0]), hy = py(h[1]);
+    const tip = Math.min(cs * 0.4, 13), back = cs * 0.02, half = Math.max(width * 1.55, Math.min(cs * 0.2, 7));
     ctx.beginPath();
     ctx.moveTo(hx + dx * tip, hy + dy * tip);
     ctx.lineTo(hx - dx * back - dy * half, hy - dy * back + dx * half);
     ctx.lineTo(hx - dx * back + dy * half, hy - dy * back - dx * half);
     ctx.closePath();
-    ctx.fillStyle = color; ctx.fill();
-  }
-  function drawLock(l, now) {
-    const { cs } = layout;
-    const [c, r] = l.cells[Math.floor(l.cells.length / 2)];
-    const need = l.lock - removed;
-    const size = Math.max(cs * 0.95, 15 / view.s);
-    const x = px(c), y = py(r);
-    ctx.save();
-    ctx.translate(x + (l.shake > 0 ? Math.sin(now / 20) * 2 * l.shake : 0), y);
-    ctx.fillStyle = colors.title;
-    ctx.strokeStyle = colors.panel; ctx.lineWidth = size * 0.1;
-    ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(-size * 0.55, -size * 0.45, size * 1.1, size * 0.9, size * 0.22);
-    else ctx.rect(-size * 0.55, -size * 0.45, size * 1.1, size * 0.9);
+    ctx.fillStyle = color; ctx.lineWidth = width * 0.5;
     ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#fff';
-    ctx.font = `900 ${size * 0.62}px ui-rounded, system-ui, sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(String(need), 0, size * 0.04);
-    ctx.restore();
-  }
-  function mixCss(a, b, t) {
-    try {
-      const A = a.startsWith('rgb') ? a.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number) : hexRgb(a);
-      const B = b.startsWith('rgb') ? b.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number) : hexRgb(b);
-      return rgbStr(mixRgb(A, B, t));
-    } catch (e) { return a; }
   }
 
   let last = performance.now();
@@ -1027,32 +1010,41 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
     if (!G) return;
-    ctx.setTransform(dpr * view.s, 0, 0, dpr * view.s, dpr * view.x, dpr * view.y);
+
+    if (zoomAnim) {
+      zoomAnim.t = Math.min(1, zoomAnim.t + dt * 4);
+      const e = 1 - Math.pow(1 - zoomAnim.t, 3);
+      for (const k of ['s', 'x', 'y']) view[k] = zoomAnim.from[k] + (zoomAnim.to[k] - zoomAnim.from[k]) * e;
+      if (zoomAnim.t >= 1) zoomAnim = null;
+    }
+    shake = Math.max(0, shake - dt * 3.2);
+    const sx = shake > 0 ? Math.sin(now / 22) * 5 * shake * shake : 0;
+    ctx.setTransform(dpr * view.s, 0, 0, dpr * view.s, dpr * (view.x + sx), dpr * view.y);
     const { cs, ox, oy } = layout;
-    const lw = Math.max(1.4 / view.s, cs * 0.17);
+    const lw = Math.max(1.3 / view.s, Math.min(cs * 0.13, 4.2));
 
     if (showGrid) {
       ctx.fillStyle = colors.line;
-      const rr = Math.max(0.8 / view.s, cs * 0.07);
+      const rr = Math.max(0.9 / view.s, cs * 0.07);
       for (let r = 0; r < G.rows; r++) for (let c = 0; c < G.cols; c++) {
         ctx.beginPath(); ctx.arc(px(c), py(r), rr, 0, Math.PI * 2); ctx.fill();
       }
     }
 
-    // Completed picture fades in over the empty board.
+    // Finished picture fades in over the empty board.
     if (revealT >= 0) {
-      revealT = Math.min(1, revealT + dt * 1.2);
+      revealT = Math.min(1, revealT + dt * 1.1);
       const e = 1 - Math.pow(1 - revealT, 3);
       ctx.save();
       ctx.globalAlpha = e;
       if (G.emoji && G.draw) {
         const k = cs / RS;
-        const cx = ox + G.draw.cx * k, cy = oy + G.draw.cy * k;
         const bx = ox + G.cols * cs / 2, by = oy + G.rows * cs / 2;
-        ctx.translate(bx, by); ctx.scale(0.85 + 0.15 * e, 0.85 + 0.15 * e); ctx.translate(-bx, -by);
+        const sc = 0.82 + 0.18 * e + Math.sin(e * Math.PI) * 0.05;
+        ctx.translate(bx, by); ctx.scale(sc, sc); ctx.translate(-bx, -by);
         ctx.font = `${G.draw.font * k}px ${EMOJI_FONT}`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(G.emoji, cx, cy);
+        ctx.fillText(G.emoji, ox + G.draw.cx * k, oy + G.draw.cy * k);
       }
       ctx.restore();
     }
@@ -1061,15 +1053,15 @@
     if (guide) {
       const l = lines[guide.id];
       if (l && l.state === 'idle') {
-        const k = laneBlocker(l, occ, G.cols, G.rows, l.id);
+        const k = laneBlocker(l);
         const [hc, hr] = l.cells[l.cells.length - 1];
         const steps = k < 0 ? Math.max(G.cols, G.rows) : k - 0.5;
         ctx.save();
-        ctx.setLineDash([cs * 0.25, cs * 0.25]);
-        ctx.strokeStyle = locked(l) ? colors.muted : k < 0 ? colors.accent : colors.danger;
-        ctx.lineWidth = Math.max(2 / view.s, lw);
+        ctx.setLineDash([cs * 0.22, cs * 0.26]);
+        ctx.strokeStyle = k < 0 ? colors.accent : colors.danger;
+        ctx.lineWidth = Math.max(1.6 / view.s, lw * 0.9); ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(px(hc), py(hr));
+        ctx.moveTo(px(hc + l.dir[0] * 0.5), py(hr + l.dir[1] * 0.5));
         ctx.lineTo(px(hc + l.dir[0] * steps), py(hr + l.dir[1] * steps));
         ctx.stroke();
         ctx.restore();
@@ -1078,69 +1070,49 @@
 
     const hintOn = hintId >= 0 && now < hintUntil;
     let anyGone = false;
-    const locks = [];
     for (const l of lines) {
       if (l.state === 'gone') continue;
-      l.flash = Math.max(0, l.flash - dt * 1.4);
-      l.shake = Math.max(0, l.shake - dt * 2.5);
-      let color = l.flash > 0 ? mixCss(l.color, colors.danger, Math.min(1, l.flash)) : l.color;
+      l.flash = Math.max(0, l.flash - dt * 1.3);
+      let color = l.flash > 0 ? mix(colors.ink, colors.danger, Math.min(1, l.flash)) : colors.ink;
+      let width = lw;
 
       if (l.state === 'idle') {
-        const isLocked = locked(l);
         if (hintOn && l.id === hintId) {
-          const pulse = 0.5 + 0.5 * Math.sin(now / 140);
-          ctx.globalAlpha = 0.25 + 0.3 * pulse;
-          drawLine(l, l.cells, 0, colors.accent, lw * 3.4, false);
+          const pulse = 0.5 + 0.5 * Math.sin(now / 150);
+          ctx.globalAlpha = 0.18 + 0.22 * pulse;
+          drawLine(l, l.cells, 0, colors.accent, lw * 4, false);
           ctx.globalAlpha = 1;
           color = colors.accent;
         }
-        if (l.unlockGlow > 0) {
-          l.unlockGlow = Math.max(0, l.unlockGlow - dt);
-          ctx.globalAlpha = l.unlockGlow * 0.5;
-          drawLine(l, l.cells, 0, colors.title, lw * 3.2, false);
-          ctx.globalAlpha = 1;
-        }
-        if (guide && guide.id === l.id) color = colors.accent;
-        if (isLocked) ctx.globalAlpha = 0.45;
-        drawLine(l, l.cells, 0, color, lw);
-        ctx.globalAlpha = 1;
-        if (isLocked) locks.push(l);
+        if (guide && guide.id === l.id) { color = colors.accent; width = lw * 1.45; }
+        else if (pressed === l.id) width = lw * 1.45;
+        drawLine(l, l.cells, 0, color, width);
       } else if (l.state === 'exit') {
-        l.v = Math.min(70, l.v + 110 * dt);
+        // Ease in, then accelerate hard off the board.
+        l.v = Math.min(80, l.v + (20 + l.v * 3.2) * dt);
         l.s += l.v * dt;
-        const inBoard = 1 - Math.max(0, Math.min(1, (l.s - (l.goal - l.cells.length)) / l.cells.length));
-        ctx.globalAlpha = Math.max(0.1, inBoard);
-        drawLine(l, l.path, l.s, l.color, lw);
+        const leave = (l.s - (l.goal - l.cells.length)) / l.cells.length;
+        ctx.globalAlpha = Math.max(0, Math.min(1, 1 - leave));
+        drawLine(l, l.path, l.s, colors.ink, lw);
         ctx.globalAlpha = 1;
         if (l.s >= l.goal) { l.state = 'gone'; anyGone = true; }
       } else if (l.state === 'bump') {
+        // Quick hit on the blocker, then a springy settle back.
         l.t += dt;
-        const T = 0.34;
-        const s = l.reach * Math.sin(Math.min(1, l.t / T) * Math.PI);
+        const hitT = 0.11 + l.reach * 0.02, T = hitT + 0.42;
+        let s;
+        if (l.t < hitT) { const u = l.t / hitT; s = l.reach * u * u; }
+        else { const u = (l.t - hitT) / (T - hitT); s = l.reach * Math.exp(-5 * u) * Math.cos(u * 9); }
         drawLine(l, l.path, Math.max(0, s), color, lw);
         if (l.t >= T) l.state = 'idle';
       }
-    }
-    for (const l of locks) drawLock(l, now);
-
-    for (let i = floaters.length - 1; i >= 0; i--) {
-      const f = floaters[i];
-      f.life -= dt * 1.2; f.y -= 30 * dt / view.s;
-      if (f.life <= 0) { floaters.splice(i, 1); continue; }
-      ctx.save();
-      ctx.globalAlpha = Math.min(1, f.life * 2);
-      ctx.font = `900 ${Math.max(16 / view.s, cs * 1.1)}px ui-rounded, system-ui, sans-serif`;
-      ctx.textAlign = 'center'; ctx.fillStyle = colors.title;
-      ctx.strokeStyle = colors.panel; ctx.lineWidth = 4 / view.s;
-      ctx.strokeText(f.text, f.x, f.y); ctx.fillText(f.text, f.x, f.y);
-      ctx.restore();
     }
     if (anyGone) { renderHud(); checkWin(); }
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
-      p.vy += 22 * dt; p.x += p.vx; p.y += p.vy; p.life -= dt * 0.6; p.rot += 0.2;
+      p.vy += 20 * dt; p.x += p.vx; p.y += p.vy; p.life -= dt * 0.55; p.rot += 0.18;
       if (p.life <= 0 || p.y > H + 20) { particles.splice(i, 1); continue; }
       ctx.save(); ctx.globalAlpha = Math.min(1, p.life * 1.5);
       ctx.translate(p.x, p.y); ctx.rotate(p.rot);
@@ -1150,7 +1122,7 @@
   }
 
   // ================= Menus, themes & settings =================
-  const THEMES = ['paper', 'night', 'mint'];
+  const THEMES = ['paper', 'night', 'sage'];
   function applyTheme(t) {
     document.documentElement.setAttribute('data-skin', t);
     save.theme = t; persist(); readColors();
@@ -1166,7 +1138,7 @@
   readColors();
 
   function renderMenu() {
-    $('playBtn').textContent = `Play level ${save.level}`;
+    $('menuLevel').textContent = `Level ${save.level}`;
     $('levelsSub').textContent = `${Object.keys(save.best).length} cleared`;
     const k = todayKey();
     $('dailySub').textContent = save.daily[k] !== undefined ? `Solved · ${'💧'.repeat(save.daily[k])}` : 'New today';
@@ -1187,9 +1159,9 @@
     requestAnimationFrame(() => { const cur = grid.querySelector('.cur'); if (cur) cur.scrollIntoView({ block: 'center' }); });
   }
 
+  const restart = () => mode === 'daily' ? startLevel(0, { daily: true }) : startLevel(save.level);
   $('themeBtn').addEventListener('click', () => applyTheme(THEMES[(THEMES.indexOf(save.theme || initialTheme) + 1) % THEMES.length]));
   $('gridBtn').addEventListener('click', () => { showGrid = !showGrid; $('gridBtn').classList.toggle('on', showGrid); });
-  $('zoomBtn').addEventListener('click', () => zoomAt(W / 2, H / 2, view.s > 1.01 ? 1 : 2.4));
   $('hintBtn').addEventListener('click', useHint);
   $('homeBtn').addEventListener('click', () => { renderMenu(); $('startVeil').classList.add('show'); });
   $('playBtn').addEventListener('click', () => {
@@ -1201,27 +1173,28 @@
   $('levelsClose').addEventListener('click', () => { $('levelsVeil').classList.remove('show'); renderMenu(); $('startVeil').classList.add('show'); });
   $('dailyBtn').addEventListener('click', () => { audio(); startLevel(0, { daily: true }); });
   $('nextBtn').addEventListener('click', () => startLevel(mode === 'daily' ? save.level : save.level + 1));
-  $('replayBtn').addEventListener('click', () => mode === 'daily' ? startLevel(0, { daily: true }) : startLevel(save.level));
-  $('retryBtn').addEventListener('click', () => mode === 'daily' ? startLevel(0, { daily: true }) : startLevel(save.level));
+  $('replayBtn').addEventListener('click', restart);
+  $('retryBtn').addEventListener('click', restart);
   $('settingsBtn').addEventListener('click', () => $('setVeil').classList.add('show'));
   $('setClose').addEventListener('click', () => $('setVeil').classList.remove('show'));
-  $('restartBtn').addEventListener('click', () => { $('setVeil').classList.remove('show'); mode === 'daily' ? startLevel(0, { daily: true }) : startLevel(save.level); });
-  const sw = (id, key, after) => {
+  $('restartBtn').addEventListener('click', () => { $('setVeil').classList.remove('show'); restart(); });
+  const sw = (id, key) => {
     const el = $(id);
     el.classList.toggle('on', !!save[key]);
-    el.addEventListener('click', () => { save[key] = !save[key]; el.classList.toggle('on', save[key]); persist(); if (after) after(); });
+    el.addEventListener('click', () => { save[key] = !save[key]; el.classList.toggle('on', save[key]); persist(); });
   };
-  sw('swSound', 'sound'); sw('swVibe', 'vibe'); sw('swColor', 'colorLines', () => { for (const l of lines) l.color = lineColor(l); });
+  sw('swSound', 'sound'); sw('swVibe', 'vibe');
 
-  // Boot: show the current level behind the menu.
+  // Boot: the current level sits behind the menu.
   renderMenu();
   startLevel(save.level);
+  $('toast').classList.remove('show');
   $('startVeil').classList.add('show');
   onResize();
   requestAnimationFrame(frame);
 
   // Hooks for automated checks.
-  window.__laneOut = { generateLevel, laneBlocker, levelConfig, debug: () => ({ layout, view, removed, lines: lines.map(l => ({ id: l.id, state: l.state, lock: l.lock, cells: l.cells })) }) };
+  window.__laneOut = { generateLevel, analyse, levelConfig, debug: () => ({ layout, view, removed, cols: G.cols, rows: G.rows, lines: lines.map(l => ({ id: l.id, state: l.state, cells: l.cells, dir: l.dir })) }) };
 })();
 </script>
 </body>
