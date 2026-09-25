@@ -190,6 +190,16 @@
     .streak-tile.active { border-color: var(--gold); box-shadow: 0 0 14px var(--gold-glow); }
     .trophy-item { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 16px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 
+    #toast {
+      position: fixed; left: 50%; top: 80px; transform: translate(-50%, -20px); background: rgba(10, 32, 21, 0.96); border: 1.5px solid var(--gold);
+      color: #fff; font-weight: 800; font-size: 14px; padding: 12px 20px; border-radius: 18px; box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+      z-index: 2000000; opacity: 0; pointer-events: none; transition: all 0.25s ease; max-width: calc(100% - 32px); text-align: center;
+    }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .btn-action:disabled, .shop-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #resActions { display: flex; flex-direction: column; gap: 10px; }
+    .quest-item .shop-btn { padding: 6px 11px; font-size: 11px; }
+
     @media (max-width: 1060px) {
       #game-view.active { display: flex !important; flex-direction: column; align-items: center; padding: 12px; }
       .portal-sidebar, .header-nav { display: none; }
@@ -229,7 +239,7 @@
       </div>
       <div class="pill coins" onclick="openModal('shopModal')">🪙 <span id="coinsVal">2,450</span></div>
       <button class="pill" onclick="toggleAudio()"><span id="audioIcon">🔊</span></button>
-      <button class="pill" onclick="toggleBGM()"><span id="bgmIcon">🎵</span></button>
+      <button class="pill" onclick="toggleBGM()"><span id="bgmIcon">🎶</span></button>
     </div>
   </header>
 
@@ -262,14 +272,11 @@
       <div class="home-split-row">
         <div class="home-card">
           <div class="home-card-header"><span>🏆 NATIONAL RANK</span><span style="font-size:10px; color:#8fa89b;">THIS WEEK</span></div>
-          <div style="background:rgba(255,183,3,0.12); border:1px solid var(--gold); border-radius:14px; padding:9px 13px; margin-bottom:6px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>🥇 1. Chidi (Ikeja)</span><span style="color:var(--gold)">48,800</span></div>
-          <div style="background:rgba(0,0,0,0.3); border-radius:14px; padding:9px 13px; margin-bottom:6px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>🥈 2. Fatima (Abuja)</span><span>41,250</span></div>
-          <div style="background:rgba(0,230,138,0.14); border:1px solid var(--primary); border-radius:14px; padding:9px 13px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>⭐ 3. You (Emeka)</span><span id="homePlayerScore" style="color:var(--primary)">0</span></div>
+          <div class="leaderboard" id="homeLeaderboard"></div>
         </div>
         <div class="home-card">
           <div class="home-card-header"><span>🎯 ACTIVE BOUNTIES</span><span style="font-size:10px; color:var(--primary);">ACTIVE</span></div>
-          <div class="quest-item"><div><div style="font-size:12px; font-weight:800;">Smash Traffic Cones</div><div style="font-size:10px; color:#8fa89b;">Clear lane barriers</div></div><div style="font-size:12px; font-weight:900; color:var(--gold);">+150 🪙</div></div>
-          <div class="quest-item"><div><div style="font-size:12px; font-weight:800;">Claim Daily Pass</div><div style="font-size:10px; color:#8fa89b;">Keep your streak alive</div></div><div style="font-size:12px; font-weight:900; color:var(--pink);">+1 🔨</div></div>
+          <div id="bountyList"></div>
         </div>
       </div>
     </div>
@@ -338,9 +345,7 @@
     <div class="portal-sidebar">
       <div class="portal-card">
         <div style="font-size:12px; font-weight:900; color:var(--gold); margin-bottom:10px;">🏆 NATIONAL LEADERBOARD</div>
-        <div style="background:rgba(255,183,3,0.12); border:1px solid var(--gold); border-radius:12px; padding:9px 13px; margin-bottom:6px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>🥇 1. Chidi (Ikeja)</span><span style="color:var(--gold)">48,800</span></div>
-        <div style="background:rgba(0,0,0,0.3); border-radius:14px; padding:9px 13px; margin-bottom:6px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>🥈 2. Fatima (Abuja)</span><span>41,250</span></div>
-        <div style="background:rgba(0,230,138,0.14); border:1px solid var(--primary); border-radius:12px; padding:9px 13px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>⭐ 3. You (Emeka)</span><span id="playerHiScoreText" style="color:var(--primary)">0</span></div>
+        <div class="leaderboard" id="sideLeaderboard"></div>
       </div>
     </div>
   </div>
@@ -433,11 +438,21 @@
       <h2 id="resTitle" style="font-size:26px; font-weight:900; color:var(--gold);">STAGE CLEARED!</h2>
       <div id="resStars" style="font-size:36px; margin: 10px 0; color:var(--gold);">★★★</div>
       <p id="resSubtitle" style="color:#b8e2cd; font-size:14px; margin-bottom:18px;">Final Score: 4,200</p>
-      <button class="btn-action" onclick="dismissResult()">CONTINUE HIGHWAY</button>
+      <div id="resActions"></div>
     </div>
   </div>
 
+  <div id="toast"></div>
+
   <script>
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.innerText = msg; t.classList.add('show');
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
     function safeSetText(id, txt) {
       const el = document.getElementById(id);
       if (el) el.innerText = txt;
@@ -469,14 +484,19 @@
       const name = isBoss ? `⚠️ ${city} Hazard (Lv ${lvl})` : `${city} ${suff} (Lv ${lvl})`;
       const colorCount = (lvl >= 80) ? 6 : (lvl >= 15 ? 5 : 4);
       const objectiveType = isBoss ? 'BOSS' : (lvl === 1 ? 'JELLY' : (lvl === 2 ? 'SCORE' : (lvl % 3 === 0 ? 'DUAL' : (lvl % 2 === 0 ? 'CHOCOLATE' : 'JELLY'))));
-      const moves = Math.max(11, 16 - Math.floor((lvl % 100) / 18)) + (userSave?.perks?.turbo ? 1 : 0);
-      const target = isBoss ? Math.floor(10000 + lvl * 180) : Math.floor(1200 + (lvl * 140) + Math.pow(lvl, 1.25) * 12);
+      // Tuned with a simulated player: targets scale with how many points a move is realistically worth
+      // for the colour count, ramping up across the tour and within each 100-stage sector.
+      const moves = 16 - Math.floor(((lvl - 1) % 100) / 34) + (objectiveType === 'DUAL' ? 4 : 0) + (colorCount === 6 ? 2 : 0) + (isBoss ? 2 : 0) + (userSave?.perks?.turbo ? 1 : 0);
+      const pointsPerMove = { 4: 2400, 5: 800, 6: 470 }[colorCount];
+      const difficulty = 0.35 + 0.45 * Math.min(1, lvl / 600) + 0.1 * (((lvl - 1) % 100) / 99) + (isBoss ? 0.15 : 0);
+      const baseMoves = moves - (userSave?.perks?.turbo ? 1 : 0);
+      const target = Math.max(500, Math.round(baseMoves * pointsPerMove * difficulty / 50) * 50);
 
       return {
         level: lvl, name, icon: isBoss ? '👹' : sector.icon, chapterName: sector.name, target, moves, colorCount, objectiveType,
-        chocCount: (objectiveType === 'CHOCOLATE' || objectiveType === 'DUAL' || lvl >= 4) ? Math.min(10, 3 + Math.floor((lvl % 50) / 7)) : 0,
-        cageCount: (lvl >= 7) ? Math.min(8, 2 + Math.floor((lvl % 50) / 8)) : 0,
-        coneCount: (lvl >= 8) ? Math.min(6, 2 + Math.floor((lvl % 60) / 10)) : 0,
+        chocCount: (objectiveType === 'CHOCOLATE' || objectiveType === 'DUAL' || lvl >= 4) ? Math.min(6, 3 + Math.floor(lvl / 250)) : 0,
+        cageCount: (lvl >= 7) ? Math.min(4, 2 + Math.floor(lvl / 300)) : 0,
+        coneCount: (lvl >= 8) ? Math.min(3, 2 + Math.floor(lvl / 400)) : 0,
         isBoss, bossHP: target
       };
     }
@@ -484,7 +504,8 @@
     const REFILL_INTERVAL = 20 * 60 * 1000;
     let userSave = {
       unlocked: 1, stars: {}, hiScore: 0, coins: 2450, blitzHiScore: 0, lives: 5, lastLifeLostTime: null,
-      hammers: 3, swaps: 2, lastSpinDate: null,
+      hammers: 3, swaps: 2, lastSpinDate: null, activeLevel: null,
+      conesSmashed: 0, coneBountyBase: 0, passBountyDate: null, bombsMade: 0, claimedSouvenirs: [],
       equippedSkin: 'classic', ownedSkins: ['classic'], equippedHorn: 'classic', ownedHorns: ['classic'],
       perks: { turbo: false, bumper: false, magnet: false }, souvenirsClaimed: false,
       dailyStreak: 1, lastDailyClaimDate: null, claimedAchievements: []
@@ -506,6 +527,7 @@
     if (!Array.isArray(userSave.ownedHorns)) userSave.ownedHorns = ['classic'];
     if (!userSave.perks) userSave.perks = { turbo: false, bumper: false, magnet: false };
     if (!Array.isArray(userSave.claimedAchievements)) userSave.claimedAchievements = [];
+    if (!Array.isArray(userSave.claimedSouvenirs)) userSave.claimedSouvenirs = [];
 
     function persistState() {
       try { localStorage.setItem('sugar_scramble_save_1000_fixed', JSON.stringify(userSave)); } catch(e) {}
@@ -532,22 +554,20 @@
       } else safeSetText('lifeTimer', '');
       safeSetText('livesVal', `${userSave.lives}/5`);
       safeSetText('coinsVal', userSave.coins.toLocaleString());
-      safeSetText('playerHiScoreText', userSave.hiScore.toLocaleString());
-      safeSetText('homePlayerScore', userSave.hiScore.toLocaleString());
     }
 
     function refillLivesShop() {
-      if (userSave.coins < 400) { alert("Need 400 🪙 to refill lives!"); return; }
-      if (userSave.lives >= 5) { alert("Lives already full!"); return; }
-      userSave.coins -= 400; userSave.lives = 5; userSave.lastLifeLostTime = null; persistState(); sfxChime(); alert("❤️ Lives restored!");
+      if (userSave.lives >= 5) { toast("Lives already full!"); return; }
+      if (userSave.coins < 400) { toast("Need 400 🪙 to refill lives!"); return; }
+      userSave.coins -= 400; userSave.lives = 5; userSave.lastLifeLostTime = null; persistState(); sfxChime(); toast("❤️ Lives restored!");
     }
     window.refillLivesShop = refillLivesShop;
 
     function launchLevel(lvl) {
       initAudio();
       lvl = Math.max(1, Math.min(TOTAL_STAGES, Number(lvl) || 1));
-      if (lvl > userSave.unlocked) { showBanner("STAGE LOCKED!"); sfxBoom(); return; }
-      if (userSave.lives <= 0) { showBanner("OUT OF LIVES!"); openModal('shopModal'); return; }
+      if (lvl > userSave.unlocked) { toast(`🔒 Stage ${lvl} is locked — clear Stage ${userSave.unlocked} first`); sfxBoom(); return; }
+      if (userSave.lives <= 0) { toast("💔 Out of lives! Wait for a refill or buy one."); openModal('shopModal'); return; }
       stopBlitzTimer();
       startMatchGame(lvl);
     }
@@ -555,6 +575,11 @@
 
     function navigate(viewId) {
       initAudio();
+      const leavingGame = viewId !== 'game-view' && document.getElementById('game-view')?.classList.contains('active');
+      if (leavingGame && levelInProgress()) {
+        if (!confirm("Quit this stage? You'll lose a life.")) return;
+        isVictoryLocked = true; state = 'OVER'; loseLife(); persistState();
+      }
       if (isBlitzActive && viewId !== 'game-view') stopBlitzTimer();
       document.querySelectorAll('.view-screen').forEach(s => s.classList.remove('active'));
       const target = document.getElementById(viewId);
@@ -564,7 +589,7 @@
       }
       document.querySelectorAll('.nav-pill').forEach(n => n.classList.remove('active'));
       if (viewId === 'home-view') document.getElementById('nav-home')?.classList.add('active');
-      if (viewId === 'map-view') { document.getElementById('nav-map')?.classList.add('active'); refreshMapUI(); }
+      if (viewId === 'map-view') { document.getElementById('nav-map')?.classList.add('active'); jumpToCurrentLevelSector(); }
     }
     window.navigate = navigate;
 
@@ -627,6 +652,7 @@
       userSave.lastDailyClaimDate = today;
       userSave.dailyStreak = (userSave.dailyStreak % 7) + 1;
       persistState();
+      toast(`Day ${r.day} reward: ${r.label}`);
       sfxChime(); playEquippedHorn();
       openTransitPass();
     }
@@ -637,7 +663,11 @@
       { id: "p1", title: "First Passenger", desc: "Clear Stage 1", reward: 200, check: () => userSave.unlocked > 1 },
       { id: "b10", title: "Boss Smasher", desc: "Defeat a Road Boss", reward: 400, check: () => userSave.unlocked > 10 },
       { id: "s1", title: "Sector 1 Master", desc: "Clear Stage 100", reward: 1000, check: () => userSave.unlocked > 100 },
-      { id: "bz", title: "Speed Demon", desc: "Score 10k+ in Quick Blitz", reward: 500, check: () => (userSave.blitzHiScore || 0) >= 10000 }
+      { id: "bz", title: "Speed Demon", desc: "Score 10k+ in Quick Blitz", reward: 500, check: () => (userSave.blitzHiScore || 0) >= 10000 },
+      { id: "st30", title: "Star Collector", desc: "Earn 30 stars", reward: 600, check: () => totalStars() >= 30 },
+      { id: "bomb", title: "Colour Bomber", desc: "Make a colour bomb (match 5)", reward: 300, check: () => (userSave.bombsMade || 0) >= 1 },
+      { id: "cone25", title: "Cone Crusher", desc: "Smash 25 traffic cones", reward: 500, check: () => (userSave.conesSmashed || 0) >= 25 },
+      { id: "garage", title: "Fully Loaded", desc: "Own every Danfo paint job", reward: 800, check: () => Object.keys(DANFO_SKINS).every(k => userSave.ownedSkins.includes(k)) }
     ];
 
     function openTrophies() {
@@ -720,7 +750,7 @@
 
     function equipSkin(k) {
       if (!userSave.ownedSkins.includes(k)) {
-        if (userSave.coins < DANFO_SKINS[k].cost) { alert("Not enough coins!"); return; }
+        if (userSave.coins < DANFO_SKINS[k].cost) { toast("Not enough coins!"); return; }
         userSave.coins -= DANFO_SKINS[k].cost;
         userSave.ownedSkins.push(k);
       }
@@ -730,7 +760,7 @@
 
     function equipHorn(k) {
       if (!userSave.ownedHorns.includes(k)) {
-        if (userSave.coins < TRANSIT_HORNS[k].cost) { alert("Not enough coins!"); return; }
+        if (userSave.coins < TRANSIT_HORNS[k].cost) { toast("Not enough coins!"); return; }
         userSave.coins -= TRANSIT_HORNS[k].cost;
         userSave.ownedHorns.push(k);
       }
@@ -740,7 +770,7 @@
 
     function buyPerk(p, cost) {
       if (userSave.perks[p]) return;
-      if (userSave.coins < cost) { alert("Not enough coins!"); return; }
+      if (userSave.coins < cost) { toast("Not enough coins!"); return; }
       userSave.coins -= cost; userSave.perks[p] = true; persistState(); sfxChime(); renderGarageUI();
     }
     window.buyPerk = buyPerk;
@@ -795,11 +825,46 @@
     }
 
     function starString(n) { return '★'.repeat(n) + '☆'.repeat(3 - n); }
+    function totalStars() { return Object.values(userSave.stars).reduce((a, b) => a + (Number(b) || 0), 0); }
+
+    const RIVALS = [{ name: "Chidi (Ikeja)", score: 48800 }, { name: "Fatima (Abuja)", score: 41250 }, { name: "Tunde (Ibadan)", score: 22400 }];
+    function renderLeaderboards() {
+      const rows = [...RIVALS, { name: "You", score: userSave.hiScore, me: true }].sort((a, b) => b.score - a.score).slice(0, 4);
+      const medals = ['🥇', '🥈', '🥉', '⭐'];
+      const html = rows.map((p, i) => `<div style="background:${p.me ? 'rgba(0,230,138,0.14)' : (i === 0 ? 'rgba(255,183,3,0.12)' : 'rgba(0,0,0,0.3)')}; border:1px solid ${p.me ? 'var(--primary)' : (i === 0 ? 'var(--gold)' : 'transparent')}; border-radius:14px; padding:9px 13px; margin-bottom:6px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>${medals[i]} ${i + 1}. ${p.name}</span><span style="color:${p.me ? 'var(--primary)' : (i === 0 ? 'var(--gold)' : '#fff')}">${p.score.toLocaleString()}</span></div>`).join('');
+      ['homeLeaderboard', 'sideLeaderboard'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = html; });
+    }
+
+    const CONE_BOUNTY = 5;
+    function renderBounties() {
+      const el = document.getElementById('bountyList');
+      if (!el) return;
+      const cones = Math.min(CONE_BOUNTY, (userSave.conesSmashed || 0) - (userSave.coneBountyBase || 0));
+      const today = new Date().toDateString();
+      const passDone = userSave.lastDailyClaimDate === today, passClaimed = userSave.passBountyDate === today;
+      el.innerHTML = `
+        <div class="quest-item"><div><div style="font-size:12px; font-weight:800;">Smash Traffic Cones</div><div style="font-size:10px; color:#8fa89b;">${cones} / ${CONE_BOUNTY} lane barriers cleared</div></div>
+          ${cones >= CONE_BOUNTY ? `<button class="shop-btn" onclick="claimBounty('cones')">+150 🪙</button>` : `<div style="font-size:12px; font-weight:900; color:var(--gold);">+150 🪙</div>`}</div>
+        <div class="quest-item"><div><div style="font-size:12px; font-weight:800;">Claim Daily Pass</div><div style="font-size:10px; color:#8fa89b;">${passClaimed ? 'Done for today ✅' : (passDone ? 'Pass claimed — collect your bounty!' : 'Keep your streak alive')}</div></div>
+          ${passDone && !passClaimed ? `<button class="shop-btn" onclick="claimBounty('pass')">+1 🔨</button>` : `<div style="font-size:12px; font-weight:900; color:var(--pink);">+1 🔨</div>`}</div>`;
+    }
+
+    function claimBounty(kind) {
+      const today = new Date().toDateString();
+      if (kind === 'cones' && (userSave.conesSmashed || 0) - (userSave.coneBountyBase || 0) >= CONE_BOUNTY) {
+        userSave.coneBountyBase = (userSave.coneBountyBase || 0) + CONE_BOUNTY; userSave.coins += 150; toast("+150 🪙 cone bounty!");
+      } else if (kind === 'pass' && userSave.lastDailyClaimDate === today && userSave.passBountyDate !== today) {
+        userSave.passBountyDate = today; userSave.hammers++; toast("+1 🔨 Hammer!");
+      } else return;
+      persistState(); sfxChime();
+    }
+    window.claimBounty = claimBounty;
 
     function refreshMapUI() {
       renderSectorTrack();
-      const totalStars = Object.values(userSave.stars).reduce((a, b) => a + (Number(b) || 0), 0);
-      safeSetText('mapStarsTotal', `⭐ ${totalStars} / ${TOTAL_STAGES * 3}`);
+      renderLeaderboards();
+      renderBounties();
+      safeSetText('mapStarsTotal', `⭐ ${totalStars()} / ${TOTAL_STAGES * 3}`);
       const cfg = getStageConfig(userSave.unlocked);
       safeSetText('homeStageTitle', cfg.name);
       safeSetText('mapBtnLvl', userSave.unlocked);
@@ -812,7 +877,12 @@
 
     // AUDIO
     let audioCtx = null; let soundOn = true; let bgmOn = false; let bgmInterval = null; let bgmStep = 0;
-    function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    function initAudio() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+      } catch (e) {}
+    }
     function toggleAudio() { soundOn = !soundOn; safeSetText('audioIcon', soundOn ? '🔊' : '🔇'); }
     function toggleBGM() {
       initAudio(); bgmOn = !bgmOn; safeSetText('bgmIcon', bgmOn ? '🎵' : '🎶');
@@ -923,13 +993,29 @@
     let grid = []; let jellyGrid = []; let chocGrid = []; let cageGrid = []; let coneGrid = [];
     let state = 'IDLE'; let isVictoryLocked = false; let score = 0; let moves = 16; let combo = 0;
     let bossCurrentHP = 0; let activeBooster = null;
-    let selectedTile = null;
+    let selectedTile = null; let swapAnim = null; let pendingClear = []; let lastSwap = null;
+    let lastInteraction = Date.now(); let hintMove = null; let dragStart = null;
+    let effects = [];
 
     class Candy {
       constructor(type, r, c, special = 'NONE') {
         this.type = type; this.r = r; this.c = c; this.special = special;
         this.x = c * TILE_SIZE; this.y = r * TILE_SIZE; this.targetY = this.y; this.vy = 0;
       }
+    }
+
+    const key = (r, c) => r * COLS + c;
+    const unkey = k => [Math.floor(k / COLS), k % COLS];
+    const inBounds = (r, c) => r >= 0 && r < ROWS && c >= 0 && c < COLS;
+
+    // Deterministic per-level layouts (mulberry32)
+    function seededRandom(seed) {
+      return () => {
+        seed = (seed + 0x6D2B79F5) | 0;
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
     }
 
     function randomType() { return Math.floor(Math.random() * (currentCfg?.colorCount || 4)); }
@@ -953,7 +1039,7 @@
             if (coneGrid[r][c] === 0) grid[r][c] = new Candy(safeType(r, c), r, c);
           }
         }
-      } while (!hasPossibleMove());
+      } while (!findMove());
     }
 
     function countLayer(layer) {
@@ -1007,15 +1093,40 @@
       safeSetText('swapBadge', userSave.swaps);
     }
 
+    function buildLayout(lvl) {
+      const t = currentCfg.objectiveType;
+      const rand = seededRandom(lvl * 7919);
+      // Places up to n items, applying each one before picking the next so the checks see earlier picks.
+      const place = (n, rows, ok, apply) => {
+        for (let placed = 0, guard = 0; placed < n && guard < 400; guard++) {
+          const r = rows[Math.floor(rand() * rows.length)], c = Math.floor(rand() * COLS);
+          if (ok(r, c)) { apply(r, c); placed++; }
+        }
+      };
+      if (isBlitzActive) return;
+      // Cones: at most one per column so every column keeps flowing
+      place(currentCfg.coneCount, [2, 3, 4, 5], (r, c) => !coneGrid.some(row => row[c] > 0), (r, c) => { coneGrid[r][c] = 2; });
+      if (t === 'JELLY' || t === 'DUAL') {
+        for (let r = 2; r <= 4; r++) for (let c = 2; c <= 4; c++) if (!coneGrid[r][c]) jellyGrid[r][c] = 1;
+        place(t === 'DUAL' ? 0 : Math.min(4, Math.floor(lvl / 200)), [1, 2, 3, 4, 5], (r, c) => !coneGrid[r][c] && !jellyGrid[r][c], (r, c) => { jellyGrid[r][c] = 1; });
+      }
+      if (!userSave?.perks?.bumper) {
+        place(t === 'DUAL' ? Math.min(4, currentCfg.chocCount) : currentCfg.chocCount, [4, 5, 6], (r, c) => !coneGrid[r][c] && !chocGrid[r][c], (r, c) => { chocGrid[r][c] = true; });
+      }
+      place(currentCfg.cageCount, [0, 1, 2, 3, 4, 5, 6], (r, c) => !coneGrid[r][c] && !cageGrid[r][c], (r, c) => { cageGrid[r][c] = true; });
+    }
+
     function startMatchGame(lvl) {
       currentLvl = lvl;
       currentCfg = getStageConfig(lvl);
       score = 0; moves = currentCfg.moves; combo = 0; isVictoryLocked = false; state = 'IDLE';
-      selectedTile = null; activateBooster(null);
+      selectedTile = null; swapAnim = null; pendingClear = []; lastSwap = null; effects = []; hintMove = null;
+      lastInteraction = Date.now(); activateBooster(null);
 
       safeSetText('dossierTitle', currentCfg.name);
       safeSetText('dossierIcon', currentCfg.icon);
-      safeSetText('dossierHazard', currentCfg.coneCount > 0 ? 'Traffic Cones Ahead' : 'No Hazards');
+      const hazards = [currentCfg.coneCount > 0 && 'Cones', currentCfg.cageCount > 0 && 'Cages', !userSave.perks.bumper && currentCfg.chocCount > 0 && 'Choc'].filter(Boolean);
+      safeSetText('dossierHazard', hazards.length ? `Hazards: ${hazards.join(', ')}` : 'No Hazards');
       safeSetText('dossierObjectiveText', objectiveText());
       safeSetText('leftColTarget', `${currentCfg.target.toLocaleString()} pts`);
       safeSetText('dossierColorsText', `${currentCfg.colorCount} Colors`);
@@ -1030,19 +1141,12 @@
         safeSetText('bossNameTxt', `⚠️ ${currentCfg.name.toUpperCase()}`);
       } else { bossBox.style.display = 'none'; }
 
-      const t = currentCfg.objectiveType;
       grid = []; jellyGrid = []; chocGrid = []; cageGrid = []; coneGrid = [];
       for (let r = 0; r < ROWS; r++) {
         grid[r] = []; jellyGrid[r] = []; chocGrid[r] = []; cageGrid[r] = []; coneGrid[r] = [];
-        for (let c = 0; c < COLS; c++) {
-          jellyGrid[r][c] = ((t === 'JELLY' || t === 'DUAL') && (r >= 2 && r <= 4 && c >= 2 && c <= 4)) ? 1 : 0;
-          chocGrid[r][c] = (currentCfg.chocCount > 0 && r === 6 && c >= 2 && c <= 4);
-          if (userSave?.perks?.bumper && chocGrid[r][c]) chocGrid[r][c] = false;
-          cageGrid[r][c] = (currentCfg.cageCount > 0 && (r === 1 && c === 1));
-          coneGrid[r][c] = (currentCfg.coneCount > 0 && r === 3 && (c === 2 || c === 4)) ? 2 : 0;
-          if (coneGrid[r][c]) jellyGrid[r][c] = 0;
-        }
+        for (let c = 0; c < COLS; c++) { jellyGrid[r][c] = 0; chocGrid[r][c] = false; cageGrid[r][c] = false; coneGrid[r][c] = 0; }
       }
+      buildLayout(lvl);
       fillBoard();
       updateHUD();
       navigate('game-view');
@@ -1053,12 +1157,13 @@
       const b = document.getElementById('gameBanner');
       if (!b) return;
       b.innerText = text; b.style.opacity = '1'; b.style.transform = 'translate(-50%, -50%) scale(1)';
-      setTimeout(() => { b.style.opacity = '0'; b.style.transform = 'translate(-50%, -50%) scale(0.6)'; }, 700);
+      clearTimeout(showBanner.t);
+      showBanner.t = setTimeout(() => { b.style.opacity = '0'; b.style.transform = 'translate(-50%, -50%) scale(0.6)'; }, 700);
     }
 
     function activateBooster(type) {
-      if (type === 'HAMMER' && activeBooster !== 'HAMMER' && userSave.hammers <= 0) { showBanner("NO HAMMERS!"); openModal('shopModal'); type = null; }
-      if (type === 'SWAP' && activeBooster !== 'SWAP' && userSave.swaps <= 0) { showBanner("NO SWAPS!"); openModal('shopModal'); type = null; }
+      if (type === 'HAMMER' && activeBooster !== 'HAMMER' && userSave.hammers <= 0) { toast("No hammers left — get more in the shop!"); openModal('shopModal'); type = null; }
+      if (type === 'SWAP' && activeBooster !== 'SWAP' && userSave.swaps <= 0) { toast("No free swaps left — get more in the shop!"); openModal('shopModal'); type = null; }
       activeBooster = (type === null || activeBooster === type) ? null : type;
       selectedTile = null;
       document.getElementById('hammerBtn').classList.toggle('active', activeBooster === 'HAMMER');
@@ -1071,73 +1176,261 @@
       const x = (e.clientX - rect.left) * (VIRTUAL_SIZE / rect.width);
       const y = (e.clientY - rect.top) * (VIRTUAL_SIZE / rect.height);
       const c = Math.floor(x / TILE_SIZE); const r = Math.floor(y / TILE_SIZE);
-      return (r >= 0 && r < ROWS && c >= 0 && c < COLS) ? { r, c } : null;
+      return inBounds(r, c) ? { r, c } : null;
     }
+
+    const canSwap = p => inBounds(p.r, p.c) && !!grid[p.r][p.c] && !cageGrid[p.r][p.c];
+    const isAdjacent = (a, b) => Math.abs(a.r - b.r) + Math.abs(a.c - b.c) === 1;
 
     canvas.addEventListener('pointerdown', (e) => {
       initAudio();
       const pos = getTileFromEvent(e);
       if (!pos || state !== 'IDLE' || isVictoryLocked) return;
+      lastInteraction = Date.now(); hintMove = null;
 
       if (activeBooster === 'HAMMER') {
         if (!grid[pos.r][pos.c] && !coneGrid[pos.r][pos.c]) return;
         userSave.hammers--; persistState(); activateBooster(null);
-        sfxBoom(); popTile(pos.r, pos.c); applyGravity(); updateHUD(); state = 'DROPPING'; return;
+        sfxBoom(); pendingClear.push(key(pos.r, pos.c)); combo = 0; lastSwap = null; state = 'CLEARING';
+        return;
       }
-      if (!grid[pos.r][pos.c]) return; // cones can't be picked up
-      if (!selectedTile) { selectedTile = pos; return; }
-      if (selectedTile.r === pos.r && selectedTile.c === pos.c) { selectedTile = null; return; }
-
-      const dr = Math.abs(selectedTile.r - pos.r); const dc = Math.abs(selectedTile.c - pos.c);
-      if (activeBooster === 'SWAP') {
-        executeSwap(selectedTile, pos, true); selectedTile = null;
-      } else if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
-        executeSwap(selectedTile, pos, false); selectedTile = null;
-      } else selectedTile = pos;
+      if (!canSwap(pos)) { if (cageGrid[pos.r][pos.c]) showBanner("CAGED! 🔒"); return; }
+      if (selectedTile) {
+        const sel = selectedTile; selectedTile = null;
+        if (sel.r === pos.r && sel.c === pos.c) return;
+        if (activeBooster === 'SWAP') { beginSwap(sel, pos, true); return; }
+        if (isAdjacent(sel, pos)) { beginSwap(sel, pos, false); return; }
+      }
+      selectedTile = pos;
+      dragStart = { pos, x: e.clientX, y: e.clientY };
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
     });
+
+    // Swipe to swap
+    canvas.addEventListener('pointermove', (e) => {
+      if (!dragStart || state !== 'IDLE' || activeBooster) return;
+      const dx = e.clientX - dragStart.x, dy = e.clientY - dragStart.y;
+      const threshold = canvas.getBoundingClientRect().width / COLS * 0.35;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < threshold) return;
+      const p = dragStart.pos; dragStart = null;
+      const q = Math.abs(dx) > Math.abs(dy) ? { r: p.r, c: p.c + Math.sign(dx) } : { r: p.r + Math.sign(dy), c: p.c };
+      if (!canSwap(q)) return;
+      selectedTile = null;
+      beginSwap(p, q, false);
+    });
+    ['pointerup', 'pointercancel'].forEach(ev => canvas.addEventListener(ev, () => { dragStart = null; }));
 
     function swapCells(a, b) {
       const t1 = grid[a.r][a.c]; const t2 = grid[b.r][b.c];
       grid[a.r][a.c] = t2; grid[b.r][b.c] = t1;
       for (const [t, p] of [[t1, b], [t2, a]]) {
-        t.r = p.r; t.c = p.c; t.x = p.c * TILE_SIZE; t.y = t.targetY = p.r * TILE_SIZE;
+        t.r = p.r; t.c = p.c; t.sx = t.x; t.sy = t.y; t.tx = p.c * TILE_SIZE; t.targetY = p.r * TILE_SIZE; t.vy = 0;
       }
     }
 
-    function executeSwap(a, b, isFree) {
-      if (!grid[a.r][a.c] || !grid[b.r][b.c]) return;
+    function beginSwap(a, b, isFree) {
+      if (!canSwap(a) || !canSwap(b)) return;
+      lastInteraction = Date.now(); hintMove = null;
       swapCells(a, b);
-      const { hasMatch } = analyzeMatches();
+      swapAnim = { a, b, t: 0, isFree, back: false };
+      state = 'SWAPPING';
+    }
+
+    function finishSwap() {
+      const { a, b, isFree, back } = swapAnim;
+      swapAnim = null;
+      if (back) { state = 'IDLE'; return; }
+      const A = grid[a.r][a.c], B = grid[b.r][b.c];
+      let triggered = false;
+      if (A.special === 'BOMB' || B.special === 'BOMB') {
+        triggered = true;
+        const bombs = [[A, a], [B, b]].filter(([cd]) => cd.special === 'BOMB');
+        if (bombs.length === 2) {
+          A.special = B.special = 'NONE';
+          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) pendingClear.push(key(r, c));
+        } else {
+          const [bomb, bp] = bombs[0]; const other = bomb === A ? B : A;
+          bomb.special = 'NONE'; pendingClear.push(key(bp.r, bp.c));
+          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c]?.type === other.type) pendingClear.push(key(r, c));
+          addFlash('bomb', bp.r, bp.c);
+        }
+      } else if (A.special !== 'NONE' && B.special !== 'NONE') {
+        triggered = true;
+        pendingClear.push(key(a.r, a.c), key(b.r, b.c));
+      }
+      const hasMatch = triggered || analyzeMatches().hasMatch;
       if (isFree) {
-        // Free swap: any two tiles, costs a swap token instead of a move, and sticks even without a match.
         userSave.swaps--; persistState(); activateBooster(null);
-        combo = 0; state = hasMatch ? 'CLEARING' : 'IDLE';
+        lastSwap = [a, b]; combo = 0; state = hasMatch ? 'CLEARING' : 'IDLE';
       } else if (hasMatch) {
-        if (!isBlitzActive) moves--;
-        combo = 0; state = 'CLEARING';
+        if (!isBlitzActive) {
+          moves--;
+          if (userSave.activeLevel !== currentLvl) { userSave.activeLevel = currentLvl; persistState(); }
+        }
+        lastSwap = [a, b]; combo = 0; state = 'CLEARING';
       } else {
-        swapCells(a, b); // invalid swap: undo, no move charged
+        swapCells(a, b);
+        swapAnim = { a, b, t: 0, isFree: false, back: true };
         sfxBoom();
       }
       updateHUD();
     }
 
-    function popTile(r, c) {
-      if (coneGrid[r]?.[c] > 0) { coneGrid[r][c]--; sfxPop(); return; }
-      if (grid[r]?.[c]) {
-        grid[r][c] = null; score += (isBlitzActive ? 60 * blitzComboMultiplier : 60);
-        if (jellyGrid[r]?.[c] > 0) jellyGrid[r][c] = 0;
-        if (chocGrid[r]?.[c]) chocGrid[r][c] = false;
-        sfxPop();
-      }
+    // Runs of 3+ same-colour candies. Colour bombs (type -1) never match.
+    function findRuns() {
+      const runs = [];
+      const scan = (outer, inner, cell, dir) => {
+        for (let i = 0; i < outer; i++) {
+          let j = 0;
+          while (j < inner) {
+            const t = cell(i, j)?.type;
+            let e = j + 1;
+            if (t !== undefined && t >= 0) while (e < inner && cell(i, e)?.type === t) e++;
+            if (t !== undefined && t >= 0 && e - j >= 3) {
+              const cells = [];
+              for (let k = j; k < e; k++) cells.push(dir === 'H' ? [i, k] : [k, i]);
+              runs.push({ dir, cells });
+            }
+            j = e;
+          }
+        }
+      };
+      scan(ROWS, COLS, (r, c) => grid[r][c], 'H');
+      scan(COLS, ROWS, (c, r) => grid[r][c], 'V');
+      return runs;
     }
 
-    // Candies fall past cones into the next open cell; empty cells at the top get new candies.
+    function analyzeMatches() {
+      const matchMap = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+      const runs = findRuns();
+      runs.forEach(run => run.cells.forEach(([r, c]) => { matchMap[r][c] = true; }));
+      return { hasMatch: runs.length > 0, matchMap };
+    }
+
+    function findMove() {
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+        const a = { r, c };
+        if (!canSwap(a)) continue;
+        for (const b of [{ r, c: c + 1 }, { r: r + 1, c }]) {
+          if (!canSwap(b)) continue;
+          const A = grid[a.r][a.c], B = grid[b.r][b.c];
+          if (A.special === 'BOMB' || B.special === 'BOMB' || (A.special !== 'NONE' && B.special !== 'NONE')) return [a, b];
+          grid[a.r][a.c] = B; grid[b.r][b.c] = A;
+          const ok = findRuns().length > 0;
+          grid[a.r][a.c] = A; grid[b.r][b.c] = B;
+          if (ok) return [a, b];
+        }
+      }
+      return null;
+    }
+    const hasPossibleMove = () => !!findMove();
+
+    // Cells a special candy destroys when it goes off.
+    function specialCells(cd, r, c) {
+      const out = [];
+      if (cd.special === 'STRIPE_H') { for (let k = 0; k < COLS; k++) out.push(key(r, k)); addFlash('row', r, c); }
+      else if (cd.special === 'STRIPE_V') { for (let k = 0; k < ROWS; k++) out.push(key(k, c)); addFlash('col', r, c); }
+      else if (cd.special === 'WRAP') { for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) if (inBounds(r + dr, c + dc)) out.push(key(r + dr, c + dc)); addFlash('wrap', r, c); }
+      else if (cd.special === 'BOMB') {
+        const counts = {};
+        for (const row of grid) for (const x of row) if (x && x.type >= 0) counts[x.type] = (counts[x.type] || 0) + 1;
+        const best = Object.keys(counts).sort((p, q) => counts[q] - counts[p])[0];
+        for (let rr = 0; rr < ROWS; rr++) for (let cc = 0; cc < COLS; cc++) if (String(grid[rr][cc]?.type) === best) out.push(key(rr, cc));
+        addFlash('bomb', r, c);
+      }
+      return out;
+    }
+
+    function smashCone(r, c) {
+      coneGrid[r][c]--;
+      sfxPop();
+      if (coneGrid[r][c] === 0) { userSave.conesSmashed = (userSave.conesSmashed || 0) + 1; addFlash('wrap', r, c); }
+    }
+
+    // Returns the extra cells to hit if this was a special candy.
+    function damageCell(r, c, mult) {
+      if (coneGrid[r][c] > 0) { smashCone(r, c); return []; }
+      if (cageGrid[r][c]) { cageGrid[r][c] = false; sfxPop(); return []; }
+      const cd = grid[r][c];
+      if (!cd) return [];
+      grid[r][c] = null;
+      score += 60 * mult;
+      if (jellyGrid[r][c] > 0) jellyGrid[r][c] = 0;
+      if (chocGrid[r][c]) chocGrid[r][c] = false;
+      return specialCells(cd, r, c);
+    }
+
+    function resolveStep() {
+      const runs = findRuns();
+      if (!runs.length && !pendingClear.length) return false;
+      combo++;
+      const mult = Math.min(5, combo);
+      if (isBlitzActive) blitzComboMultiplier = mult;
+      const scoreBefore = score;
+
+      // Decide which specials this step creates
+      const inH = new Set(), inV = new Set(), toClear = new Set(pendingClear);
+      pendingClear = [];
+      runs.forEach(run => run.cells.forEach(([r, c]) => { toClear.add(key(r, c)); (run.dir === 'H' ? inH : inV).add(key(r, c)); }));
+      const creates = new Map();
+      const swapKeys = (lastSwap || []).map(p => key(p.r, p.c));
+      runs.forEach(run => {
+        const keys = run.cells.map(([r, c]) => key(r, c));
+        const cross = keys.find(k => inH.has(k) && inV.has(k));
+        let special = null;
+        if (keys.length >= 5) special = 'BOMB';
+        else if (cross !== undefined) special = 'WRAP';
+        else if (keys.length === 4) special = run.dir === 'H' ? 'STRIPE_V' : 'STRIPE_H';
+        if (!special) return;
+        const at = keys.find(k => swapKeys.includes(k)) ?? cross ?? keys[Math.floor(keys.length / 2)];
+        const [r, c] = unkey(at);
+        if (cageGrid[r][c] || grid[r][c]?.special !== 'NONE') return;
+        const prev = creates.get(at);
+        if (!prev || special === 'BOMB') creates.set(at, special);
+      });
+
+      // Clear, chaining through any specials that get hit
+      const queue = [...toClear], seen = new Set(queue), coneHits = new Set();
+      let cleared = 0;
+      while (queue.length) {
+        const k = queue.shift();
+        if (creates.has(k)) continue;
+        const [r, c] = unkey(k);
+        const hadCandy = !!grid[r][c] && !cageGrid[r][c] && !coneGrid[r][c];
+        for (const e of damageCell(r, c, mult)) if (!seen.has(e)) { seen.add(e); queue.push(e); }
+        if (hadCandy) {
+          cleared++;
+          for (const [dr, dc] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+            const rr = r + dr, cc = c + dc;
+            if (inBounds(rr, cc) && coneGrid[rr][cc] > 0 && !seen.has(key(rr, cc))) coneHits.add(key(rr, cc));
+          }
+        }
+      }
+      coneHits.forEach(k => { const [r, c] = unkey(k); if (coneGrid[r][c] > 0) smashCone(r, c); });
+      creates.forEach((special, k) => {
+        const [r, c] = unkey(k); const cd = grid[r][c];
+        if (!cd) return;
+        cd.special = special;
+        if (special === 'BOMB') { cd.type = -1; userSave.bombsMade = (userSave.bombsMade || 0) + 1; }
+        score += 120 * mult;
+      });
+      lastSwap = null;
+
+      const gained = score - scoreBefore;
+      if (gained > 0) addFloat(`+${gained.toLocaleString()}`, swapKeys[0] ?? [...toClear][0]);
+      if (cleared > 0) sfxPop();
+      const callouts = { 2: "SWEET!", 3: "E CHOKE! 🔥", 4: "OYA NA! 💥", 5: "NA WA O! 🤯" };
+      if (combo >= 5) triggerCultureCallout(callouts[5]);
+      else if (callouts[combo]) showBanner(callouts[combo]);
+      return true;
+    }
+
+    // Candies fall past cones and cages into the next open cell; the top is refilled.
     function applyGravity() {
       for (let c = 0; c < COLS; c++) {
         const slots = []; const candies = [];
         for (let r = ROWS - 1; r >= 0; r--) {
-          if (coneGrid[r][c] > 0) continue;
+          if (coneGrid[r][c] > 0 || cageGrid[r][c]) continue;
           slots.push(r);
           if (grid[r][c]) candies.push(grid[r][c]);
           grid[r][c] = null;
@@ -1154,53 +1447,17 @@
       }
     }
 
-    function analyzeMatches() {
-      const matchMap = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
-      let matchFound = false;
-      for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS - 2; c++) {
-          const type = grid[r][c]?.type;
-          if (type !== undefined && type === grid[r][c+1]?.type && type === grid[r][c+2]?.type) {
-            matchMap[r][c] = matchMap[r][c+1] = matchMap[r][c+2] = true;
-            matchFound = true;
-          }
-        }
-      }
-      for (let c = 0; c < COLS; c++) {
-        for (let r = 0; r < ROWS - 2; r++) {
-          const type = grid[r][c]?.type;
-          if (type !== undefined && type === grid[r+1][c]?.type && type === grid[r+2][c]?.type) {
-            matchMap[r][c] = matchMap[r+1][c] = matchMap[r+2][c] = true;
-            matchFound = true;
-          }
-        }
-      }
-      return { hasMatch: matchFound, matchMap };
-    }
-
-    function hasPossibleMove() {
-      const tryPair = (a, b) => {
-        if (!grid[a.r]?.[a.c] || !grid[b.r]?.[b.c]) return false;
-        const t1 = grid[a.r][a.c], t2 = grid[b.r][b.c];
-        grid[a.r][a.c] = t2; grid[b.r][b.c] = t1;
-        const ok = analyzeMatches().hasMatch;
-        grid[a.r][a.c] = t1; grid[b.r][b.c] = t2;
-        return ok;
-      };
-      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
-        if (c + 1 < COLS && tryPair({ r, c }, { r, c: c + 1 })) return true;
-        if (r + 1 < ROWS && tryPair({ r, c }, { r: r + 1, c })) return true;
-      }
-      return false;
-    }
-
     function update() {
-      if (state === 'CLEARING') {
-        const { hasMatch, matchMap } = analyzeMatches();
-        if (hasMatch) {
-          combo++;
-          if (isBlitzActive) blitzComboMultiplier = Math.min(5, 1 + Math.floor(combo / 2));
-          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (matchMap[r][c]) popTile(r, c);
+      if (state === 'SWAPPING' && swapAnim) {
+        swapAnim.t = Math.min(1, swapAnim.t + 0.2);
+        const e = 1 - Math.pow(1 - swapAnim.t, 2);
+        for (const p of [swapAnim.a, swapAnim.b]) {
+          const cd = grid[p.r][p.c];
+          cd.x = cd.sx + (cd.tx - cd.sx) * e; cd.y = cd.sy + (cd.targetY - cd.sy) * e;
+        }
+        if (swapAnim.t >= 1) finishSwap();
+      } else if (state === 'CLEARING') {
+        if (resolveStep()) {
           applyGravity();
           updateHUD();
           state = 'DROPPING';
@@ -1220,34 +1477,70 @@
           }
         }
         if (!moving) state = 'CLEARING';
+      } else if (state === 'IDLE' && !isVictoryLocked && !hintMove && Date.now() - lastInteraction > 6000) {
+        hintMove = findMove();
       }
     }
+
+    function loseLife() {
+      userSave.lives = Math.max(0, userSave.lives - 1);
+      if (!userSave.lastLifeLostTime) userSave.lastLifeLostTime = Date.now();
+      userSave.activeLevel = null;
+    }
+
+    function setResultActions(buttons) {
+      const box = document.getElementById('resActions');
+      if (!box) return;
+      box.innerHTML = '';
+      buttons.forEach(([label, fn, primary]) => {
+        const b = document.createElement('button');
+        b.className = primary ? 'btn-action' : 'dock-btn';
+        if (!primary) b.style.cssText = 'width:100%; justify-content:center;';
+        b.innerText = label; b.onclick = fn;
+        box.appendChild(b);
+      });
+    }
+
+    const EXTRA_MOVES_COST = 500;
 
     function evaluateEnd() {
       if (isVictoryLocked || state === 'OVER') return;
       if (isBlitzActive) { ensurePlayableBoard(); state = 'IDLE'; return; }
       if (score >= currentCfg.target && objectiveDone()) {
         isVictoryLocked = true; state = 'OVER';
-        const stars = score >= currentCfg.target * 1.6 ? 3 : (score >= currentCfg.target * 1.3 ? 2 : 1);
+        const rush = moves * 150;
+        score += rush;
+        const stars = score >= currentCfg.target * 1.5 ? 3 : (score >= currentCfg.target * 1.25 ? 2 : 1);
+        const firstClear = !userSave.stars[currentLvl];
         userSave.stars[currentLvl] = Math.max(userSave.stars[currentLvl] || 0, stars);
         if (currentLvl === userSave.unlocked && userSave.unlocked < TOTAL_STAGES) userSave.unlocked++;
         userSave.hiScore = Math.max(userSave.hiScore, score);
-        const reward = 150 + (userSave.perks.magnet ? 75 : 0);
-        userSave.coins += reward; persistState();
+        userSave.activeLevel = null;
+        const reward = (firstClear ? 150 : 40) + (userSave.perks.magnet ? (firstClear ? 75 : 20) : 0);
+        userSave.coins += reward; persistState(); updateHUD();
         playEquippedHorn();
         safeSetText('resTitle', currentCfg.isBoss ? "BOSS DEFEATED!" : "STAGE CLEARED!");
         safeSetText('resStars', starString(stars));
-        safeSetText('resSubtitle', `Final Score: ${score.toLocaleString()} • +${reward} 🪙`);
+        safeSetText('resSubtitle', `Final Score: ${score.toLocaleString()}${rush ? ` (Sugar Rush +${rush.toLocaleString()})` : ''} • +${reward} 🪙`);
+        const next = currentLvl + 1;
+        setResultActions([
+          ...(next <= TOTAL_STAGES ? [[`NEXT STAGE ${next} ▶`, () => { closeModal('gameResultModal'); launchLevel(next); }, true]] : []),
+          ['🗺️ Back to Map', dismissResult, next > TOTAL_STAGES]
+        ]);
         openModal('gameResultModal');
       } else if (moves <= 0) {
         state = 'OVER'; isVictoryLocked = true;
-        userSave.lives = Math.max(0, userSave.lives - 1);
-        if (!userSave.lastLifeLostTime) userSave.lastLifeLostTime = Date.now();
+        loseLife();
         userSave.hiScore = Math.max(userSave.hiScore, score);
         persistState();
         safeSetText('resTitle', "OUT OF MOVES!");
         safeSetText('resStars', starString(0));
         safeSetText('resSubtitle', score >= currentCfg.target ? `Score reached, but ${objectiveText().toLowerCase()} first! (-1 ❤️)` : `Final Score: ${score.toLocaleString()} / ${currentCfg.target.toLocaleString()} (-1 ❤️)`);
+        setResultActions([
+          [`+5 MOVES (${EXTRA_MOVES_COST} 🪙, keep your life)`, buyExtraMoves, true],
+          ['🔁 Retry', () => { closeModal('gameResultModal'); launchLevel(currentLvl); }],
+          ['🗺️ Back to Map', dismissResult]
+        ]);
         openModal('gameResultModal');
       } else {
         ensurePlayableBoard();
@@ -1255,74 +1548,178 @@
       }
     }
 
+    function buyExtraMoves() {
+      if (userSave.coins < EXTRA_MOVES_COST) { toast(`Need ${EXTRA_MOVES_COST} 🪙 for extra moves`); return; }
+      userSave.coins -= EXTRA_MOVES_COST;
+      userSave.lives = Math.min(5, userSave.lives + 1);
+      if (userSave.lives >= 5) userSave.lastLifeLostTime = null;
+      userSave.activeLevel = currentLvl;
+      persistState();
+      moves += 5; isVictoryLocked = false; state = 'IDLE'; lastInteraction = Date.now();
+      closeModal('gameResultModal'); updateHUD(); showBanner("+5 MOVES!");
+    }
+    window.buyExtraMoves = buyExtraMoves;
+
     function ensurePlayableBoard() {
-      if (hasPossibleMove()) return;
+      if (findMove()) return;
       showBanner("SHUFFLE!");
-      const candies = grid.flat().filter(Boolean);
+      const candies = grid.flat().filter(cd => cd && cd.special === 'NONE' && !cageGrid[cd.r][cd.c]);
       for (let tries = 0; tries < 50; tries++) {
         for (let i = candies.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [candies[i].type, candies[j].type] = [candies[j].type, candies[i].type];
         }
-        if (!analyzeMatches().hasMatch && hasPossibleMove()) return;
+        if (!findRuns().length && findMove()) return;
       }
-      fillBoard();
+      for (const cd of candies) cd.type = randomType();
+      if (findRuns().length) { pendingClear = []; state = 'CLEARING'; }
     }
 
     function dismissResult() { closeModal('gameResultModal'); navigate('map-view'); }
     window.dismissResult = dismissResult;
 
+    // Quitting a stage after making a move costs a life
+    function levelInProgress() {
+      return !isBlitzActive && currentCfg && !isVictoryLocked && userSave.activeLevel === currentLvl;
+    }
+
+    // EFFECTS
+    function addFloat(text, k) {
+      if (k === undefined) return;
+      const [r, c] = unkey(k);
+      effects.push({ kind: 'text', text, x: c * TILE_SIZE + TILE_SIZE / 2, y: r * TILE_SIZE + TILE_SIZE / 2, life: 1 });
+    }
+    function addFlash(kind, r, c) { effects.push({ kind, r, c, life: 1 }); }
+
     // 4K LIQUID GLASS CANVAS RENDER
+    function drawShape(shape, cx, cy, s) {
+      ctx.beginPath();
+      if (shape === 'square') ctx.rect(cx - s * 0.7, cy - s * 0.7, s * 1.4, s * 1.4);
+      else if (shape === 'circle') ctx.arc(cx, cy, s * 0.75, 0, Math.PI * 2);
+      else if (shape === 'triangle') { ctx.moveTo(cx, cy - s); ctx.lineTo(cx + s, cy + s * 0.8); ctx.lineTo(cx - s, cy + s * 0.8); ctx.closePath(); }
+      else if (shape === 'diamond') { ctx.moveTo(cx, cy - s); ctx.lineTo(cx + s * 0.8, cy); ctx.lineTo(cx, cy + s); ctx.lineTo(cx - s * 0.8, cy); ctx.closePath(); }
+      else if (shape === 'hexagon') { for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i; ctx[i ? 'lineTo' : 'moveTo'](cx + s * Math.cos(a), cy + s * Math.sin(a)); } ctx.closePath(); }
+      else if (shape === 'heart') {
+        ctx.moveTo(cx, cy + s * 0.9);
+        ctx.bezierCurveTo(cx - s * 1.5, cy - s * 0.1, cx - s * 0.6, cy - s * 1.2, cx, cy - s * 0.4);
+        ctx.bezierCurveTo(cx + s * 0.6, cy - s * 1.2, cx + s * 1.5, cy - s * 0.1, cx, cy + s * 0.9);
+      }
+      ctx.fill();
+    }
+
+    function drawCandy(item) {
+      const cx = item.x + TILE_SIZE / 2; const cy = item.y + TILE_SIZE / 2; const rad = TILE_SIZE * 0.35;
+      if (item.special === 'BOMB') {
+        const g = ctx.createRadialGradient(cx - rad * 0.3, cy - rad * 0.3, rad * 0.1, cx, cy, rad);
+        g.addColorStop(0, '#7a4a2a'); g.addColorStop(1, '#2a1406');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
+        CANDIES.forEach((cd, i) => {
+          const a = (Math.PI * 2 / CANDIES.length) * i + performance.now() / 900;
+          ctx.fillStyle = cd.color; ctx.beginPath(); ctx.arc(cx + Math.cos(a) * rad * 0.55, cy + Math.sin(a) * rad * 0.55, rad * 0.14, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.strokeStyle = "rgba(255,255,255,0.6)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
+        return;
+      }
+      const conf = CANDIES[item.type] || CANDIES[0];
+
+      // Radial Glass Jewel Body
+      const g = ctx.createRadialGradient(cx - rad*0.3, cy - rad*0.3, rad*0.1, cx, cy, rad);
+      g.addColorStop(0, conf.center); g.addColorStop(0.6, conf.color); g.addColorStop(1, conf.deep);
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 1.5; ctx.stroke();
+
+      if (item.special === 'STRIPE_H' || item.special === 'STRIPE_V') {
+        ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.clip();
+        ctx.fillStyle = "rgba(255,255,255,0.75)";
+        for (let k = -1; k <= 1; k++) {
+          if (item.special === 'STRIPE_H') ctx.fillRect(cx - rad, cy + k * rad * 0.55 - rad * 0.1, rad * 2, rad * 0.2);
+          else ctx.fillRect(cx + k * rad * 0.55 - rad * 0.1, cy - rad, rad * 0.2, rad * 2);
+        }
+        ctx.restore();
+      } else if (item.special === 'WRAP') {
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
+        ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(cx, cy, rad + 3, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+      }
+
+      // Shape glyph so colours can be told apart without relying on hue
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
+      drawShape(conf.shape, cx, cy + rad * 0.1, rad * 0.32);
+
+      // Glass Highlights
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.beginPath();
+      ctx.ellipse(cx - rad*0.3, cy - rad*0.3, rad*0.35, rad*0.18, -Math.PI/4, 0, Math.PI*2);
+      ctx.fill();
+    }
+
     function render() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, VIRTUAL_SIZE, VIRTUAL_SIZE);
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
 
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
+          const x = c * TILE_SIZE, y = r * TILE_SIZE;
           ctx.fillStyle = (r + c) % 2 === 0 ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.3)";
-          ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+          ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
           if (jellyGrid[r]?.[c] > 0) {
-            ctx.fillStyle = "rgba(0,230,138,0.25)"; ctx.fillRect(c * TILE_SIZE + 2, r * TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+            ctx.fillStyle = "rgba(0,230,138,0.25)"; ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
           }
           if (chocGrid[r]?.[c]) {
-            ctx.fillStyle = "rgba(120,62,24,0.75)"; ctx.fillRect(c * TILE_SIZE + 2, r * TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
-          }
-          if (selectedTile && selectedTile.r === r && selectedTile.c === c) {
-            ctx.strokeStyle = activeBooster === 'SWAP' ? "#00f0ff" : "#ffbe1a"; ctx.lineWidth = 3;
-            ctx.strokeRect(c * TILE_SIZE + 3, r * TILE_SIZE + 3, TILE_SIZE - 6, TILE_SIZE - 6);
+            ctx.fillStyle = "rgba(120,62,24,0.75)"; ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
           }
           if (coneGrid[r]?.[c] > 0) {
             ctx.fillStyle = coneGrid[r][c] > 1 ? "#ff6600" : "#ffa366";
             ctx.beginPath();
-            ctx.moveTo(c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE + 6);
-            ctx.lineTo(c * TILE_SIZE + TILE_SIZE - 8, r * TILE_SIZE + TILE_SIZE - 6);
-            ctx.lineTo(c * TILE_SIZE + 8, r * TILE_SIZE + TILE_SIZE - 6);
+            ctx.moveTo(x + TILE_SIZE / 2, y + 6);
+            ctx.lineTo(x + TILE_SIZE - 8, y + TILE_SIZE - 6);
+            ctx.lineTo(x + 8, y + TILE_SIZE - 6);
             ctx.fill();
+            ctx.fillStyle = "#fff"; ctx.fillRect(x + TILE_SIZE * 0.34, y + TILE_SIZE * 0.55, TILE_SIZE * 0.32, 5);
           }
         }
       }
       // Candies are drawn in a second pass so ones falling past a cone stay visible.
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r]?.[c]) drawCandy(grid[r][c]);
+
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
-          const item = grid[r]?.[c];
-          if (item) {
-            const conf = CANDIES[item.type] || CANDIES[0];
-            const cx = item.x + TILE_SIZE / 2; const cy = item.y + TILE_SIZE / 2; const rad = TILE_SIZE * 0.35;
-
-            // Radial Glass Jewel Body
-            const g = ctx.createRadialGradient(cx - rad*0.3, cy - rad*0.3, rad*0.1, cx, cy, rad);
-            g.addColorStop(0, conf.center); g.addColorStop(0.6, conf.color); g.addColorStop(1, conf.deep);
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
-            ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 1.5; ctx.stroke();
-
-            // Glass Highlights
-            ctx.fillStyle = "rgba(255,255,255,0.7)";
+          const x = c * TILE_SIZE, y = r * TILE_SIZE;
+          if (cageGrid[r]?.[c]) {
+            ctx.strokeStyle = "rgba(210,220,230,0.95)"; ctx.lineWidth = 3;
+            ctx.strokeRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
             ctx.beginPath();
-            ctx.ellipse(cx - rad*0.3, cy - rad*0.3, rad*0.35, rad*0.18, -Math.PI/4, 0, Math.PI*2);
-            ctx.fill();
+            for (let k = 1; k <= 3; k++) { ctx.moveTo(x + TILE_SIZE * k / 4, y + 4); ctx.lineTo(x + TILE_SIZE * k / 4, y + TILE_SIZE - 4); }
+            ctx.stroke();
+          }
+          if (selectedTile && selectedTile.r === r && selectedTile.c === c) {
+            ctx.strokeStyle = activeBooster === 'SWAP' ? "#00f0ff" : "#ffbe1a"; ctx.lineWidth = 3;
+            ctx.strokeRect(x + 3, y + 3, TILE_SIZE - 6, TILE_SIZE - 6);
+          }
+          if (hintMove && state === 'IDLE' && hintMove.some(p => p.r === r && p.c === c)) {
+            ctx.strokeStyle = `rgba(255,255,255,${0.25 + 0.6 * pulse})`; ctx.lineWidth = 3;
+            ctx.strokeRect(x + 5, y + 5, TILE_SIZE - 10, TILE_SIZE - 10);
           }
         }
+      }
+
+      effects = effects.filter(fx => (fx.life -= 0.025) > 0);
+      for (const fx of effects) {
+        ctx.globalAlpha = Math.max(0, fx.life);
+        if (fx.kind === 'text') {
+          ctx.fillStyle = "#ffbe1a"; ctx.font = "900 20px sans-serif"; ctx.textAlign = "center";
+          ctx.strokeStyle = "rgba(0,0,0,0.7)"; ctx.lineWidth = 4;
+          const y = fx.y - (1 - fx.life) * 40;
+          ctx.strokeText(fx.text, fx.x, y); ctx.fillText(fx.text, fx.x, y);
+        } else {
+          ctx.fillStyle = "rgba(255,255,255,0.5)";
+          if (fx.kind === 'row') ctx.fillRect(0, fx.r * TILE_SIZE + TILE_SIZE * 0.3, VIRTUAL_SIZE, TILE_SIZE * 0.4);
+          else if (fx.kind === 'col') ctx.fillRect(fx.c * TILE_SIZE + TILE_SIZE * 0.3, 0, TILE_SIZE * 0.4, VIRTUAL_SIZE);
+          else if (fx.kind === 'wrap') ctx.fillRect((fx.c - 1) * TILE_SIZE, (fx.r - 1) * TILE_SIZE, TILE_SIZE * 3, TILE_SIZE * 3);
+          else if (fx.kind === 'bomb') { ctx.beginPath(); ctx.arc(fx.c * TILE_SIZE + TILE_SIZE / 2, fx.r * TILE_SIZE + TILE_SIZE / 2, (1.2 - fx.life) * VIRTUAL_SIZE, 0, Math.PI * 2); ctx.fill(); }
+        }
+        ctx.globalAlpha = 1;
       }
     }
 
@@ -1348,6 +1745,10 @@
           safeSetText('resTitle', "BLITZ FINISHED!");
           safeSetText('resStars', '⚡');
           safeSetText('resSubtitle', `Score: ${score.toLocaleString()} • Best: ${userSave.blitzHiScore.toLocaleString()}`);
+          setResultActions([
+            ['⚡ PLAY AGAIN', () => { closeModal('gameResultModal'); startQuickBlitz(); }, true],
+            ['🏠 Lobby', () => { closeModal('gameResultModal'); navigate('home-view'); }]
+          ]);
           openModal('gameResultModal');
         }
       }, 1000);
@@ -1355,23 +1756,58 @@
     window.startQuickBlitz = startQuickBlitz;
     function stopBlitzTimer() { clearInterval(blitzTimer); blitzTimer = null; isBlitzActive = false; }
 
-    // MINIGAME DIALOGS
+    // SCRAPBOOK: one souvenir per sector, unlocked by beating that sector's first boss
+    const SOUVENIRS = [
+      { icon: "🌉", title: "Lagos Bridge Postcard", sub: "Coastal expressway landmark" },
+      { icon: "🌳", title: "Osun Grove Postcard", sub: "Sacred forest of the south-west" },
+      { icon: "🗿", title: "Benin Bronze Replica", sub: "Bronze Kingdom keepsake" },
+      { icon: "⛏️", title: "Coal City Lamp", sub: "Miner's lamp from the hills" },
+      { icon: "🌊", title: "Confluence Snapshot", sub: "Where two great rivers meet" },
+      { icon: "🪨", title: "Zuma Rock Postcard", sub: "Gateway to the capital" },
+      { icon: "💎", title: "Plateau Gemstone", sub: "Sparkle from the granite peaks" },
+      { icon: "🚂", title: "Savannah Rail Ticket", sub: "All aboard the northern line" },
+      { icon: "🎨", title: "Indigo Dye Cloth", sub: "Hand-dyed in the ancient city" },
+      { icon: "🐪", title: "Caravan Bell", sub: "Echoes of the Sahel trade routes" }
+    ];
+    const souvenirUnlocked = i => userSave.unlocked > i * 100 + 10;
+
     function openScrapbook() {
-      const unlocked = userSave.unlocked > 10;
-      document.getElementById('scrapbookGrid').innerHTML = `<div class="postcard-item ${unlocked ? '' : 'locked'}"><div style="font-size:30px;">🌉</div><div><strong>Lekki Toll Postcard</strong><br><small>${unlocked ? 'Coastal expressway landmark' : 'Defeat the Stage 10 boss to collect'}</small></div></div>`;
+      if (!Array.isArray(userSave.claimedSouvenirs)) userSave.claimedSouvenirs = [];
+      const gridEl = document.getElementById('scrapbookGrid');
+      gridEl.innerHTML = '';
+      SOUVENIRS.forEach((s, i) => {
+        const open = souvenirUnlocked(i), got = userSave.claimedSouvenirs.includes(i);
+        const d = document.createElement('div');
+        d.className = `postcard-item ${open ? '' : 'locked'}`;
+        d.innerHTML = `<div style="font-size:30px;">${s.icon}</div><div style="flex:1;"><strong>${s.title}</strong><br><small>${open ? s.sub : `Beat the Stage ${i * 100 + 10} boss to collect`}</small></div>`;
+        if (open) {
+          const b = document.createElement('button');
+          b.className = 'shop-btn'; b.disabled = got; b.innerText = got ? '✅' : '+250 🪙';
+          b.onclick = () => claimSouvenir(i);
+          d.appendChild(b);
+        }
+        gridEl.appendChild(d);
+      });
+      const all = userSave.claimedSouvenirs.length >= SOUVENIRS.length;
       const btn = document.getElementById('scrapbookBountyBtn');
       if (btn) {
-        btn.disabled = !unlocked || userSave.souvenirsClaimed;
-        btn.innerText = userSave.souvenirsClaimed ? "JACKPOT CLAIMED ✅" : (unlocked ? "CLAIM 2,500 🪙 JACKPOT" : "🔒 COLLECT SOUVENIRS FIRST");
+        btn.disabled = !all || userSave.souvenirsClaimed;
+        btn.innerText = userSave.souvenirsClaimed ? "JACKPOT CLAIMED ✅" : (all ? "CLAIM 2,500 🪙 JACKPOT" : `🔒 JACKPOT: ${userSave.claimedSouvenirs.length}/${SOUVENIRS.length} SOUVENIRS`);
       }
       openModal('scrapbookModal');
     }
     window.openScrapbook = openScrapbook;
 
-    function claimScrapbookJackpot() {
-      if (userSave.souvenirsClaimed || userSave.unlocked <= 10) return;
-      userSave.souvenirsClaimed = true; userSave.coins += 2500;
+    function claimSouvenir(i) {
+      if (!souvenirUnlocked(i) || userSave.claimedSouvenirs.includes(i)) return;
+      userSave.claimedSouvenirs.push(i); userSave.coins += 250;
       persistState(); sfxChime(); openScrapbook();
+    }
+
+    function claimScrapbookJackpot() {
+      if (userSave.souvenirsClaimed || (userSave.claimedSouvenirs || []).length < SOUVENIRS.length) return;
+      userSave.souvenirsClaimed = true; userSave.coins += 2500;
+      persistState(); sfxChime(); playEquippedHorn(); openScrapbook();
     }
     window.claimScrapbookJackpot = claimScrapbookJackpot;
 
@@ -1379,6 +1815,7 @@
       { label: "100 🪙", coins: 100 }, { label: "🔨", hammers: 1 }, { label: "300 🪙", coins: 300 }, { label: "🖐️", swaps: 1 },
       { label: "150 🪙", coins: 150 }, { label: "500 🪙", coins: 500 }
     ];
+    let wheelSpinning = false; let wheelAngle = 0;
 
     function openLuckyWheel() {
       openModal('spinModal');
@@ -1397,37 +1834,55 @@
       wCtx.strokeStyle = '#fff'; wCtx.lineWidth = 4; wCtx.stroke();
       const spun = userSave.lastSpinDate === new Date().toDateString();
       const btn = document.getElementById('spinBtn');
-      if (btn) { btn.disabled = spun; btn.innerText = spun ? "COME BACK TOMORROW ⏳" : "SPIN FOR REWARDS! 🎡"; }
+      if (btn && !wheelSpinning) { btn.disabled = spun; btn.innerText = spun ? "COME BACK TOMORROW ⏳" : "SPIN FOR REWARDS! 🎡"; }
     }
     window.openLuckyWheel = openLuckyWheel;
 
     function spinWheel() {
       const today = new Date().toDateString();
-      if (userSave.lastSpinDate === today) return;
-      const p = WHEEL_PRIZES[Math.floor(Math.random() * WHEEL_PRIZES.length)];
+      if (userSave.lastSpinDate === today || wheelSpinning) return;
+      const idx = Math.floor(Math.random() * WHEEL_PRIZES.length);
+      const p = WHEEL_PRIZES[idx];
+      // Claim straight away so closing the dialog mid-spin can't lose or repeat the prize
       userSave.coins += p.coins || 0; userSave.hammers += p.hammers || 0; userSave.swaps += p.swaps || 0;
       userSave.lastSpinDate = today;
-      persistState(); sfxChime();
-      alert(`Won ${p.hammers ? '+1 Hammer 🔨' : (p.swaps ? '+1 Free Swap 🖐️' : `+${p.coins} 🪙`)}!`);
-      closeModal('spinModal');
+      wheelSpinning = true;
+      const segDeg = 360 / WHEEL_PRIZES.length;
+      wheelAngle += 360 * 5 + ((360 - (idx + 0.5) * segDeg) - (wheelAngle % 360) + 360) % 360;
+      const wc = document.getElementById('wheelCanvas');
+      wc.style.transition = 'transform 3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+      wc.style.transform = `rotate(${wheelAngle}deg)`;
+      const btn = document.getElementById('spinBtn');
+      if (btn) { btn.disabled = true; btn.innerText = "SPINNING... 🎡"; }
+      setTimeout(() => {
+        wheelSpinning = false;
+        persistState(); sfxChime();
+        toast(`Lucky Spin: ${p.hammers ? '+1 Hammer 🔨' : (p.swaps ? '+1 Free Swap 🖐️' : `+${p.coins} 🪙`)}!`);
+        if (btn) btn.innerText = "COME BACK TOMORROW ⏳";
+      }, 3100);
     }
     window.spinWheel = spinWheel;
 
     function buyItem(t, cost) {
-      if (userSave.coins < cost) { alert("Not enough coins!"); return; }
+      if (userSave.coins < cost) { toast("Not enough coins!"); return; }
       userSave.coins -= cost;
       if (t === 'HAMMER') userSave.hammers++;
       if (t === 'SWAP') userSave.swaps++;
-      persistState(); alert(`Purchased ${t}!`);
+      persistState(); sfxChime(); toast(t === 'HAMMER' ? "🔨 Hammer added!" : "🖐️ Free Swap added!");
     }
     window.buyItem = buyItem;
 
     function main() { update(); render(); requestAnimationFrame(main); }
 
     // INITIALIZATION
+    if (userSave.activeLevel) {
+      loseLife();
+      setTimeout(() => toast("You left a stage mid-way last time: -1 ❤️"), 400);
+    }
     regenLives();
     setupHighDPICanvases();
-    refreshMapUI();
+    window.addEventListener('resize', () => { if ((window.devicePixelRatio || 1) !== dpr) setupHighDPICanvases(); });
+    persistState();
     setInterval(() => { if (regenLives()) persistState(); else updateLivesTimer(); }, 1000);
     requestAnimationFrame(main);
   </script>
