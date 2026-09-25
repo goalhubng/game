@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#efe4d0" />
   <title>Lane Out</title>
   <style>
-    :root, [data-theme="paper"] {
+    :root, [data-skin="paper"] {
       --page: #e8dcc6;
       --panel: #f4ead8;
       --board: #f4ead8;
@@ -19,7 +19,8 @@
       --btn: #fbf6ec;
       --shadow: rgba(91, 63, 37, 0.18);
     }
-    [data-theme="night"] {
+    [data-skin="night"] {
+      color-scheme: dark;
       --page: #0f1218;
       --panel: #171b24;
       --board: #171b24;
@@ -32,7 +33,7 @@
       --btn: #222836;
       --shadow: rgba(0, 0, 0, 0.45);
     }
-    [data-theme="mint"] {
+    [data-skin="mint"] {
       --page: #d6e9df;
       --panel: #eaf5ef;
       --board: #eaf5ef;
@@ -61,7 +62,7 @@
     .app {
       position: relative;
       width: 100%; max-width: 440px;
-      height: 100dvh; max-height: 920px;
+      height: 100%; max-height: 920px;
       background: var(--panel);
       display: flex; flex-direction: column;
       overflow: hidden;
@@ -70,7 +71,7 @@
       transition: background .3s;
     }
     @media (min-width: 520px) {
-      .app { border-radius: 34px; height: 94dvh; box-shadow: 0 30px 70px -20px var(--shadow); }
+      .app { border-radius: 34px; height: 94%; box-shadow: 0 30px 70px -20px var(--shadow); }
     }
 
     .bar { display: grid; grid-template-columns: 44px 1fr 44px 44px; align-items: center; gap: 4px; padding: 14px 16px 10px; border-bottom: 2px solid var(--line); }
@@ -848,14 +849,17 @@
   // ================= Themes & settings =================
   const THEMES = ['paper', 'night', 'mint'];
   function applyTheme(t) {
-    document.documentElement.setAttribute('data-theme', t);
+    document.documentElement.setAttribute('data-skin', t);
     save.theme = t; persist(); readColors();
   }
   let initialTheme = save.theme;
   if (!initialTheme) {
-    try { initialTheme = matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'paper'; } catch (e) { initialTheme = 'paper'; }
+    const host = document.documentElement.getAttribute('data-theme');
+    let dark = host === 'dark';
+    if (!host) { try { dark = matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {} }
+    initialTheme = dark ? 'night' : 'paper';
   }
-  document.documentElement.setAttribute('data-theme', initialTheme);
+  document.documentElement.setAttribute('data-skin', initialTheme);
   readColors();
 
   $('themeBtn').addEventListener('click', () => applyTheme(THEMES[(THEMES.indexOf(save.theme || initialTheme) + 1) % THEMES.length]));
