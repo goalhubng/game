@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sugar Scramble Deluxe // 1,000-Stage Tour</title>
+  <style>
+    :root {
+      --primary: #00e68a; --primary-glow: rgba(0, 230, 138, 0.4);
+      --gold: #ffbe1a; --gold-glow: rgba(255, 190, 26, 0.45);
+      --pink: #ff2a7a; --cyan: #00f0ff;
+      --glass-surface: rgba(14, 38, 26, 0.65);
+      --glass-dense: rgba(9, 26, 18, 0.92);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --glass-border-light: rgba(255, 255, 255, 0.35);
+      --danfo-amber: #f9bc08;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body {
+      background: radial-gradient(circle at 18% 12%, rgba(0, 240, 255, 0.15) 0%, transparent 40%),
+                  radial-gradient(circle at 82% 18%, rgba(255, 42, 122, 0.14) 0%, transparent 45%),
+                  radial-gradient(circle at 50% 80%, rgba(0, 230, 138, 0.18) 0%, transparent 55%),
+                  radial-gradient(circle at 50% 30%, #0d3822 0%, #05140c 60%, #020704 100%);
+      background-attachment: fixed; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; padding-bottom: 140px;
+    }
+
+    header {
+      width: 100%; max-width: 1240px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;
+      background: rgba(6, 18, 12, 0.85); backdrop-filter: blur(28px) saturate(190%); -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border-bottom: 1px solid var(--glass-border-light); box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: sticky; top: 0; z-index: 1000;
+    }
+    .brand { font-size: 20px; font-weight: 900; cursor: pointer; letter-spacing: 0.5px; text-shadow: 0 0 18px var(--primary-glow); }
+    .brand span { color: var(--gold); }
+    .header-nav, .header-pills { display: flex; align-items: center; gap: 8px; }
+    .pill {
+      background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border); padding: 7px 14px; border-radius: 24px; font-size: 13px; font-weight: 800;
+      display: flex; align-items: center; gap: 6px; color: #fff; cursor: pointer; transition: all 0.2s;
+    }
+    .pill:hover { border-color: var(--glass-border-light); transform: translateY(-1px); }
+    .pill.coins { border-color: rgba(255, 190, 26, 0.4); color: var(--gold); }
+    .pill.lives { border-color: rgba(255, 42, 122, 0.4); color: #ff6b9d; }
+
+    .view-screen { display: none; width: 100%; max-width: 1240px; padding: 20px; z-index: 1; flex-direction: column; align-items: center; }
+    .view-screen.active { display: flex !important; }
+    #game-view.active { display: grid !important; }
+
+    .home-container { width: 100%; max-width: 820px; display: flex; flex-direction: column; gap: 16px; }
+    .hero-banner-card {
+      background: linear-gradient(135deg, rgba(0, 200, 117, 0.35) 0%, rgba(13, 56, 34, 0.65) 100%);
+      backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.28); border-radius: 28px; padding: 24px 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55); display: flex; justify-content: space-between; align-items: center;
+    }
+    .hero-text h1 { font-size: 30px; font-weight: 900; margin-bottom: 4px; }
+    .hero-text p { font-size: 13px; color: #c4ecd7; margin-bottom: 14px; }
+    .tour-progress-bar { width: 100%; max-width: 320px; height: 9px; background: rgba(0, 0, 0, 0.45); border-radius: 8px; margin-bottom: 16px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.12); }
+    .tour-progress-fill { height: 100%; width: 2%; background: linear-gradient(90deg, var(--gold), var(--danfo-amber)); border-radius: 8px; }
+    .btn-danfo {
+      background: linear-gradient(180deg, #ffca2c 0%, #f9bc08 100%); color: #000; font-weight: 900; font-size: 15px;
+      padding: 13px 26px; border-radius: 18px; border: none; cursor: pointer; box-shadow: 0 10px 25px rgba(249, 188, 8, 0.45);
+      display: inline-flex; align-items: center; gap: 8px; transition: transform 0.2s;
+    }
+    .btn-danfo:hover { transform: scale(1.04); }
+    .hero-danfo-art { font-size: 75px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6)); }
+
+    .mode-hub-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .hub-tile {
+      background: var(--glass-surface); backdrop-filter: blur(28px); border: 1px solid var(--glass-border); border-radius: 22px;
+      padding: 16px 8px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: transform 0.2s;
+    }
+    .hub-tile:hover { border-color: var(--primary); transform: translateY(-4px); }
+    .hub-tile-icon { font-size: 32px; margin-bottom: 6px; }
+    .hub-tile-title { font-size: 13px; font-weight: 900; }
+    .hub-tile-sub { font-size: 10px; color: #9bc2ad; }
+
+    .home-split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .home-card { background: var(--glass-surface); border: 1px solid var(--glass-border); border-radius: 24px; padding: 20px; }
+    .home-card-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 900; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+    .quest-item { background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 11px 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+
+    .map-header-panel {
+      width: 100%; max-width: 650px; background: var(--glass-dense); backdrop-filter: blur(30px);
+      border: 1px solid var(--glass-border-light); border-radius: 24px; padding: 14px 20px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .sector-nav-row { display: flex; justify-content: space-between; align-items: center; }
+    .sector-btn {
+      background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: #fff; padding: 6px 14px; border-radius: 16px; font-weight: 800; font-size: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .sector-btn:hover { background: rgba(255,255,255,0.2); border-color: var(--primary); }
+    .saga-scroll-viewport {
+      width: 100%; max-width: 650px; height: 68vh; overflow-y: scroll; overflow-x: hidden; border: 1.5px solid var(--glass-border-light); border-radius: 30px;
+      background: linear-gradient(180deg, rgba(16, 52, 30, 0.85) 0%, rgba(9, 30, 18, 0.9) 50%, rgba(20, 52, 32, 0.9) 100%);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8), inset 0 0 50px rgba(0,0,0,0.6); position: relative; scrollbar-width: none;
+    }
+    .saga-scroll-viewport::-webkit-scrollbar { display: none; }
+    .saga-track-container { display: flex; flex-direction: column-reverse; gap: 32px; padding: 60px 20px 100px 20px; }
+    .stage-row { display: flex; align-items: center; position: relative; }
+    .stage-row.pos-0 { justify-content: flex-start; padding-left: 60px; }
+    .stage-row.pos-1 { justify-content: center; }
+    .stage-row.pos-2 { justify-content: flex-end; padding-right: 60px; }
+    .map-node { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s; }
+    .map-node:hover { transform: scale(1.1); }
+    .node-circle {
+      width: 68px; height: 68px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #00ff9d 0%, #00a85a 60%, #004d29 100%);
+      border: 3px solid rgba(255, 255, 255, 0.85); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 17px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65);
+    }
+    .map-node.boss .node-circle { background: radial-gradient(circle at 35% 30%, #ff5294 0%, #ff005d 65%, #660026 100%); border-color: var(--gold); }
+    .map-node.locked .node-circle { background: radial-gradient(circle at 35% 30%, #29382e 0%, #151e18 100%); border-color: #3b4e42; color: #5d7064; cursor: not-allowed; }
+    .map-node.cleared .node-circle { background: radial-gradient(circle at 35% 30%, #00e68a 0%, #008751 70%, #004227 100%); }
+    .map-node.current .node-circle { border-color: var(--gold); box-shadow: 0 0 24px var(--gold-glow); }
+    .node-label {
+      position: absolute; bottom: -20px; background: rgba(3, 12, 7, 0.85); border: 1px solid var(--glass-border); padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 800; white-space: nowrap;
+    }
+    .danfo-token {
+      position: absolute; top: -26px; background: var(--danfo-amber); color: #000; font-size: 11px; font-weight: 900; padding: 3px 8px; border-radius: 9px;
+      border: 2px solid #000; display: flex; align-items: center; gap: 4px; z-index: 5;
+    }
+
+    #game-view { width: 100%; grid-template-columns: 280px auto 280px; gap: 24px; align-items: start; justify-content: center; }
+    .portal-sidebar { display: flex; flex-direction: column; gap: 16px; }
+    .portal-card {
+      background: var(--glass-dense); backdrop-filter: blur(28px); border: 1px solid var(--glass-border-light); border-radius: 24px; padding: 20px; box-shadow: 0 14px 35px rgba(0,0,0,0.5);
+    }
+    .target-metric-box { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 11px 13px; display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 700; }
+    .game-center-col { display: flex; flex-direction: column; align-items: center; max-width: 480px; margin: 0 auto; width: 100%; }
+    .star-progress-card { width: 100%; background: var(--glass-dense); border: 1px solid var(--glass-border); border-radius: 20px; padding: 11px 18px; margin-bottom: 12px; }
+    .progress-track { position: relative; width: 100%; height: 14px; background: rgba(0, 0, 0, 0.55); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ff0077, var(--gold)); border-radius: 10px; transition: width 0.25s ease; }
+
+    #bossBarContainer { display: none; width: 100%; background: rgba(0,0,0,0.65); border: 1.5px solid var(--pink); border-radius: 16px; padding: 9px 14px; margin-bottom: 12px; }
+    .boss-track { width: 100%; height: 11px; background: #260010; border-radius: 7px; overflow: hidden; margin-top: 4px; }
+    .boss-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ff0055, #ff7700); transition: width 0.25s ease; }
+
+    .hud-metrics { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .metric-card { background: var(--glass-dense); border: 1px solid var(--glass-border); border-radius: 18px; padding: 11px 16px; display: flex; justify-content: space-between; align-items: center; }
+
+    #canvas-box { position: relative; border-radius: 26px; border: 1.5px solid var(--glass-border-light); background: #030e08; box-shadow: 0 25px 70px rgba(0,0,0,0.85); overflow: hidden; width: 440px; height: 440px; }
+    canvas { display: block; width: 440px; height: 440px; cursor: pointer; touch-action: none; }
+    #gameBanner {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); font-size: 30px; font-weight: 900; color: var(--gold);
+      text-shadow: 0 0 30px var(--gold-glow), 2px 2px 0 var(--pink); pointer-events: none; opacity: 0; transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index: 50; white-space: nowrap; text-align: center;
+    }
+    .dock-bar { display: flex; justify-content: center; gap: 12px; margin-top: 14px; width: 100%; }
+    .dock-btn {
+      background: var(--glass-dense); border: 1px solid var(--glass-border); border-radius: 18px; padding: 10px 18px; color: #fff; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease;
+    }
+    .dock-btn.active { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 20px var(--gold-glow); }
+
+    .bottom-nav {
+      position: fixed; bottom: 54px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 540px;
+      background: rgba(8, 26, 16, 0.94); backdrop-filter: blur(32px) saturate(200%); -webkit-backdrop-filter: blur(32px) saturate(200%);
+      border: 1.5px solid var(--glass-border-light); border-radius: 32px; display: flex; justify-content: space-around; align-items: center;
+      padding: 10px 14px; z-index: 999999; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+    }
+    .nav-pill {
+      background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border); border-radius: 22px; padding: 9px 16px; display: flex; align-items: center; gap: 6px; color: #b8e2cd; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s;
+    }
+    .nav-pill:hover { background: rgba(255, 255, 255, 0.2); border-color: var(--primary); color: #fff; transform: translateY(-2px); }
+    .nav-pill.active {
+      background: linear-gradient(135deg, rgba(0, 230, 138, 0.4) 0%, rgba(0, 135, 81, 0.7) 100%); border-color: var(--primary); color: #fff; box-shadow: 0 0 18px var(--primary-glow);
+    }
+
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(2, 8, 4, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      display: none; align-items: center; justify-content: center; z-index: 1000000;
+    }
+    .modal-overlay.active { display: flex !important; }
+    .modal-card {
+      background: rgba(10, 32, 21, 0.94); border: 1.5px solid var(--glass-border-light); border-radius: 28px; padding: 24px; width: 90%; max-width: 440px; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,0.9); max-height: 85vh; overflow-y: auto;
+    }
+    .btn-action {
+      background: linear-gradient(180deg, #00ff9d 0%, #008751 100%); border: none; color: #03140a; font-weight: 900; font-size: 15px; padding: 13px 26px; border-radius: 18px; cursor: pointer; width: 100%; box-shadow: 0 10px 30px var(--primary-glow);
+    }
+    .shop-item { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); border-radius: 18px; padding: 13px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 11px; }
+    .shop-btn { background: linear-gradient(180deg, #ffd043 0%, var(--danfo-amber) 100%); color: #000; font-weight: 900; font-size: 12px; padding: 9px 15px; border-radius: 14px; border: none; cursor: pointer; }
+    .wheel-container { position: relative; width: 260px; height: 260px; margin: 12px auto 16px auto; }
+    .wheel-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 13px solid transparent; border-right: 13px solid transparent; border-top: 24px solid var(--gold); z-index: 10; }
+    #wheelCanvas { width: 260px; height: 260px; border-radius: 50%; }
+    .garage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin: 12px 0; }
+    .garage-card { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 18px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .garage-card.equipped { border-color: var(--gold); background: rgba(255, 190, 26, 0.15); box-shadow: 0 0 18px var(--gold-glow); }
+    .scrapbook-grid { display: flex; flex-direction: column; gap: 11px; margin: 14px 0; }
+    .postcard-item { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 18px; padding: 13px; text-align: left; display: flex; align-items: center; gap: 14px; }
+    .postcard-item.locked { opacity: 0.5; filter: grayscale(1); }
+
+    .streak-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; }
+    .streak-tile { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 14px; padding: 10px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; }
+    .streak-tile.claimed { border-color: var(--primary); background: rgba(0,230,138,0.15); }
+    .streak-tile.active { border-color: var(--gold); box-shadow: 0 0 14px var(--gold-glow); }
+    .trophy-item { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 16px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+
+    @media (max-width: 1060px) {
+      #game-view.active { display: flex !important; flex-direction: column; align-items: center; padding: 12px; }
+      .portal-sidebar, .header-nav { display: none; }
+      .mode-hub-grid { grid-template-columns: 1fr 1fr; }
+      .home-split-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand" onclick="navigate('home-view')">
+      🍬 SUGAR <span>SCRAMBLE</span>
+    </div>
+    <div class="header-nav">
+      <button class="pill" onclick="navigate('home-view')">🏠 Lobby</button>
+      <button class="pill" onclick="navigate('map-view')">🗺️ Map</button>
+      <button class="pill" onclick="openLuckyWheel()">🎡 Spin</button>
+      <button class="pill" onclick="openTransitPass()">📅 Pass</button>
+      <button class="pill" onclick="openTrophies()">🏆 Trophies</button>
+      <button class="pill" onclick="openGarage()">🚌 Garage</button>
+    </div>
+    <div class="header-pills">
+      <div class="pill lives" id="livesPill" onclick="openModal('shopModal')">
+        ❤️ <span id="livesVal">5/5</span>
+        <span id="lifeTimer" style="font-size:10px; color:#ffd0e0; margin-left:4px;"></span>
+      </div>
+      <div class="pill coins" onclick="openModal('shopModal')">🪙 <span id="coinsVal">2,450</span></div>
+      <button class="pill" onclick="toggleAudio()"><span id="audioIcon">🔊</span></button>
+      <button class="pill" onclick="toggleBGM()"><span id="bgmIcon">🎵</span></button>
+    </div>
+  </header>
+
+  <!-- 1. HOMEPAGE VIEW -->
+  <div id="home-view" class="view-screen active">
+    <div class="home-container">
+      <div class="hero-banner-card">
+        <div class="hero-text">
+          <span style="font-size:11px; font-weight:900; color:var(--gold); letter-spacing:1.5px; text-transform:uppercase;">1,000-STAGE EXPEDITION</span>
+          <h1 id="homeStageTitle">Marina Coast (Lv 1)</h1>
+          <p id="homeStageProgressText">Stage 1 of 1,000 • Continental Tour Active</p>
+          <div class="tour-progress-bar"><div class="tour-progress-fill" id="homeProgressFill"></div></div>
+          <button class="btn-danfo" onclick="launchLevel(userSave.unlocked)"><span>🚌 RESUME JOURNEY</span></button>
+        </div>
+        <div class="hero-danfo-art" id="heroDanfoIcon">🚌</div>
+      </div>
+
+      <!-- 8-TILE ACTION HUB -->
+      <div class="mode-hub-grid">
+        <div class="hub-tile" onclick="navigate('map-view')"><div class="hub-tile-icon">🗺️</div><div class="hub-tile-title">1,000 Map</div><div class="hub-tile-sub">10 Mega Sectors</div></div>
+        <div class="hub-tile" onclick="openLuckyWheel()"><div class="hub-tile-icon">🎡</div><div class="hub-tile-title">Lucky Spin</div><div class="hub-tile-sub">Daily Boosters</div></div>
+        <div class="hub-tile" onclick="openTransitPass()"><div class="hub-tile-icon">📅</div><div class="hub-tile-title">Transit Pass</div><div class="hub-tile-sub">7-Day Streak</div></div>
+        <div class="hub-tile" onclick="openTrophies()"><div class="hub-tile-icon">🏆</div><div class="hub-tile-title">Trophies</div><div class="hub-tile-sub">Milestones</div></div>
+        <div class="hub-tile" onclick="openGarage()"><div class="hub-tile-icon">🚌</div><div class="hub-tile-title">Pimp Danfo</div><div class="hub-tile-sub">Skins & Horns</div></div>
+        <div class="hub-tile" onclick="startQuickBlitz()"><div class="hub-tile-icon">⚡</div><div class="hub-tile-title">Quick Blitz</div><div class="hub-tile-sub">60-Sec Rush</div></div>
+        <div class="hub-tile" onclick="openModal('shopModal')"><div class="hub-tile-icon">🛒</div><div class="hub-tile-title">Sweet Shop</div><div class="hub-tile-sub">Lives & Tools</div></div>
+        <div class="hub-tile" onclick="openScrapbook()"><div class="hub-tile-icon">📖</div><div class="hub-tile-title">Scrapbook</div><div class="hub-tile-sub">Souvenirs</div></div>
+      </div>
+
+      <div class="home-split-row">
+        <div class="home-card">
+          <div class="home-card-header"><span>🏆 NATIONAL RANK</span><span style="font-size:10px; color:#8fa89b;">THIS WEEK</span></div>
+          <div style="background:rgba(255,183,3,0.12); border:1px solid var(--gold); border-radius:14px; padding:9px 13px; margin-bottom:6px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>🥇 1. Chidi (Ikeja)</span><span style="color:var(--gold)">48,800</span></div>
+          <div style="background:rgba(0,0,0,0.3); border-radius:14px; padding:9px 13px; margin-bottom:6px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>🥈 2. Fatima (Abuja)</span><span>41,250</span></div>
+          <div style="background:rgba(0,230,138,0.14); border:1px solid var(--primary); border-radius:14px; padding:9px 13px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>⭐ 3. You (Emeka)</span><span id="homePlayerScore" style="color:var(--primary)">0</span></div>
+        </div>
+        <div class="home-card">
+          <div class="home-card-header"><span>🎯 ACTIVE BOUNTIES</span><span style="font-size:10px; color:var(--primary);">ACTIVE</span></div>
+          <div class="quest-item"><div><div style="font-size:12px; font-weight:800;">Smash Traffic Cones</div><div style="font-size:10px; color:#8fa89b;">Clear lane barriers</div></div><div style="font-size:12px; font-weight:900; color:var(--gold);">+150 🪙</div></div>
+          <div class="quest-item"><div><div style="font-size:12px; font-weight:800;">Claim Daily Pass</div><div style="font-size:10px; color:#8fa89b;">Keep your streak alive</div></div><div style="font-size:12px; font-weight:900; color:var(--pink);">+1 🔨</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SCROLLABLE 1,000-STAGE HIGHWAY MAP WITH SECTOR BROWSER -->
+  <div id="map-view" class="view-screen">
+    <div class="map-header-panel">
+      <div class="sector-nav-row">
+        <button class="sector-btn" onclick="changeSector(-1)">◀ PREV</button>
+        <div style="text-align:center;">
+          <h2 style="font-size: 16px; font-weight: 900; color:var(--gold);" id="sectorTitleTxt">SECTOR 1 (1 - 100)</h2>
+          <span style="font-size: 11px; color: #8fa89b;" id="sectorSubtitleTxt">Lagos Coastal Expressway</span>
+        </div>
+        <button class="sector-btn" onclick="changeSector(1)">NEXT ▶</button>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="pill coins" id="mapStarsTotal">⭐ 0 / 3000</div>
+        <button class="sector-btn" style="border-color:var(--gold); color:var(--gold);" onclick="jumpToCurrentLevelSector()">📍 JUMP TO YOU</button>
+        <button class="btn-danfo" style="padding: 7px 16px; font-size: 12px;" onclick="launchLevel(userSave.unlocked)">▶ PLAY LVL <span id="mapBtnLvl">1</span></button>
+      </div>
+    </div>
+    <div class="saga-scroll-viewport" id="sagaViewport"><div class="saga-track-container" id="sagaTrack"></div></div>
+  </div>
+
+  <!-- 3. GAMEPLAY ARENA -->
+  <div id="game-view" class="view-screen">
+    <div class="portal-sidebar">
+      <div class="portal-card">
+        <div style="font-size:12px; font-weight:900; color:var(--gold); margin-bottom:10px;">📍 STAGE DOSSIER</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+          <div style="font-size:32px;" id="dossierIcon">🏝️</div>
+          <div><div style="font-size:16px; font-weight:900;" id="dossierTitle">Marina Coast</div><div style="font-size:11px; color:var(--primary); font-weight:700;" id="dossierHazard">No Hazards</div></div>
+        </div>
+        <div class="target-metric-box"><span style="color:#8fa89b;">PRIMARY MISSION</span><span id="dossierObjectiveText" style="color:var(--gold); font-size:12px; font-weight:900;">Clear Jellies</span></div>
+        <div class="target-metric-box"><span style="color:#8fa89b;">TARGET POINTS</span><span id="leftColTarget" style="color:var(--gold);">1,200 pts</span></div>
+        <div class="target-metric-box"><span style="color:#8fa89b;">CANDY COLORS</span><span id="dossierColorsText" style="color:var(--cyan);">4 Colors</span></div>
+        <div class="target-metric-box"><span style="color:#8fa89b;" id="dossierBudgetLabel">MOVES BUDGET</span><span id="leftColMoves" style="color:var(--pink);">16</span></div>
+      </div>
+    </div>
+
+    <div class="game-center-col">
+      <div id="bossBarContainer">
+        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:900; color:var(--gold);"><span id="bossNameTxt">⚠️ BOSS CONFRONTATION</span><span id="bossHPTxt">15,000 / 15,000 HP</span></div>
+        <div class="boss-track"><div id="bossHPFill" class="boss-fill"></div></div>
+      </div>
+      <div class="star-progress-card">
+        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-bottom:6px;"><span id="scoreLabelTxt">SCORE: <strong id="scoreVal" style="color:#fff;">0</strong></span><span style="color:var(--gold);" id="targetLabelTxt">TARGET: <strong id="targetVal">1,200</strong></span></div>
+        <div class="progress-track"><div id="scoreProgress" class="progress-fill"></div></div>
+      </div>
+      <div class="hud-metrics">
+        <div class="metric-card"><div><div style="font-size:10px; color:#8fa89b; font-weight:800;">OBJECTIVE STATUS</div><div id="objectiveStatusTxt" style="font-size:14px; font-weight:900; color:var(--primary);">4 Jellies Left</div></div><span style="font-size:22px;">🎯</span></div>
+        <div class="metric-card"><div><div style="font-size:10px; color:#8fa89b; font-weight:800;" id="hudBudgetTitle">MOVES LEFT</div><div id="movesVal" style="font-size:24px; font-weight:900; color:var(--pink);">16</div></div><span style="font-size:22px;" id="hudBudgetIcon">⏱️</span></div>
+      </div>
+      <div id="canvas-box">
+        <canvas id="canvas" width="440" height="440"></canvas>
+        <div id="gameBanner">E CHOKE!</div>
+      </div>
+      <div class="dock-bar">
+        <button id="hammerBtn" class="dock-btn" onclick="activateBooster('HAMMER')"><span>🔨 HAMMER</span><span style="background:rgba(0,0,0,0.45); padding:2px 7px; border-radius:10px;" id="hammerBadge">3</span></button>
+        <button id="swapBtn" class="dock-btn" onclick="activateBooster('SWAP')"><span>🖐️ FREE SWAP</span><span style="background:rgba(0,0,0,0.45); padding:2px 7px; border-radius:10px;" id="swapBadge">2</span></button>
+        <button class="dock-btn" onclick="navigate('map-view')"><span>🗺️ MAP</span></button>
+      </div>
+    </div>
+
+    <div class="portal-sidebar">
+      <div class="portal-card">
+        <div style="font-size:12px; font-weight:900; color:var(--gold); margin-bottom:10px;">🏆 NATIONAL LEADERBOARD</div>
+        <div style="background:rgba(255,183,3,0.12); border:1px solid var(--gold); border-radius:12px; padding:9px 13px; margin-bottom:6px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>🥇 1. Chidi (Ikeja)</span><span style="color:var(--gold)">48,800</span></div>
+        <div style="background:rgba(0,0,0,0.3); border-radius:14px; padding:9px 13px; margin-bottom:6px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>🥈 2. Fatima (Abuja)</span><span>41,250</span></div>
+        <div style="background:rgba(0,230,138,0.14); border:1px solid var(--primary); border-radius:12px; padding:9px 13px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>⭐ 3. You (Emeka)</span><span id="playerHiScoreText" style="color:var(--primary)">0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ELEVATED BOTTOM NAVIGATION BAR -->
+  <nav class="bottom-nav">
+    <button class="nav-pill active" id="nav-home" onclick="navigate('home-view')"><span>🏠</span><span>Lobby</span></button>
+    <button class="nav-pill" id="nav-map" onclick="navigate('map-view')"><span>🗺️</span><span>1,000 Map</span></button>
+    <button class="nav-pill" id="nav-spin" onclick="openLuckyWheel()"><span>🎡</span><span>Spin</span></button>
+    <button class="nav-pill" id="nav-garage" onclick="openGarage()"><span>🚌</span><span>Garage</span></button>
+    <button class="nav-pill" id="nav-shop" onclick="openModal('shopModal')"><span>🛒</span><span>Shop</span></button>
+  </nav>
+
+  <!-- MODALS -->
+  <div id="transitPassModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 style="font-size:24px; font-weight:900; color:var(--gold);">7-DAY TRANSIT PASS</h2>
+      <p style="color:#b8e2cd; font-size:12px;">Login daily to claim free tools and the Day 7 Jackpot!</p>
+      <div class="streak-grid" id="streakGrid"></div>
+      <button id="claimPassBtn" class="btn-action" onclick="claimDailyPass()">CLAIM TODAY'S BOUNTY 🎁</button>
+      <button class="dock-btn" onclick="closeModal('transitPassModal')" style="margin-top:12px; width:100%; justify-content:center;">Back to Hub</button>
+    </div>
+  </div>
+
+  <div id="trophiesModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 style="font-size:24px; font-weight:900; color:var(--gold);">TRANSIT TROPHIES</h2>
+      <p style="color:#b8e2cd; font-size:12px; margin-bottom:12px;">Complete milestone feats to earn coin bounties!</p>
+      <div id="trophiesList"></div>
+      <button class="dock-btn" onclick="closeModal('trophiesModal')" style="margin-top:12px; width:100%; justify-content:center;">Back to Hub</button>
+    </div>
+  </div>
+
+  <div id="spinModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 style="font-size:24px; font-weight:900; color:var(--gold);">DANFO LUCKY WHEEL</h2>
+      <p style="color:#b8e2cd; font-size:12px;">Spin for daily coins, extra hammers, and free swaps!</p>
+      <div class="wheel-container"><div class="wheel-pointer"></div><canvas id="wheelCanvas" width="260" height="260"></canvas></div>
+      <button id="spinBtn" class="btn-action" onclick="spinWheel()">SPIN FOR REWARDS! 🎡</button>
+      <button class="dock-btn" onclick="closeModal('spinModal')" style="margin-top:12px; width:100%; justify-content:center;">Back to Hub</button>
+    </div>
+  </div>
+
+  <div id="garageModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 style="font-size:24px; font-weight:900; color:var(--gold);">PIMP MY DANFO GARAGE</h2>
+      <p style="color:#b8e2cd; font-size:12px;">Equip custom transit paint jobs, performance perks & horns!</p>
+      <div style="font-size:12px; font-weight:900; color:var(--primary); text-align:left; margin-top:10px;">🎨 DANFO PAINT JOBS</div>
+      <div class="garage-grid" id="skinsGrid"></div>
+      <div style="font-size:12px; font-weight:900; color:var(--primary); text-align:left; margin-top:10px;">📢 STREET TRANSIT HORNS</div>
+      <div class="garage-grid" id="hornsGrid"></div>
+      <div style="font-size:12px; font-weight:900; color:var(--primary); text-align:left; margin-top:10px;">⚙️ HIGHWAY PERFORMANCE PERKS</div>
+      <div class="garage-grid" id="perksGrid"></div>
+      <button class="dock-btn" onclick="closeModal('garageModal')" style="margin-top:12px; width:100%; justify-content:center;">Back to Hub</button>
+    </div>
+  </div>
+
+  <div id="scrapbookModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 style="font-size:24px; font-weight:900; color:var(--gold);">NATIONAL TOUR SCRAPBOOK</h2>
+      <p style="color:#b8e2cd; font-size:12px;">Collect souvenirs as you journey across 1,000 milestones!</p>
+      <div class="scrapbook-grid" id="scrapbookGrid"></div>
+      <button id="scrapbookBountyBtn" class="btn-action" onclick="claimScrapbookJackpot()" style="margin-top:10px;">CLAIM 2,500 🪙 JACKPOT</button>
+      <button class="dock-btn" onclick="closeModal('scrapbookModal')" style="margin-top:12px; width:100%; justify-content:center;">Back to Hub</button>
+    </div>
+  </div>
+
+  <div id="shopModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 style="font-size:24px; font-weight:900; color:var(--gold); margin-bottom:4px;">SWEET SHOP</h2>
+      <p style="color:#b8e2cd; font-size:12px; margin-bottom:16px;">Spend your coins on tools & instant life refills!</p>
+      <div class="shop-item">
+        <div style="text-align:left;"><div style="font-weight:900; font-size:14px; color:#ff6b9d;">❤️ Full Life Refill</div><div style="font-size:11px; color:#8fa89b;">Restore all 5 lives immediately</div></div>
+        <button class="shop-btn" onclick="refillLivesShop()">400 🪙</button>
+      </div>
+      <div class="shop-item">
+        <div style="text-align:left;"><div style="font-weight:900; font-size:14px;">🔨 Extra Hammer</div><div style="font-size:11px; color:#8fa89b;">Smash any single tile</div></div>
+        <button class="shop-btn" onclick="buyItem('HAMMER', 300)">300 🪙</button>
+      </div>
+      <div class="shop-item">
+        <div style="text-align:left;"><div style="font-weight:900; font-size:14px;">🖐️ Free Swap</div><div style="font-size:11px; color:#8fa89b;">Swap any two tiles</div></div>
+        <button class="shop-btn" onclick="buyItem('SWAP', 450)">450 🪙</button>
+      </div>
+      <button class="dock-btn" onclick="closeModal('shopModal')" style="margin-top:12px; width:100%; justify-content:center;">Back to Hub</button>
+    </div>
+  </div>
+
+  <div id="gameResultModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 id="resTitle" style="font-size:26px; font-weight:900; color:var(--gold);">STAGE CLEARED!</h2>
+      <div id="resStars" style="font-size:36px; margin: 10px 0; color:var(--gold);">★★★</div>
+      <p id="resSubtitle" style="color:#b8e2cd; font-size:14px; margin-bottom:18px;">Final Score: 4,200</p>
+      <button class="btn-action" onclick="dismissResult()">CONTINUE HIGHWAY</button>
+    </div>
+  </div>
+
+  <script>
+    function safeSetText(id, txt) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = txt;
+    }
+
+    const TOTAL_STAGES = 1000;
+    const SECTOR_DATA = [
+      { id: 1, name: "Lagos Coastal Expressway", region: "South-West Atlantic Corridor", icon: "🌴" },
+      { id: 2, name: "Cocoa Groves & Osun Highlands", region: "Oyo, Osun & Ondo", icon: "🍫" },
+      { id: 3, name: "Bronze Kingdom & Delta Creeks", region: "Edo, Delta & Rivers", icon: "👑" },
+      { id: 4, name: "Coal City & Limestone Hills", region: "Enugu, Anambra & Ebonyi", icon: "⛰️" },
+      { id: 5, name: "Benue River Confluence", region: "Kogi, Benue & Nasarawa", icon: "🌊" },
+      { id: 6, name: "Zuma Rock & FCT Beltway", region: "Abuja Capital & Niger", icon: "🕌" },
+      { id: 7, name: "Jos Plateau & Granite Peaks", region: "Plateau & Bauchi Highlands", icon: "💎" },
+      { id: 8, name: "Kaduna Savannah Railways", region: "Kaduna & Zaria Corridor", icon: "🚂" },
+      { id: 9, name: "Kano Ancient Citadel & Gates", region: "Kano, Jigawa & Katsina", icon: "🏜️" },
+      { id: 10, name: "Trans-Sahara Oasis Gateway", region: "Sahel to Northern Frontier", icon: "🐪" }
+    ];
+
+    const CITY_BASES = ["Marina", "Lekki", "Ikeja", "Abeokuta", "Ijebu", "Ibadan", "Bodija", "Oshogbo", "Akure", "Owo", "Benin", "Warri", "Asaba", "Onitsha", "Awka", "Enugu", "Nsukka", "Makurdi", "Lokoja", "Zuba", "Abuja", "Maitama", "Keffi", "Jos", "Bukuru", "Bauchi", "Zaria", "Kano", "Dala", "Sahara"];
+    const HUB_SUFFIXES = ["Crossing", "Terminal", "Bypass", "Motor Park", "Tollgate", "Boulevard", "Junction", "Heights"];
+
+    function getStageConfig(lvl) {
+      const isBoss = (lvl % 10 === 0);
+      const sIdx = Math.min(9, Math.floor((lvl - 1) / 100));
+      const sector = SECTOR_DATA[sIdx];
+      const city = CITY_BASES[(lvl - 1) % CITY_BASES.length];
+      const suff = HUB_SUFFIXES[Math.floor((lvl - 1) / 3) % HUB_SUFFIXES.length];
+      const name = isBoss ? `⚠️ ${city} Hazard (Lv ${lvl})` : `${city} ${suff} (Lv ${lvl})`;
+      const colorCount = (lvl >= 80) ? 6 : (lvl >= 15 ? 5 : 4);
+      const objectiveType = isBoss ? 'BOSS' : (lvl === 1 ? 'JELLY' : (lvl === 2 ? 'SCORE' : (lvl % 3 === 0 ? 'DUAL' : (lvl % 2 === 0 ? 'CHOCOLATE' : 'JELLY'))));
+      const moves = Math.max(11, 16 - Math.floor((lvl % 100) / 18)) + (userSave?.perks?.turbo ? 1 : 0);
+      const target = isBoss ? Math.floor(10000 + lvl * 180) : Math.floor(1200 + (lvl * 140) + Math.pow(lvl, 1.25) * 12);
+
+      return {
+        level: lvl, name, icon: isBoss ? '👹' : sector.icon, chapterName: sector.name, target, moves, colorCount, objectiveType,
+        chocCount: (objectiveType === 'CHOCOLATE' || objectiveType === 'DUAL' || lvl >= 4) ? Math.min(10, 3 + Math.floor((lvl % 50) / 7)) : 0,
+        cageCount: (lvl >= 7) ? Math.min(8, 2 + Math.floor((lvl % 50) / 8)) : 0,
+        coneCount: (lvl >= 8) ? Math.min(6, 2 + Math.floor((lvl % 60) / 10)) : 0,
+        isBoss, bossHP: target
+      };
+    }
+
+    const REFILL_INTERVAL = 20 * 60 * 1000;
+    let userSave = {
+      unlocked: 1, stars: {}, hiScore: 0, coins: 2450, blitzHiScore: 0, lives: 5, lastLifeLostTime: null,
+      equippedSkin: 'classic', ownedSkins: ['classic'], equippedHorn: 'classic', ownedHorns: ['classic'],
+      perks: { turbo: false, bumper: false, magnet: false }, souvenirsClaimed: false,
+      dailyStreak: 1, lastDailyClaimDate: null, claimedAchievements: []
+    };
+
+    try {
+      const stored = JSON.parse(localStorage.getItem('sugar_scramble_save_1000_fixed'));
+      if (stored && typeof stored === 'object') userSave = Object.assign(userSave, stored);
+    } catch(e) {}
+
+    userSave.unlocked = Math.max(1, Number(userSave.unlocked) || 1);
+    userSave.lives = (typeof userSave.lives === 'number' && userSave.lives > 0) ? userSave.lives : 5;
+    userSave.coins = (typeof userSave.coins === 'number') ? userSave.coins : 2450;
+    if (!userSave.stars) userSave.stars = {};
+    if (!Array.isArray(userSave.ownedSkins)) userSave.ownedSkins = ['classic'];
+    if (!Array.isArray(userSave.ownedHorns)) userSave.ownedHorns = ['classic'];
+    if (!userSave.perks) userSave.perks = { turbo: false, bumper: false, magnet: false };
+    if (!Array.isArray(userSave.claimedAchievements)) userSave.claimedAchievements = [];
+
+    function persistState() {
+      localStorage.setItem('sugar_scramble_save_1000_fixed', JSON.stringify(userSave));
+      refreshMapUI();
+    }
+
+    function updateLivesTimer() {
+      safeSetText('livesVal', `${userSave.lives}/5`);
+      safeSetText('coinsVal', userSave.coins.toLocaleString());
+      safeSetText('playerHiScoreText', userSave.hiScore.toLocaleString());
+      safeSetText('homePlayerScore', userSave.hiScore.toLocaleString());
+    }
+
+    function refillLivesShop() {
+      if (userSave.coins < 400) { alert("Need 400 🪙 to refill lives!"); return; }
+      if (userSave.lives >= 5) { alert("Lives already full!"); return; }
+      userSave.coins -= 400; userSave.lives = 5; persistState(); sfxChime(); alert("❤️ Lives restored!");
+    }
+    window.refillLivesShop = refillLivesShop;
+
+    function launchLevel(lvl) {
+      initAudio();
+      lvl = Math.max(1, Math.min(TOTAL_STAGES, Number(lvl) || 1));
+      if (lvl > userSave.unlocked) { showBanner("STAGE LOCKED!"); sfxBoom(); return; }
+      if (userSave.lives <= 0) { showBanner("OUT OF LIVES!"); openModal('shopModal'); return; }
+      isBlitzActive = false;
+      startMatchGame(lvl);
+    }
+    window.launchLevel = launchLevel;
+
+    function navigate(viewId) {
+      initAudio();
+      if (isBlitzActive && viewId !== 'game-view') stopBlitzTimer();
+      document.querySelectorAll('.view-screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(viewId);
+      if (target) {
+        target.classList.add('active');
+        if (viewId === 'game-view') setupHighDPICanvases();
+      }
+      document.querySelectorAll('.nav-pill').forEach(n => n.classList.remove('active'));
+      if (viewId === 'home-view') document.getElementById('nav-home')?.classList.add('active');
+      if (viewId === 'map-view') { document.getElementById('nav-map')?.classList.add('active'); refreshMapUI(); }
+    }
+    window.navigate = navigate;
+
+    function openModal(id) { initAudio(); document.getElementById(id)?.classList.add('active'); }
+    function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
+    window.openModal = openModal; window.closeModal = closeModal;
+
+    // 7-DAY TRANSIT PASS
+    const STREAK_REWARDS = [
+      { day: 1, label: "150 🪙", coins: 150, hammers: 0, swaps: 0 },
+      { day: 2, label: "🔨 +1 Hammer", coins: 0, hammers: 1, swaps: 0 },
+      { day: 3, label: "300 🪙", coins: 300, hammers: 0, swaps: 0 },
+      { day: 4, label: "🖐️ +1 Swap", coins: 0, hammers: 0, swaps: 1 },
+      { day: 5, label: "500 🪙", coins: 500, hammers: 0, swaps: 0 },
+      { day: 6, label: "🔨 +2 Hammers", coins: 0, hammers: 2, swaps: 0 },
+      { day: 7, label: "1,000 🪙 JACKPOT!", coins: 1000, hammers: 1, swaps: 1 }
+    ];
+
+    function openTransitPass() {
+      const grid = document.getElementById('streakGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      const today = new Date().toDateString();
+      const claimed = (userSave.lastDailyClaimDate === today);
+
+      STREAK_REWARDS.forEach(r => {
+        const isPast = r.day < userSave.dailyStreak;
+        const isCur = r.day === userSave.dailyStreak;
+        const d = document.createElement('div');
+        d.className = `streak-tile ${isPast || (isCur && claimed) ? 'claimed' : ''} ${isCur && !claimed ? 'active' : ''}`;
+        d.innerHTML = `<div>DAY ${r.day}</div><div style="font-size:18px;">${r.day === 7 ? '👑' : '🎁'}</div><div>${r.label}</div>`;
+        grid.appendChild(d);
+      });
+
+      const btn = document.getElementById('claimPassBtn');
+      if (btn) {
+        btn.disabled = claimed;
+        btn.innerText = claimed ? "CLAIMED TODAY! ✅" : `CLAIM DAY ${userSave.dailyStreak} REWARD 🎁`;
+      }
+      openModal('transitPassModal');
+    }
+    window.openTransitPass = openTransitPass;
+
+    function claimDailyPass() {
+      const today = new Date().toDateString();
+      if (userSave.lastDailyClaimDate === today) return;
+      const r = STREAK_REWARDS[(userSave.dailyStreak - 1) % 7];
+      userSave.coins += r.coins;
+      hammerStock += r.hammers;
+      swapStock += r.swaps;
+      userSave.lastDailyClaimDate = today;
+      userSave.dailyStreak = (userSave.dailyStreak % 7) + 1;
+      persistState();
+      sfxChime(); playEquippedHorn();
+      openTransitPass();
+    }
+    window.claimDailyPass = claimDailyPass;
+
+    // TROPHIES
+    const TROPHIES = [
+      { id: "p1", title: "First Passenger", desc: "Clear Stage 1", reward: 200, check: () => userSave.unlocked > 1 },
+      { id: "b10", title: "Boss Smasher", desc: "Defeat a Road Boss", reward: 400, check: () => userSave.unlocked > 10 },
+      { id: "s1", title: "Sector 1 Master", desc: "Clear Stage 100", reward: 1000, check: () => userSave.unlocked > 100 },
+      { id: "bz", title: "Speed Demon", desc: "Score 10k+ in Quick Blitz", reward: 500, check: () => (userSave.blitzHiScore || 0) >= 10000 }
+    ];
+
+    function openTrophies() {
+      const list = document.getElementById('trophiesList');
+      if (!list) return;
+      list.innerHTML = '';
+      TROPHIES.forEach(t => {
+        const ok = t.check();
+        const done = userSave.claimedAchievements.includes(t.id);
+        const d = document.createElement('div');
+        d.className = 'trophy-item';
+        d.innerHTML = `
+          <div><strong>${ok ? '🏆' : '🔒'} ${t.title}</strong><br><small style="color:#8fa89b;">${t.desc}</small></div>
+          <div>${done ? '<span style="color:var(--primary); font-size:11px; font-weight:800;">CLAIMED</span>' : (ok ? `<button class="shop-btn" onclick="claimTrophy('${t.id}', ${t.reward})">+${t.reward} 🪙</button>` : `<small style="color:#8fa89b;">+${t.reward} 🪙</small>`)}</div>
+        `;
+        list.appendChild(d);
+      });
+      openModal('trophiesModal');
+    }
+    window.openTrophies = openTrophies;
+
+    function claimTrophy(id, rew) {
+      if (userSave.claimedAchievements.includes(id)) return;
+      userSave.claimedAchievements.push(id);
+      userSave.coins += rew;
+      persistState(); sfxChime(); openTrophies();
+    }
+    window.claimTrophy = claimTrophy;
+
+    // HORNS & GARAGE
+    const DANFO_SKINS = {
+      classic: { name: "Classic Yellow", icon: "🚌", cost: 0 },
+      cyber: { name: "Cyber Neon", icon: "⚡🚌", cost: 800 },
+      patriot: { name: "Green-White", icon: "🇳🇬🚌", cost: 1200 },
+      gold: { name: "24K Royalty", icon: "👑🚌", cost: 2500 }
+    };
+    const TRANSIT_HORNS = {
+      classic: { name: "Classic Danfo", cost: 0 },
+      molue: { name: "Molue Air-Horn", cost: 500 },
+      keke: { name: "Keke Squeak", cost: 400 },
+      siren: { name: "Highway Siren", cost: 900 }
+    };
+
+    function openGarage() { renderGarageUI(); openModal('garageModal'); }
+    window.openGarage = openGarage;
+
+    function renderGarageUI() {
+      const sGrid = document.getElementById('skinsGrid');
+      if (sGrid) {
+        sGrid.innerHTML = '';
+        for (let k in DANFO_SKINS) {
+          const s = DANFO_SKINS[k];
+          const div = document.createElement('div');
+          div.className = `garage-card ${userSave.equippedSkin === k ? 'equipped' : ''}`;
+          div.innerHTML = `<div style="font-size:26px;">${s.icon}</div><div style="font-size:11px; font-weight:900;">${s.name}</div><button class="shop-btn" onclick="equipSkin('${k}')">${userSave.equippedSkin === k ? 'ACTIVE' : (userSave.ownedSkins.includes(k) ? 'EQUIP' : `${s.cost} 🪙`)}</button>`;
+          sGrid.appendChild(div);
+        }
+      }
+      const hGrid = document.getElementById('hornsGrid');
+      if (hGrid) {
+        hGrid.innerHTML = '';
+        for (let k in TRANSIT_HORNS) {
+          const h = TRANSIT_HORNS[k];
+          const div = document.createElement('div');
+          div.className = `garage-card ${userSave.equippedHorn === k ? 'equipped' : ''}`;
+          div.innerHTML = `<div style="font-size:20px;">📢</div><div style="font-size:11px; font-weight:900;">${h.name}</div><button class="pill" style="padding:4px 8px; font-size:10px;" onclick="playCustomHorn('${k}')">TEST</button><button class="shop-btn" onclick="equipHorn('${k}')">${userSave.equippedHorn === k ? 'ACTIVE' : (userSave.ownedHorns.includes(k) ? 'EQUIP' : `${h.cost} 🪙`)}</button>`;
+          hGrid.appendChild(div);
+        }
+      }
+      const pGrid = document.getElementById('perksGrid');
+      if (pGrid) {
+        pGrid.innerHTML = `
+          <div class="garage-card ${userSave.perks.turbo ? 'equipped' : ''}"><div>🚀 Turbo Engine</div><button class="shop-btn" onclick="buyPerk('turbo', 1200)">${userSave.perks.turbo ? 'ACTIVE' : '1,200 🪙'}</button></div>
+          <div class="garage-card ${userSave.perks.bumper ? 'equipped' : ''}"><div>🛡️ Heavy Bumper</div><button class="shop-btn" onclick="buyPerk('bumper', 1500)">${userSave.perks.bumper ? 'ACTIVE' : '1,500 🪙'}</button></div>
+          <div class="garage-card ${userSave.perks.magnet ? 'equipped' : ''}"><div>🧲 Fare Magnet</div><button class="shop-btn" onclick="buyPerk('magnet', 1000)">${userSave.perks.magnet ? 'ACTIVE' : '1,000 🪙'}</button></div>
+        `;
+      }
+      safeSetText('heroDanfoIcon', DANFO_SKINS[userSave.equippedSkin]?.icon || '🚌');
+    }
+
+    function equipSkin(k) {
+      if (!userSave.ownedSkins.includes(k)) {
+        if (userSave.coins < DANFO_SKINS[k].cost) { alert("Not enough coins!"); return; }
+        userSave.coins -= DANFO_SKINS[k].cost;
+        userSave.ownedSkins.push(k);
+      }
+      userSave.equippedSkin = k; persistState(); renderGarageUI();
+    }
+    window.equipSkin = equipSkin;
+
+    function equipHorn(k) {
+      if (!userSave.ownedHorns.includes(k)) {
+        if (userSave.coins < TRANSIT_HORNS[k].cost) { alert("Not enough coins!"); return; }
+        userSave.coins -= TRANSIT_HORNS[k].cost;
+        userSave.ownedHorns.push(k);
+      }
+      userSave.equippedHorn = k; persistState(); playEquippedHorn(); renderGarageUI();
+    }
+    window.equipHorn = equipHorn;
+
+    function buyPerk(p, cost) {
+      if (userSave.perks[p]) return;
+      if (userSave.coins < cost) { alert("Not enough coins!"); return; }
+      userSave.coins -= cost; userSave.perks[p] = true; persistState(); sfxChime(); renderGarageUI();
+    }
+    window.buyPerk = buyPerk;
+
+    // SECTOR MAP
+    let currentMapSector = 1;
+    function changeSector(d) {
+      currentMapSector = Math.max(1, Math.min(10, currentMapSector + d));
+      renderSectorTrack();
+    }
+    window.changeSector = changeSector;
+
+    function jumpToCurrentLevelSector() {
+      currentMapSector = Math.min(10, Math.floor((userSave.unlocked - 1) / 100) + 1);
+      renderSectorTrack();
+      setTimeout(() => {
+        document.querySelector('.map-node.current')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+    window.jumpToCurrentLevelSector = jumpToCurrentLevelSector;
+
+    function renderSectorTrack() {
+      const sector = SECTOR_DATA[currentMapSector - 1];
+      const startLvl = (currentMapSector - 1) * 100 + 1;
+      const endLvl = currentMapSector * 100;
+      safeSetText('sectorTitleTxt', `SECTOR ${currentMapSector} (${startLvl} - ${endLvl})`);
+      safeSetText('sectorSubtitleTxt', `${sector.icon} ${sector.name}`);
+
+      const track = document.getElementById('sagaTrack');
+      if (!track) return;
+      track.innerHTML = '';
+
+      for (let lvl = startLvl; lvl <= endLvl; lvl++) {
+        const isBoss = (lvl % 10 === 0);
+        const cycle = (lvl - 1) % 4;
+        const pos = cycle === 0 ? 'pos-0' : (cycle === 2 ? 'pos-2' : 'pos-1');
+        const row = document.createElement('div');
+        row.className = `stage-row ${pos}`;
+        const isLocked = lvl > userSave.unlocked;
+        const isCurrent = lvl === userSave.unlocked;
+        row.innerHTML = `
+          <div class="map-node ${isLocked ? 'locked' : ''} ${isBoss ? 'boss' : ''} ${isCurrent ? 'current' : ''}" onclick="launchLevel(${lvl})">
+            ${isCurrent ? `<div class="danfo-token">${DANFO_SKINS[userSave.equippedSkin]?.icon || '🚌'} YOU</div>` : ''}
+            <div class="node-circle">${isBoss ? '⚠️' : lvl}</div>
+            <div style="font-size:10px; color:var(--gold); margin-top:2px;">${isLocked ? '🔒' : '★★★'}</div>
+            <div class="node-label">${getStageConfig(lvl).name}</div>
+          </div>
+        `;
+        track.appendChild(row);
+      }
+    }
+
+    function refreshMapUI() {
+      renderSectorTrack();
+      const cfg = getStageConfig(userSave.unlocked);
+      safeSetText('homeStageTitle', cfg.name);
+      safeSetText('mapBtnLvl', userSave.unlocked);
+      const pct = Math.min(100, Math.round((userSave.unlocked / TOTAL_STAGES) * 100));
+      safeSetText('homeStageProgressText', `Stage ${userSave.unlocked} of ${TOTAL_STAGES} • ${pct}% Continental Tour Completed`);
+      const fill = document.getElementById('homeProgressFill');
+      if (fill) fill.style.width = `${pct}%`;
+      updateLivesTimer();
+    }
+
+    // AUDIO
+    let audioCtx = null; let soundOn = true; let bgmOn = false; let bgmInterval = null; let bgmStep = 0;
+    function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    function toggleAudio() { soundOn = !soundOn; safeSetText('audioIcon', soundOn ? '🔊' : '🔇'); }
+    function toggleBGM() {
+      initAudio(); bgmOn = !bgmOn; safeSetText('bgmIcon', bgmOn ? '🎵' : '🎶');
+      if (bgmOn) startBGM(); else { clearInterval(bgmInterval); bgmInterval = null; }
+    }
+    window.toggleAudio = toggleAudio; window.toggleBGM = toggleBGM;
+
+    function startBGM(tempo = 134) {
+      if (bgmInterval) clearInterval(bgmInterval);
+      bgmStep = 0;
+      bgmInterval = setInterval(() => {
+        if (!bgmOn || !soundOn || !audioCtx) return;
+        const t = audioCtx.currentTime;
+        if (bgmStep === 0 || bgmStep === 6 || bgmStep === 10) {
+          const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+          o.frequency.setValueAtTime(105, t); o.frequency.exponentialRampToValueAtTime(36, t + 0.1);
+          g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+          o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + 0.12);
+        }
+        bgmStep = (bgmStep + 1) % 16;
+      }, tempo);
+    }
+
+    function playTone(freq, type, dur, vol = 0.1) {
+      if (!soundOn || !audioCtx) return;
+      try {
+        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        o.type = type; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        g.gain.setValueAtTime(vol, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+        o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+    const sfxPop = () => playTone(420, 'triangle', 0.12);
+    const sfxBoom = () => playTone(80, 'square', 0.25);
+    const sfxChime = () => { playTone(587, 'sine', 0.12); setTimeout(() => playTone(880, 'sine', 0.2), 70); };
+
+    function playCustomHorn(k) {
+      initAudio(); if (!soundOn || !audioCtx) return;
+      const t = audioCtx.currentTime;
+      if (k === 'molue') {
+        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        o.type = 'square'; o.frequency.setValueAtTime(140, t);
+        g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + 0.3);
+      } else if (k === 'keke') {
+        [0, 0.08].forEach(d => {
+          const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+          o.type = 'sine'; o.frequency.setValueAtTime(1100, t + d);
+          g.gain.setValueAtTime(0.15, t + d); g.gain.exponentialRampToValueAtTime(0.001, t + d + 0.06);
+          o.connect(g); g.connect(audioCtx.destination); o.start(t + d); o.stop(t + d + 0.06);
+        });
+      } else if (k === 'siren') {
+        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        o.type = 'sawtooth'; o.frequency.setValueAtTime(600, t);
+        o.frequency.linearRampToValueAtTime(1000, t + 0.25);
+        g.gain.setValueAtTime(0.15, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + 0.3);
+      } else {
+        [430, 540].forEach(f => {
+          const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+          o.type = 'sawtooth'; o.frequency.setValueAtTime(f, t);
+          g.gain.setValueAtTime(0.12, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+          o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + 0.2);
+        });
+      }
+    }
+    function playEquippedHorn() { playCustomHorn(userSave.equippedHorn || 'classic'); }
+
+    let lastSpeech = 0;
+    function triggerCultureCallout(phrase) {
+      showBanner(phrase);
+      const now = Date.now();
+      if ('speechSynthesis' in window && soundOn && (now - lastSpeech > 2500)) {
+        try {
+          window.speechSynthesis.cancel();
+          const clean = phrase.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').replace(/[!?,]/g, '').trim();
+          if (clean) {
+            lastSpeech = now;
+            const u = new SpeechSynthesisUtterance(clean);
+            u.rate = 1.05; window.speechSynthesis.speak(u);
+          }
+        } catch(e) {}
+      }
+    }
+
+    // 4K CANVAS MATCH-3 ENGINE
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const ROWS = 7; const COLS = 7; const VIRTUAL_SIZE = 440; const TILE_SIZE = VIRTUAL_SIZE / COLS;
+    let dpr = 1;
+
+    function setupHighDPICanvases() {
+      dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(VIRTUAL_SIZE * dpr);
+      canvas.height = Math.round(VIRTUAL_SIZE * dpr);
+      canvas.style.width = VIRTUAL_SIZE + "px";
+      canvas.style.height = VIRTUAL_SIZE + "px";
+    }
+
+    const CANDIES = [
+      { id: 0, color: '#ff1a6c', center: '#ff7da7', deep: '#8c0032', shape: 'heart' },
+      { id: 1, color: '#ff8400', center: '#ffc375', deep: '#994f00', shape: 'square' },
+      { id: 2, color: '#ffbe0a', center: '#ffea85', deep: '#997200', shape: 'circle' },
+      { id: 3, color: '#00d66c', center: '#7affbe', deep: '#006633', shape: 'triangle' },
+      { id: 4, color: '#00b4ff', center: '#8ae2ff', deep: '#005980', shape: 'diamond' },
+      { id: 5, color: '#b033ff', center: '#e499ff', deep: '#59008c', shape: 'hexagon' }
+    ];
+
+    let currentLvl = 1; let currentCfg = null;
+    let grid = []; let jellyGrid = []; let chocGrid = []; let cageGrid = []; let coneGrid = [];
+    let state = 'IDLE'; let isVictoryLocked = false; let score = 0; let moves = 16; let combo = 0;
+    let bossCurrentHP = 0; let activeBooster = null; let hammerStock = 3; let swapStock = 2;
+    let selectedTile = null;
+
+    class Candy {
+      constructor(type, r, c, special = 'NONE') {
+        this.type = type; this.r = r; this.c = c; this.special = special;
+        this.x = c * TILE_SIZE; this.y = r * TILE_SIZE; this.targetY = this.y; this.vy = 0;
+      }
+    }
+
+    function startMatchGame(lvl) {
+      currentLvl = lvl;
+      currentCfg = getStageConfig(lvl);
+      score = 0; moves = currentCfg.moves; isVictoryLocked = false; state = 'IDLE';
+
+      safeSetText('stageName', `Stage ${lvl}`);
+      safeSetText('dossierTitle', currentCfg.name);
+      safeSetText('targetLabelTxt', `TARGET: ${currentCfg.target.toLocaleString()}`);
+      safeSetText('movesVal', moves); safeSetText('scoreVal', 0);
+      safeSetText('objectiveStatusTxt', currentCfg.objectiveType === 'JELLY' ? "Clear Jellies" : (currentCfg.objectiveType === 'CHOCOLATE' ? "Clear Choc" : "Score Points"));
+
+      const bossBox = document.getElementById('bossBarContainer');
+      if (currentCfg.isBoss) {
+        bossBox.style.display = 'block'; bossCurrentHP = currentCfg.bossHP;
+        safeSetText('bossNameTxt', `⚠️ ${currentCfg.name.toUpperCase()}`);
+      } else { bossBox.style.display = 'none'; }
+
+      grid = []; jellyGrid = []; chocGrid = []; cageGrid = []; coneGrid = [];
+      for (let r = 0; r < ROWS; r++) {
+        grid[r] = []; jellyGrid[r] = []; chocGrid[r] = []; cageGrid[r] = []; coneGrid[r] = [];
+        for (let c = 0; c < COLS; c++) {
+          jellyGrid[r][c] = (currentCfg.objectiveType === 'JELLY' && (r >= 2 && r <= 4 && c >= 2 && c <= 4)) ? 1 : 0;
+          chocGrid[r][c] = (currentCfg.chocCount > 0 && r === 6 && c >= 2 && c <= 4);
+          if (userSave?.perks?.bumper && chocGrid[r][c]) chocGrid[r][c] = false;
+          cageGrid[r][c] = (currentCfg.cageCount > 0 && (r === 1 && c === 1));
+          coneGrid[r][c] = (currentCfg.coneCount > 0 && r === 3 && (c === 2 || c === 4)) ? 2 : 0;
+          grid[r][c] = new Candy(Math.floor(Math.random() * currentCfg.colorCount), r, c);
+        }
+      }
+      navigate('game-view');
+      playEquippedHorn();
+    }
+
+    function showBanner(text) {
+      const b = document.getElementById('gameBanner');
+      if (!b) return;
+      b.innerText = text; b.style.opacity = '1'; b.style.transform = 'translate(-50%, -50%) scale(1)';
+      setTimeout(() => { b.style.opacity = '0'; b.style.transform = 'translate(-50%, -50%) scale(0.6)'; }, 700);
+    }
+
+    function activateBooster(type) {
+      activeBooster = (activeBooster === type) ? null : type;
+      document.getElementById('hammerBtn').classList.toggle('active', activeBooster === 'HAMMER');
+      document.getElementById('swapBtn').classList.toggle('active', activeBooster === 'SWAP');
+    }
+    window.activateBooster = activateBooster;
+
+    function getTileFromEvent(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) * (VIRTUAL_SIZE / rect.width);
+      const y = (e.clientY - rect.top) * (VIRTUAL_SIZE / rect.height);
+      const c = Math.floor(x / TILE_SIZE); const r = Math.floor(y / TILE_SIZE);
+      return (r >= 0 && r < ROWS && c >= 0 && c < COLS) ? { r, c } : null;
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+      initAudio();
+      const pos = getTileFromEvent(e);
+      if (!pos || state !== 'IDLE' || isVictoryLocked) return;
+
+      if (activeBooster === 'HAMMER') {
+        hammerStock--; safeSetText('hammerBadge', hammerStock); activeBooster = null;
+        sfxBoom(); popTile(pos.r, pos.c); state = 'DROPPING'; return;
+      }
+      if (!selectedTile) selectedTile = pos;
+      else {
+        const dr = Math.abs(selectedTile.r - pos.r); const dc = Math.abs(selectedTile.c - pos.c);
+        if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+          executeSwap(selectedTile, pos); selectedTile = null;
+        } else selectedTile = pos;
+      }
+    });
+
+    function executeSwap(a, b) {
+      const t1 = grid[a.r][a.c]; const t2 = grid[b.r][b.c];
+      grid[a.r][a.c] = t2; grid[b.r][b.c] = t1;
+      t1.r = b.r; t1.c = b.c; t2.r = a.r; t2.c = a.c;
+      t1.x = t1.c * TILE_SIZE; t1.y = t1.r * TILE_SIZE; t2.x = t2.c * TILE_SIZE; t2.y = t2.r * TILE_SIZE;
+
+      if (!isBlitzActive) { moves--; safeSetText('movesVal', moves); }
+      const { hasMatch } = analyzeMatches();
+      if (hasMatch) { combo = 0; state = 'CLEARING'; }
+      else {
+        grid[a.r][a.c] = t1; grid[b.r][b.c] = t2;
+        t1.r = a.r; t1.c = a.c; t2.r = b.r; t2.c = b.c;
+        t1.x = t1.c * TILE_SIZE; t1.y = t1.r * TILE_SIZE; t2.x = t2.c * TILE_SIZE; t2.y = t2.r * TILE_SIZE;
+      }
+    }
+
+    function popTile(r, c) {
+      if (coneGrid[r]?.[c] > 0) { coneGrid[r][c]--; sfxPop(); return; }
+      if (grid[r]?.[c]) {
+        grid[r][c] = null; score += (isBlitzActive ? 60 * blitzComboMultiplier : 60);
+        if (jellyGrid[r]?.[c] > 0) jellyGrid[r][c] = 0;
+        safeSetText('scoreVal', score.toLocaleString());
+        sfxPop();
+      }
+    }
+
+    function analyzeMatches() {
+      const matchMap = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+      let matchFound = false;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS - 2; c++) {
+          const type = grid[r][c]?.type;
+          if (type !== undefined && type === grid[r][c+1]?.type && type === grid[r][c+2]?.type && coneGrid[r][c] === 0) {
+            matchMap[r][c] = matchMap[r][c+1] = matchMap[r][c+2] = true;
+            matchFound = true;
+          }
+        }
+      }
+      for (let c = 0; c < COLS; c++) {
+        for (let r = 0; r < ROWS - 2; r++) {
+          const type = grid[r][c]?.type;
+          if (type !== undefined && type === grid[r+1][c]?.type && type === grid[r+2][c]?.type && coneGrid[r][c] === 0) {
+            matchMap[r][c] = matchMap[r+1][c] = matchMap[r+2][c] = true;
+            matchFound = true;
+          }
+        }
+      }
+      return { hasMatch: matchFound, matchMap };
+    }
+
+    function update() {
+      if (state === 'CLEARING') {
+        const { hasMatch, matchMap } = analyzeMatches();
+        if (hasMatch) {
+          combo++;
+          if (isBlitzActive) { blitzComboMultiplier = Math.min(5, 1 + Math.floor(combo / 2)); updateBlitzHUD(); }
+          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (matchMap[r][c]) popTile(r, c);
+          for (let c = 0; c < COLS; c++) {
+            let empty = 0;
+            for (let r = ROWS - 1; r >= 0; r--) {
+              if (grid[r][c] === null && coneGrid[r][c] === 0) empty++;
+              else if (empty > 0 && coneGrid[r][c] === 0) {
+                grid[r + empty][c] = grid[r][c];
+                grid[r + empty][c].r = r + empty;
+                grid[r + empty][c].targetY = (r + empty) * TILE_SIZE;
+                grid[r][c] = null;
+              }
+            }
+            for (let i = 0; i < empty; i++) {
+              const newR = empty - 1 - i;
+              const candy = new Candy(Math.floor(Math.random() * (currentCfg?.colorCount || 4)), newR, c);
+              candy.y = -(i + 1) * TILE_SIZE; candy.targetY = newR * TILE_SIZE; grid[newR][c] = candy;
+            }
+          }
+          state = 'DROPPING';
+        } else {
+          evaluateEnd();
+        }
+      } else if (state === 'DROPPING') {
+        let moving = false;
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const item = grid[r][c];
+            if (item && item.y < item.targetY) {
+              item.vy += 1.8; item.y += item.vy;
+              if (item.y >= item.targetY) { item.y = item.targetY; item.vy = 0; }
+              moving = true;
+            }
+          }
+        }
+        if (!moving) state = 'CLEARING';
+      }
+    }
+
+    function evaluateEnd() {
+      if (isVictoryLocked || state === 'OVER' || isBlitzActive) return;
+      if (score >= currentCfg.target) {
+        isVictoryLocked = true; state = 'OVER';
+        if (currentLvl === userSave.unlocked) userSave.unlocked++;
+        userSave.coins += 150; persistState();
+        playEquippedHorn(); safeSetText('resTitle', "STAGE CLEARED!"); openModal('gameResultModal');
+      } else if (moves <= 0) {
+        state = 'OVER'; isVictoryLocked = true;
+        userSave.lives--; persistState();
+        safeSetText('resTitle', "OUT OF MOVES!"); openModal('gameResultModal');
+      } else state = 'IDLE';
+    }
+
+    function dismissResult() { closeModal('gameResultModal'); navigate('map-view'); }
+    window.dismissResult = dismissResult;
+
+    // 4K LIQUID GLASS CANVAS RENDER
+    function render() {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, VIRTUAL_SIZE, VIRTUAL_SIZE);
+
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          ctx.fillStyle = (r + c) % 2 === 0 ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.3)";
+          ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+          if (jellyGrid[r]?.[c] > 0) {
+            ctx.fillStyle = "rgba(0,230,138,0.25)"; ctx.fillRect(c * TILE_SIZE + 2, r * TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+          }
+          if (coneGrid[r]?.[c] > 0) {
+            ctx.fillStyle = "#ff6600";
+            ctx.beginPath();
+            ctx.moveTo(c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE + 6);
+            ctx.lineTo(c * TILE_SIZE + TILE_SIZE - 8, r * TILE_SIZE + TILE_SIZE - 6);
+            ctx.lineTo(c * TILE_SIZE + 8, r * TILE_SIZE + TILE_SIZE - 6);
+            ctx.fill();
+            continue;
+          }
+          const item = grid[r]?.[c];
+          if (item) {
+            const conf = CANDIES[item.type] || CANDIES[0];
+            const cx = item.x + TILE_SIZE / 2; const cy = item.y + TILE_SIZE / 2; const rad = TILE_SIZE * 0.35;
+
+            // Radial Glass Jewel Body
+            const g = ctx.createRadialGradient(cx - rad*0.3, cy - rad*0.3, rad*0.1, cx, cy, rad);
+            g.addColorStop(0, conf.center); g.addColorStop(0.6, conf.color); g.addColorStop(1, conf.deep);
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 1.5; ctx.stroke();
+
+            // Glass Highlights
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.beginPath();
+            ctx.ellipse(cx - rad*0.3, cy - rad*0.3, rad*0.35, rad*0.18, -Math.PI/4, 0, Math.PI*2);
+            ctx.fill();
+          }
+        }
+      }
+    }
+
+    // QUICK BLITZ MODE
+    let isBlitzActive = false; let blitzTimer = null; let blitzTime = 60; let blitzComboMultiplier = 1;
+    function startQuickBlitz() {
+      initAudio(); isBlitzActive = true; blitzTime = 60; score = 0; moves = 999;
+      startMatchGame(1);
+      safeSetText('dossierTitle', "60-sec Rush"); safeSetText('movesVal', "60s");
+      clearInterval(blitzTimer);
+      blitzTimer = setInterval(() => {
+        blitzTime--; safeSetText('movesVal', `${blitzTime}s`);
+        if (blitzTime <= 0) {
+          clearInterval(blitzTimer); isBlitzActive = false;
+          safeSetText('resTitle', "BLITZ FINISHED!"); openModal('gameResultModal');
+        }
+      }, 1000);
+    }
+    window.startQuickBlitz = startQuickBlitz;
+    function stopBlitzTimer() { clearInterval(blitzTimer); isBlitzActive = false; }
+    function updateBlitzHUD() {
+      safeSetText('objectiveStatusTxt', `Combo: ${blitzComboMultiplier}X 🔥`);
+    }
+
+    // MINIGAME DIALOGS
+    function openScrapbook() {
+      document.getElementById('scrapbookGrid').innerHTML = `<div class="postcard-item"><div style="font-size:30px;">🌉</div><div><strong>Lekki Toll Postcard</strong><br><small>Coastal expressway landmark</small></div></div>`;
+      openModal('scrapbookModal');
+    }
+    window.openScrapbook = openScrapbook;
+
+    function openLuckyWheel() {
+      openModal('spinModal');
+      const c = document.getElementById('wheelCanvas');
+      const wCtx = c.getContext('2d');
+      wCtx.clearRect(0,0,260,260);
+      wCtx.beginPath(); wCtx.arc(130,130,120,0,Math.PI*2);
+      wCtx.fillStyle = '#ffbe1a'; wCtx.fill();
+      wCtx.strokeStyle = '#fff'; wCtx.lineWidth = 4; wCtx.stroke();
+    }
+    window.openLuckyWheel = openLuckyWheel;
+
+    function spinWheel() {
+      userSave.coins += 300; persistState(); sfxChime(); alert("Won +300 🪙!"); closeModal('spinModal');
+    }
+    window.spinWheel = spinWheel;
+
+    function buyItem(t, cost) {
+      if (userSave.coins < cost) { alert("Not enough coins!"); return; }
+      userSave.coins -= cost;
+      if (t === 'HAMMER') hammerStock++; if (t === 'SWAP') swapStock++;
+      persistState(); alert(`Purchased ${t}!`);
+    }
+    window.buyItem = buyItem;
+
+    function main() { update(); render(); requestAnimationFrame(main); }
+
+    // INITIALIZATION & IMMEDIATE START
+    setupHighDPICanvases();
+    refreshMapUI();
+    startMatchGame(userSave.unlocked);
+    requestAnimationFrame(main);
+  </script>
+</body>
+</html>
