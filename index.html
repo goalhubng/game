@@ -137,6 +137,12 @@
     .home-split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .home-card { background: linear-gradient(160deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)), var(--glass-dense); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; }
     .home-card-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 900; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+    .lb-row { border-radius: 14px; padding: 9px 13px; margin-bottom: 6px; display: flex; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; background: rgba(0,0,0,0.3); border: 1px solid transparent; }
+    .lb-row span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lb-row.top { background: rgba(255,183,3,0.12); border-color: var(--gold); }
+    .lb-row.top span:last-child { color: var(--gold); }
+    .lb-row.me { background: rgba(0,230,138,0.14); border-color: var(--primary); }
+    .lb-row.me span:last-child { color: var(--primary); }
     .quest-item { background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 11px 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 
     /* ---------- MAP ---------- */
@@ -499,7 +505,7 @@
 
       <div class="home-split-row">
         <div class="home-card">
-          <div class="home-card-header"><span>🏆 NATIONAL RANK</span><span style="font-size:10px; color:#8fa89b;">THIS WEEK</span></div>
+          <div class="home-card-header"><span id="rankLabel">🏆 NATIONAL RANK</span><span id="rankSub" style="font-size:10px; color:#8fa89b;">THIS WEEK</span></div>
           <div class="leaderboard" id="homeLeaderboard"></div>
         </div>
         <div class="home-card">
@@ -772,6 +778,7 @@
       <label class="set-row" for="setVibrate"><span>📳 Vibration <small>(Android)</small></span><input type="checkbox" id="setVibrate"></label>
       <label class="set-row" for="setReduceFx"><span>✨ Reduce effects <small>(less shaking &amp; confetti)</small></span><input type="checkbox" id="setReduceFx"></label>
       <label class="set-row" for="setHints"><span>👆 Show move hints</span><input type="checkbox" id="setHints"></label>
+      <div class="set-row" style="cursor:default;"><span>☁️ Cloud save <small id="cloudStatus">Off: progress is saved on this device only</small></span></div>
       <button id="resetBtn" class="dock-btn danger-btn" onclick="resetProgress()">🗑️ Reset all progress</button>
       <button class="btn-action" style="margin-top:12px;" onclick="closeSettings()">DONE</button>
     </div>
@@ -941,27 +948,32 @@
       if (stored && typeof stored === 'object') userSave = Object.assign(userSave, stored);
     } catch(e) {}
 
-    userSave.unlocked = Math.max(1, Number(userSave.unlocked) || 1);
-    userSave.unlocked = Math.min(TOTAL_STAGES, userSave.unlocked);
-    userSave.lives = (typeof userSave.lives === 'number') ? Math.max(0, Math.min(5, userSave.lives)) : 5;
-    userSave.hammers = Math.max(0, Number(userSave.hammers) || 0);
-    userSave.swaps = Math.max(0, Number(userSave.swaps) || 0);
-    ['rowBlasts', 'shuffles', 'startStripes', 'startBombs'].forEach(k => { userSave[k] = Math.max(0, Number(userSave[k]) || 0); });
-    userSave.coins = (typeof userSave.coins === 'number') ? userSave.coins : 2450;
-    if (!userSave.stars) userSave.stars = {};
-    if (!Array.isArray(userSave.ownedSkins)) userSave.ownedSkins = ['classic'];
-    if (!Array.isArray(userSave.ownedHorns)) userSave.ownedHorns = ['classic'];
-    if (!userSave.perks) userSave.perks = { turbo: false, bumper: false, magnet: false };
-    if (!Array.isArray(userSave.claimedAchievements)) userSave.claimedAchievements = [];
-    if (!Array.isArray(userSave.claimedSouvenirs)) userSave.claimedSouvenirs = [];
-    if (!Array.isArray(userSave.seenTips)) userSave.seenTips = [];
-    if (!userSave.daily || typeof userSave.daily !== 'object') userSave.daily = { lastWin: null, streak: 0 };
-    if (!userSave.stickers || typeof userSave.stickers !== 'object') userSave.stickers = {};
-    if (!Array.isArray(userSave.claimedSets)) userSave.claimedSets = [];
-    if (!userSave.tutorialDone || typeof userSave.tutorialDone !== 'object') userSave.tutorialDone = {};
-    userSave.settings = Object.assign({ sfxVol: 1, musicVol: 0.7, vibrate: true, reduceFx: false, hints: true }, userSave.settings || {});
+    function normalizeSave() {
+      userSave.unlocked = Math.max(1, Number(userSave.unlocked) || 1);
+      userSave.unlocked = Math.min(TOTAL_STAGES, userSave.unlocked);
+      userSave.lives = (typeof userSave.lives === 'number') ? Math.max(0, Math.min(5, userSave.lives)) : 5;
+      userSave.hammers = Math.max(0, Number(userSave.hammers) || 0);
+      userSave.swaps = Math.max(0, Number(userSave.swaps) || 0);
+      ['rowBlasts', 'shuffles', 'startStripes', 'startBombs'].forEach(k => { userSave[k] = Math.max(0, Number(userSave[k]) || 0); });
+      userSave.coins = (typeof userSave.coins === 'number') ? userSave.coins : 2450;
+      if (!userSave.stars) userSave.stars = {};
+      if (!Array.isArray(userSave.ownedSkins)) userSave.ownedSkins = ['classic'];
+      if (!Array.isArray(userSave.ownedHorns)) userSave.ownedHorns = ['classic'];
+      if (!userSave.perks) userSave.perks = { turbo: false, bumper: false, magnet: false };
+      if (!Array.isArray(userSave.claimedAchievements)) userSave.claimedAchievements = [];
+      if (!Array.isArray(userSave.claimedSouvenirs)) userSave.claimedSouvenirs = [];
+      if (!Array.isArray(userSave.seenTips)) userSave.seenTips = [];
+      if (!userSave.daily || typeof userSave.daily !== 'object') userSave.daily = { lastWin: null, streak: 0 };
+      if (!userSave.stickers || typeof userSave.stickers !== 'object') userSave.stickers = {};
+      if (!Array.isArray(userSave.claimedSets)) userSave.claimedSets = [];
+      if (!userSave.tutorialDone || typeof userSave.tutorialDone !== 'object') userSave.tutorialDone = {};
+      userSave.settings = Object.assign({ sfxVol: 1, musicVol: 0.7, vibrate: true, reduceFx: false, hints: true }, userSave.settings || {});
+    }
+    normalizeSave();
 
     function persistState() {
+      userSave.savedAt = Date.now();
+      scheduleCloudSave();
       try { localStorage.setItem('sugar_scramble_save_1000_fixed', JSON.stringify(userSave)); } catch(e) {}
       refreshMapUI();
       safeSetText('hammerBadge', userSave.hammers);
@@ -1528,10 +1540,36 @@
 
     const RIVALS = [{ name: "Chidi (Ikeja)", score: 48800 }, { name: "Fatima (Abuja)", score: 41250 }, { name: "Tunde (Ibadan)", score: 22400 }];
     function renderLeaderboards() {
-      const rows = [...RIVALS, { name: "You", score: userSave.hiScore, me: true }].sort((a, b) => b.score - a.score).slice(0, 4);
-      const medals = ['🥇', '🥈', '🥉', '⭐'];
-      const html = rows.map((p, i) => `<div style="background:${p.me ? 'rgba(0,230,138,0.14)' : (i === 0 ? 'rgba(255,183,3,0.12)' : 'rgba(0,0,0,0.3)')}; border:1px solid ${p.me ? 'var(--primary)' : (i === 0 ? 'var(--gold)' : 'transparent')}; border-radius:14px; padding:9px 13px; margin-bottom:6px; display:flex; justify-content:space-between; font-size:12px; font-weight:700;"><span>${medals[i]} ${i + 1}. ${p.name}</span><span style="color:${p.me ? 'var(--primary)' : (i === 0 ? 'var(--gold)' : '#fff')}">${p.score.toLocaleString()}</span></div>`).join('');
-      ['homeLeaderboard', 'sideLeaderboard'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = html; });
+      let rows;
+      if (cloud.board.length) {
+        // Real players from the shared leaderboard, topped up with CPU rivals when it's quiet
+        rows = cloud.board.map(e => ({ id: e.id, name: e.id === cloud.uid ? 'You' : (cloud.names[e.id] || 'Player'), score: Number(e.hiScore) || 0, me: e.id === cloud.uid }));
+        if (!rows.some(r => r.me)) rows.push({ name: 'You', score: userSave.hiScore, me: true });
+        else rows.find(r => r.me).score = Math.max(rows.find(r => r.me).score, userSave.hiScore);
+        if (rows.length < 4) rows.push(...RIVALS.slice(0, 4 - rows.length).map(r => ({ ...r, name: `🤖 ${r.name}` })));
+      } else {
+        rows = [...RIVALS, { name: "You", score: userSave.hiScore, me: true }];
+      }
+      rows.sort((a, b) => b.score - a.score);
+      const meIdx = rows.findIndex(r => r.me);
+      const shown = rows.slice(0, 4);
+      if (meIdx >= 4) shown[3] = rows[meIdx];
+      const medals = ['🥇', '🥈', '🥉'];
+      ['homeLeaderboard', 'sideLeaderboard'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.replaceChildren(...shown.map(p => {
+          const rank = rows.indexOf(p);
+          const row = document.createElement('div');
+          row.className = `lb-row ${p.me ? 'me' : ''} ${rank === 0 ? 'top' : ''}`;
+          const left = document.createElement('span'); left.textContent = `${medals[rank] || '⭐'} ${rank + 1}. ${p.name}`;
+          const right = document.createElement('span'); right.textContent = p.score.toLocaleString();
+          row.append(left, right);
+          return row;
+        }));
+      });
+      safeSetText('rankLabel', cloud.board.length ? '🏆 PLAYERS' : '🏆 NATIONAL RANK');
+      safeSetText('rankSub', cloud.board.length ? 'LIVE' : 'THIS WEEK');
     }
 
     const CONE_BOUNTY = 5;
@@ -3190,6 +3228,74 @@
 
     function main() { update(); render(); requestAnimationFrame(main); }
 
+    // CLOUD SAVE + LEADERBOARD
+    // Only available when the game runs as a Claude artifact with the shared database; everywhere
+    // else (a downloaded file, GitHub Pages) window.claude is missing and the game stays local.
+    const cloud = { db: null, user: null, uid: null, board: [], names: {}, lastSaved: '', lastBoard: '', timer: null, busy: false };
+    function scheduleCloudSave() {
+      if (!cloud.uid) return;
+      clearTimeout(cloud.timer);
+      cloud.timer = setTimeout(cloudSaveNow, 3000);
+    }
+    async function cloudSaveNow() {
+      if (!cloud.uid || cloud.busy) return;
+      cloud.busy = true;
+      try {
+        const json = JSON.stringify(userSave);
+        if (json !== cloud.lastSaved) {
+          await cloud.db.doc(`data/users/${cloud.uid}/save`).set({ json, savedAt: userSave.savedAt || Date.now(), unlocked: userSave.unlocked });
+          cloud.lastSaved = json;
+          safeSetText('cloudStatus', `On: last saved ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+        }
+        const entry = { hiScore: userSave.hiScore, stars: totalStars(), unlocked: userSave.unlocked };
+        const sig = JSON.stringify(entry);
+        if (sig !== cloud.lastBoard) {
+          await cloud.db.doc(`leaderboard/${cloud.uid}`).set({ ...entry, updatedAt: Date.now() });
+          cloud.lastBoard = sig;
+        }
+      } catch (e) {
+        safeSetText('cloudStatus', "Couldn't save to the cloud right now; your progress is still saved on this device.");
+      } finally { cloud.busy = false; }
+    }
+    window.cloudSaveNow = cloudSaveNow;
+    document.addEventListener('visibilitychange', () => { if (document.hidden) cloudSaveNow(); });
+
+    async function initCloud() {
+      if (!window.claude?.use) return;
+      try {
+        const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+        if (!db || !user) return;
+        cloud.db = db; cloud.user = user;
+        cloud.uid = await user.id();
+        if (cloud.uid) {
+          // Keep whichever save has gone further: the one on this device or the one in the cloud
+          const snap = await db.doc(`data/users/${cloud.uid}/save`).get();
+          const remote = snap.exists ? JSON.parse(snap.data().json || 'null') : null;
+          const localAhead = !remote || userSave.unlocked > remote.unlocked || (userSave.unlocked === remote.unlocked && (userSave.savedAt || 0) >= (remote.savedAt || 0));
+          if (!localAhead) {
+            userSave = Object.assign(freshSave(), remote);
+            normalizeSave();
+            try { localStorage.setItem('sugar_scramble_save_1000_fixed', JSON.stringify(userSave)); } catch (e) {}
+            refreshMapUI(); renderGarageUI();
+            toast(`☁️ Progress restored from the cloud: Stage ${userSave.unlocked}`);
+          }
+          cloud.lastSaved = localAhead ? '' : JSON.stringify(userSave);
+          safeSetText('cloudStatus', 'On: your progress follows your Claude account');
+          cloudSaveNow();
+        }
+        db.collection('leaderboard').orderBy('hiScore', 'desc').limit(25).onSnapshot(async qs => {
+          cloud.board = qs.docs.filter(d => d.exists).map(d => ({ id: d.id, ...d.data() }));
+          renderLeaderboards();
+          const ids = cloud.board.map(e => e.id).filter(id => id !== cloud.uid);
+          if (ids.length) {
+            const ps = await user.profiles(ids);
+            ids.forEach(id => { cloud.names[id] = ps[id]?.name || 'Player'; });
+            renderLeaderboards();
+          }
+        }, () => {});
+      } catch (e) { /* stay local */ }
+    }
+
     // INITIALIZATION
     syncAudioButtons();
     // Browsers only allow audio after a user gesture; start it (and saved music) on the first one.
@@ -3204,6 +3310,7 @@
     persistState();
     setInterval(() => { if (regenLives()) persistState(); else updateLivesTimer(); }, 1000);
     requestAnimationFrame(main);
+    initCloud();
   </script>
 </body>
 </html>
