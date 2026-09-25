@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Brain Draw</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f15;
+      --card: #ffffff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --green: #22c55e;
+      --green-dark: #14532d;
+      --gold: #facc15;
+      --red: #ef4444;
+      --overlay: rgba(15, 23, 42, 0.94);
+    }
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: var(--ink);
+    }
+    button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+
+    .frame {
+      position: relative;
+      width: 100%;
+      max-width: 430px;
+      height: 100dvh;
+      max-height: 900px;
+      background: var(--card);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    @media (min-width: 500px) {
+      .frame { border-radius: 36px; height: 94dvh; box-shadow: 0 25px 60px -15px rgba(0,0,0,.7); }
+    }
+
+    /* Header */
+    .top { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 4px; }
+    .brand { font-weight: 900; font-size: 18px; letter-spacing: -0.02em; }
+    .brand span { color: var(--green); }
+    .icon-btn { width: 36px; height: 36px; border-radius: 12px; background: #f1f5f9; font-size: 16px; display: grid; place-items: center; }
+    .icon-btn:active { transform: scale(0.94); }
+
+    /* IQ bar */
+    .iq { position: relative; height: 64px; margin: 4px 28px 0; }
+    .iq-line { position: absolute; left: 0; right: 44px; bottom: 26px; height: 4.5px; background: #000; border-radius: 4px; }
+    .iq-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--green); border-radius: 4px; transition: width .5s ease; }
+    .tick { position: absolute; top: -7px; width: 4px; height: 18px; background: #000; }
+    .iq-nums { position: absolute; left: 0; right: 44px; bottom: 0; display: flex; justify-content: space-between; font-weight: 900; font-size: 18px; }
+    .brain { position: absolute; top: -4px; transform: translateX(-50%); transition: left .5s cubic-bezier(.3,1.4,.5,1); pointer-events: none; }
+    .genius { position: absolute; right: 0; top: -2px; width: 42px; height: 42px; border-radius: 50%; border: 3px solid #000; background: #fef9c3; display: grid; place-items: center; font-size: 20px; }
+
+    /* Stage HUD */
+    .hud { display: flex; justify-content: space-between; align-items: center; padding: 6px 24px 0; font-size: 12px; font-weight: 800; }
+    .hud .stage { text-transform: uppercase; letter-spacing: .04em; }
+    .hud .meta { color: var(--muted); font-weight: 700; }
+    .ink { margin: 8px 24px 0; display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: var(--muted); }
+    .ink-track { position: relative; flex: 1; height: 8px; border-radius: 8px; background: #e2e8f0; overflow: hidden; }
+    .ink-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--green); transition: background .2s; }
+    .ink-par { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); opacity: .55; }
+    .goals { display: flex; gap: 10px; padding: 6px 24px 0; font-size: 11px; font-weight: 700; color: var(--muted); }
+    .goals .ok { color: #16a34a; }
+
+    /* Arena */
+    .arena { position: relative; flex: 1; min-height: 0; }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+
+    .toast {
+      position: absolute; left: 50%; top: 14px; transform: translate(-50%, -8px);
+      background: var(--ink); color: #fff; font-weight: 800; font-size: 13px;
+      padding: 9px 16px; border-radius: 999px; opacity: 0; transition: opacity .18s, transform .18s;
+      pointer-events: none; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast.bad { background: var(--red); }
+
+    /* Stage picker */
+    .picker { display: flex; gap: 4px; justify-content: center; padding: 8px 12px 16px; }
+    .dot {
+      flex: 1; min-width: 0; max-width: 34px; height: 38px; border-radius: 10px; background: #f1f5f9; font-size: 12px; font-weight: 900;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1;
+    }
+    .dot small { font-size: 8px; color: #ca8a04; letter-spacing: -1px; min-height: 9px; }
+    .dot.cur { background: var(--ink); color: #fff; }
+    .dot.locked { opacity: .35; cursor: not-allowed; }
+
+    /* Overlays */
+    .overlay {
+      position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+      background: rgba(15, 23, 42, 0.35); z-index: 40; padding: 24px;
+    }
+    .overlay.show { display: flex; }
+    .card {
+      width: 100%; background: var(--overlay); color: #fff; border-radius: 26px; padding: 22px;
+      box-shadow: 0 30px 60px -20px rgba(0,0,0,.6); animation: pop .25s cubic-bezier(.3,1.5,.6,1);
+    }
+    @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .card h2 { margin: 0; font-size: 20px; font-weight: 900; }
+    .card p { margin: 6px 0 0; color: #cbd5e1; font-size: 13px; line-height: 1.5; }
+    .stars { font-size: 38px; letter-spacing: 6px; margin: 12px 0 6px; text-align: center; }
+    .stars .off { opacity: .2; filter: grayscale(1); }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 16px; }
+    .stat { background: rgba(255,255,255,.07); border-radius: 12px; padding: 8px; text-align: center; }
+    .stat b { display: block; font-size: 16px; }
+    .stat span { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
+    .btns { display: flex; gap: 8px; }
+    .btn { flex: 1; padding: 13px; border-radius: 14px; font-weight: 900; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+    .btn.primary { background: var(--green); color: #052e16; }
+    .btn.ghost { background: rgba(255,255,255,.1); color: #fff; }
+    .btn:active { transform: scale(.97); }
+    .big-iq { font-size: 64px; font-weight: 900; text-align: center; color: var(--green); line-height: 1; margin-top: 12px; }
+    .rules { margin: 12px 0 16px; padding: 0; list-style: none; font-size: 13px; color: #e2e8f0; }
+    .rules li { padding: 5px 0; display: flex; gap: 10px; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="top">
+      <div class="brand">Brain<span>Draw</span></div>
+      <div style="display:flex;gap:8px">
+        <button class="icon-btn" id="helpBtn" title="How to play">?</button>
+        <button class="icon-btn" id="muteBtn" title="Sound">🔊</button>
+      </div>
+    </div>
+
+    <div class="iq">
+      <div class="brain" id="brain" style="left:0%">
+        <svg width="40" height="40" viewBox="0 0 100 100" style="transform:scaleX(-1)">
+          <path d="M45,20 C35,20 25,28 25,40 C20,42 15,48 15,56 C15,66 23,74 33,75 C34,82 40,88 48,88 C55,88 60,84 63,80 C66,84 72,88 80,88 C90,88 95,78 94,70 C98,64 98,54 94,48 C96,38 90,26 78,24 C74,18 64,16 56,18 C52,14 46,14 45,20 Z" fill="#f472b6" stroke="#000" stroke-width="4.5" stroke-linejoin="round"/>
+          <path d="M38,32 C38,42 48,42 48,52 C48,60 38,62 38,72" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+          <path d="M60,30 C60,40 52,44 52,56 C52,66 64,68 64,78" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+          <path d="M26,52 C32,52 36,46 44,48" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M70,44 C76,46 80,52 86,52" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="genius" title="161 IQ">💡</div>
+      <div class="iq-line">
+        <div class="iq-fill" id="iqFill" style="width:0%"></div>
+        <div class="tick" style="left:0"></div>
+        <div class="tick" style="left:calc(32.9% - 2px)"></div>
+        <div class="tick" style="left:calc(65.8% - 2px)"></div>
+        <div class="tick" style="right:0"></div>
+      </div>
+      <div class="iq-nums"><span>85</span><span>110</span><span>135</span><span>161</span></div>
+    </div>
+
+    <div class="hud">
+      <span class="stage" id="stageName">Stage 1</span>
+      <span class="meta"><span id="iqText">85 IQ</span> · <span id="tries">Try 1</span></span>
+    </div>
+    <div class="ink">
+      <span>INK</span>
+      <div class="ink-track"><div class="ink-fill" id="inkFill"></div><div class="ink-par" id="inkPar"></div></div>
+    </div>
+    <div class="goals" id="goals"></div>
+
+    <div class="arena" id="arena">
+      <canvas id="canvas"></canvas>
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <div class="picker" id="picker"></div>
+
+    <!-- Stage cleared -->
+    <div class="overlay" id="winOverlay">
+      <div class="card">
+        <h2 id="winTitle">Stage cleared!</h2>
+        <div class="stars" id="winStars"></div>
+        <p id="winTip" style="text-align:center"></p>
+        <div class="stat-row">
+          <div class="stat"><b id="winGems">0/0</b><span>Gems</span></div>
+          <div class="stat"><b id="winInk">0%</b><span>Ink used</span></div>
+          <div class="stat"><b id="winTries">1</b><span>Tries</span></div>
+        </div>
+        <div class="btns">
+          <button class="btn ghost" id="retryBtn">Retry</button>
+          <button class="btn primary" id="nextBtn">Next stage →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final result -->
+    <div class="overlay" id="endOverlay">
+      <div class="card">
+        <h2 style="text-align:center">All stages complete</h2>
+        <div class="big-iq" id="endIQ">85</div>
+        <p style="text-align:center;font-weight:800;color:#fff" id="endRank"></p>
+        <p style="text-align:center" id="endHint"></p>
+        <div class="btns" style="margin-top:16px">
+          <button class="btn primary" id="improveBtn">Go for 3 stars</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- How to play -->
+    <div class="overlay" id="helpOverlay">
+      <div class="card">
+        <h2>How to play</h2>
+        <ul class="rules">
+          <li>🟢 Press on the left green dot and draw a line to the other one.</li>
+          <li>🔴 Don't touch a ball. Moving balls can also hit your line, so draw fast.</li>
+          <li>⭕ Keep your line inside the circle.</li>
+          <li>🖊️ You only have so much ink. Finish at or below the par mark for a star.</li>
+          <li>💎 Pick up every gem for a star.</li>
+          <li>💡 Each star raises your IQ. You need all 30 stars to reach 161.</li>
+        </ul>
+        <div class="btns"><button class="btn primary" id="helpClose">Let's go</button></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ---------- Audio ----------
+  class GameAudio {
+    constructor() { this.ctx = null; this.muted = false; }
+    init() {
+      if (!this.ctx) {
+        const A = window.AudioContext || window.webkitAudioContext;
+        if (A) this.ctx = new A();
+      }
+      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    }
+    tone(freq, type = 'sine', dur = 0.08, vol = 0.1, delay = 0) {
+      if (this.muted) return;
+      try {
+        this.init();
+        const t = this.ctx.currentTime + delay;
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(vol, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g); g.connect(this.ctx.destination);
+        o.start(t); o.stop(t + dur);
+      } catch (e) {}
+    }
+    grain() { this.tone(320 + Math.random() * 80, 'triangle', 0.03, 0.025); }
+    fail() { this.tone(160, 'sawtooth', 0.12, 0.12); this.tone(90, 'sine', 0.25, 0.2, 0.05); }
+    gem() { this.tone(1318, 'sine', 0.12, 0.1); this.tone(1760, 'sine', 0.16, 0.08, 0.06); }
+    win() { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.tone(f, 'sine', 0.25, 0.14, i * 0.075)); }
+  }
+  const sound = new GameAudio();
+  const buzz = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+
+  // ---------- Stages ----------
+  // Positions and orbit radii are fractions of the arena radius; r is in px at a 160px arena and scales with it.
+  // Sphere kinds: static, moveX / moveY (sine sweep), orbit (around cx,cy), pulse (radius breathes).
+  const STAGES = [
+    { name: 'Warm-Up', start: Math.PI, goal: 0, ink: 5,
+      spheres: [
+        { x: 0, y: -0.74, r: 21, c: 'blue' },
+        { x: 0.08, y: -0.06, r: 24, c: 'red' },
+        { x: -0.16, y: 0.28, r: 22, c: 'blue' }
+      ],
+      gems: [{ x: 0.45, y: 0.42 }] },
+    { name: 'The Sinusoid', start: Math.PI, goal: 0, ink: 5.5,
+      spheres: [
+        { x: 0, y: -0.4, r: 24, c: 'red' },
+        { x: 0, y: 0.4, r: 24, c: 'red' },
+        { x: 0, y: 0, r: 20, c: 'blue', moveX: 0.35, speed: 2.2 }
+      ],
+      gems: [{ x: -0.55, y: 0 }, { x: 0.55, y: 0 }] },
+    { name: 'Orbital Defense', start: Math.PI * 0.88, goal: -Math.PI * 0.1, ink: 5.5,
+      spheres: [
+        { x: 0, y: 0, r: 30, c: 'red' },
+        { orbit: 0.52, speed: 2.2, r: 20, c: 'blue', angle: 0 },
+        { orbit: 0.52, speed: 2.2, r: 20, c: 'blue', angle: Math.PI }
+      ],
+      gems: [{ x: 0, y: 0.8 }] },
+    { name: 'Pinball Weave', start: Math.PI, goal: 0, ink: 5.5,
+      spheres: [
+        { x: -0.28, y: 0, r: 22, c: 'blue', moveY: 0.38, speed: 2.5, phase: 0 },
+        { x: 0, y: 0, r: 26, c: 'red', moveY: 0.38, speed: 2.5, phase: 2.1 },
+        { x: 0.28, y: 0, r: 22, c: 'blue', moveY: 0.38, speed: 2.5, phase: 4.2 }
+      ],
+      gems: [{ x: 0, y: -0.78 }] },
+    { name: 'Pulsar', start: Math.PI, goal: 0, ink: 4.5,
+      spheres: [
+        { x: -0.32, y: 0, r: 24, c: 'red', pulse: 0.55, speed: 2.6, phase: 0 },
+        { x: 0.32, y: 0, r: 24, c: 'red', pulse: 0.55, speed: 2.6, phase: Math.PI },
+        { x: 0, y: -0.42, r: 20, c: 'blue', pulse: 0.5, speed: 2.6, phase: Math.PI / 2 },
+        { x: 0, y: 0.42, r: 20, c: 'blue', pulse: 0.5, speed: 2.6, phase: -Math.PI / 2 }
+      ],
+      gems: [{ x: 0, y: 0 }] },
+    { name: 'Twin Gears', start: -Math.PI / 2, goal: Math.PI / 2, ink: 4,
+      spheres: [
+        { x: -0.45, y: 0, r: 16, c: 'red' },
+        { x: 0.45, y: 0, r: 16, c: 'red' },
+        { orbit: 0.24, cx: -0.45, cy: 0, speed: 2.6, r: 15, c: 'blue', angle: 0 },
+        { orbit: 0.24, cx: -0.45, cy: 0, speed: 2.6, r: 15, c: 'blue', angle: Math.PI },
+        { orbit: 0.24, cx: 0.45, cy: 0, speed: -2.6, r: 15, c: 'blue', angle: 0 },
+        { orbit: 0.24, cx: 0.45, cy: 0, speed: -2.6, r: 15, c: 'blue', angle: Math.PI }
+      ],
+      gems: [{ x: 0, y: 0 }, { x: -0.45, y: -0.55 }] },
+    { name: 'The Gate', start: -Math.PI / 2, goal: Math.PI / 2, ink: 4.5,
+      spheres: [
+        { x: -0.47, y: 0, r: 56, c: 'red' },
+        { x: 0.47, y: 0, r: 56, c: 'red' },
+        { x: 0, y: 0, r: 15, c: 'blue', moveY: 0.62, speed: 1.7 }
+      ],
+      gems: [{ x: 0, y: 0 }] },
+    { name: 'Long Way Round', start: Math.PI * 0.62, goal: Math.PI * 0.38, ink: 7,
+      spheres: [
+        { x: 0, y: 0.1, r: 22, c: 'red' },
+        { x: 0, y: 0.36, r: 22, c: 'red' },
+        { x: 0, y: 0.62, r: 22, c: 'red' },
+        { x: 0, y: 0.88, r: 22, c: 'red' },
+        { x: 0, y: -0.42, r: 18, c: 'blue', moveX: 0.55, speed: 2.1 }
+      ],
+      gems: [{ x: 0, y: -0.8 }] },
+    { name: 'Carousel', start: Math.PI, goal: 0, ink: 5,
+      spheres: [0, 1, 2, 3, 4, 5].map(i => ({ orbit: 0.5, speed: 1.1, r: 16, c: i % 2 ? 'red' : 'blue', angle: i * Math.PI / 3 })),
+      gems: [{ x: 0, y: 0 }] },
+    { name: 'Genius Paradox', start: Math.PI, goal: 0, ink: 7,
+      spheres: [
+        { x: 0, y: 0, r: 30, c: 'red' },
+        { orbit: 0.44, speed: 3.0, r: 17, c: 'blue', angle: 0 },
+        { orbit: 0.7, speed: -2.3, r: 17, c: 'blue', angle: Math.PI / 2 },
+        { orbit: 0.7, speed: -2.3, r: 17, c: 'red', angle: -Math.PI / 2 },
+        { x: 0, y: -0.9, r: 14, c: 'red', pulse: 0.6, speed: 3, phase: 0 }
+      ],
+      gems: [{ x: 0, y: 0.88 }, { x: 0, y: -0.57 }] }
+  ];
+  const PAR_RATIO = 0.7;         // finish with <= 70% of the ink for the ink star
+  const MAX_STARS = STAGES.length * 3;
+
+  // ---------- Save data ----------
+  const SAVE_KEY = 'brainDraw.v1';
+  let save = { best: [], unlocked: 1 };
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw) save = Object.assign(save, JSON.parse(raw));
+  } catch (e) {}
+  const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
+  const totalStars = () => save.best.reduce((a, b) => a + (b || 0), 0);
+  const iqFromStars = (s) => Math.round(85 + 76 * s / MAX_STARS);
+
+  // ---------- State ----------
+  const state = {
+    idx: 0, drawing: false, won: false,
+    path: [], ghost: [], inkUsed: 0, gemsHit: [],
+    tries: 1, debris: [], shake: 0, t: 0, flash: 0
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const canvas = $('canvas');
+  const ctx = canvas.getContext('2d');
+  const arena = $('arena');
+  const toastEl = $('toast');
+
+  let C = { x: 0, y: 0 }, R = 150, K = 1, dpr = 1;
+  const startP = { x: 0, y: 0, r: 22 }, goalP = { x: 0, y: 0, r: 22 };
+  const LINE_HALF = 7;
+
+  function resize() {
+    const rect = arena.getBoundingClientRect();
+    dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    C = { x: rect.width / 2, y: rect.height / 2 };
+    R = Math.max(90, Math.min(rect.width * 0.44, rect.height * 0.45, 185));
+    K = R / 160;
+    placePortals();
+    // Any path in progress was drawn at the old scale; drop it.
+    state.path = []; state.drawing = false; state.ghost = [];
+  }
+
+  function placePortals() {
+    const s = STAGES[state.idx];
+    startP.r = goalP.r = Math.max(16, 22 * K);
+    startP.x = C.x + Math.cos(s.start) * R; startP.y = C.y + Math.sin(s.start) * R;
+    goalP.x = C.x + Math.cos(s.goal) * R;   goalP.y = C.y + Math.sin(s.goal) * R;
+  }
+
+  const inkMax = () => STAGES[state.idx].ink * R;
+
+  function liveSpheres(stage, t) {
+    return stage.spheres.map(d => {
+      let x, y, r = d.r * K, moving = false;
+      if (d.orbit !== undefined) {
+        const a = d.angle + t * d.speed;
+        x = C.x + ((d.cx || 0) + Math.cos(a) * d.orbit) * R;
+        y = C.y + ((d.cy || 0) + Math.sin(a) * d.orbit) * R;
+        moving = true;
+      } else {
+        x = C.x + d.x * R; y = C.y + d.y * R;
+        if (d.moveX) { x += Math.sin(t * d.speed + (d.phase || 0)) * d.moveX * R; moving = true; }
+        if (d.moveY) { y += Math.sin(t * d.speed + (d.phase || 0)) * d.moveY * R; moving = true; }
+        if (d.pulse) { r *= 1 + d.pulse * Math.sin(t * d.speed + (d.phase || 0)); moving = true; }
+      }
+      return { x, y, r: Math.max(2, r), c: d.c, moving };
+    });
+  }
+  const gemPos = (g) => ({ x: C.x + g.x * R, y: C.y + g.y * R, r: 10 * K });
+
+  // ---------- Geometry ----------
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  function distToSeg(p, v, w) {
+    const l2 = (v.x - w.x) ** 2 + (v.y - w.y) ** 2;
+    if (l2 === 0) return dist(p, v);
+    const t = Math.max(0, Math.min(1, ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2));
+    return dist(p, { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) });
+  }
+  function inBounds(p) {
+    if (dist(p, startP) < startP.r || dist(p, goalP) < goalP.r) return true;
+    return dist(p, C) <= R - 3;
+  }
+
+  // ---------- UI ----------
+  let toastTimer = 0;
+  function toast(msg, bad = false) {
+    toastEl.textContent = msg;
+    toastEl.classList.toggle('bad', bad);
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1300);
+  }
+
+  function renderIQ() {
+    const iq = iqFromStars(totalStars());
+    const pct = (iq - 85) / 76 * 100;
+    $('brain').style.left = `calc((100% - 44px) * ${pct / 100})`;
+    $('iqFill').style.width = pct + '%';
+    $('iqText').textContent = iq + ' IQ';
+  }
+
+  function renderPicker() {
+    const el = $('picker');
+    el.innerHTML = '';
+    STAGES.forEach((s, i) => {
+      const b = document.createElement('button');
+      const locked = i >= save.unlocked;
+      b.className = 'dot' + (i === state.idx ? ' cur' : '') + (locked ? ' locked' : '');
+      const st = save.best[i] || 0;
+      b.innerHTML = `${locked ? '🔒' : i + 1}<small>${'★'.repeat(st)}</small>`;
+      b.title = s.name;
+      b.addEventListener('click', () => { if (!locked) loadStage(i); });
+      el.appendChild(b);
+    });
+  }
+
+  function renderHud() {
+    const s = STAGES[state.idx];
+    $('stageName').textContent = `${state.idx + 1}. ${s.name}`;
+    $('tries').textContent = `Try ${state.tries}`;
+    const frac = Math.min(1, state.inkUsed / inkMax());
+    const fill = $('inkFill');
+    fill.style.width = (frac * 100) + '%';
+    fill.style.background = frac > 0.85 ? 'var(--red)' : frac > PAR_RATIO ? '#f59e0b' : 'var(--green)';
+    $('inkPar').style.left = (PAR_RATIO * 100) + '%';
+    const got = state.gemsHit.filter(Boolean).length;
+    $('goals').innerHTML =
+      `<span class="${got === s.gems.length ? 'ok' : ''}">💎 ${got}/${s.gems.length}</span>` +
+      `<span>Best ${'★'.repeat(save.best[state.idx] || 0) || '—'}</span>`;
+  }
+
+  function loadStage(i) {
+    state.idx = Math.max(0, Math.min(STAGES.length - 1, i));
+    state.tries = 1;
+    state.ghost = [];
+    resetAttempt();
+    placePortals();
+    ['winOverlay', 'endOverlay'].forEach(id => $(id).classList.remove('show'));
+    renderPicker(); renderHud(); renderIQ();
+  }
+
+  function resetAttempt() {
+    state.path = []; state.drawing = false; state.won = false;
+    state.inkUsed = 0; state.gemsHit = STAGES[state.idx].gems.map(() => false);
+  }
+
+  // ---------- Game events ----------
+  function fail(reason) {
+    sound.fail(); buzz(60);
+    state.shake = 12; state.flash = 1;
+    for (const p of state.path) {
+      state.debris.push({ x: p.x, y: p.y, vx: (Math.random() - .5) * 7, vy: (Math.random() - .5) * 7, size: 4, life: .9, decay: .05, c: 'green' });
+    }
+    state.ghost = state.path.slice();
+    resetAttempt();
+    state.tries++;
+    toast(reason, true);
+    renderHud();
+  }
+
+  function win() {
+    state.won = true; state.drawing = false;
+    sound.win(); buzz([20, 40, 20]);
+    const s = STAGES[state.idx];
+    const gemsAll = state.gemsHit.every(Boolean);
+    const inkFrac = state.inkUsed / inkMax();
+    const stars = 1 + (gemsAll ? 1 : 0) + (inkFrac <= PAR_RATIO ? 1 : 0);
+    const prevStars = save.best[state.idx] || 0;
+    const prevIQ = iqFromStars(totalStars());
+    save.best[state.idx] = Math.max(prevStars, stars);
+    save.unlocked = Math.max(save.unlocked, Math.min(STAGES.length, state.idx + 2));
+    persist();
+    const gain = iqFromStars(totalStars()) - prevIQ;
+
+    for (let i = 0; i < 40; i++) {
+      state.debris.push({ x: goalP.x, y: goalP.y, vx: (Math.random() - .5) * 10, vy: (Math.random() - .5) * 10, size: 5, life: 1, decay: .025, c: i % 2 ? 'gold' : 'green' });
+    }
+
+    $('winTitle').textContent = gain > 0 ? `Stage cleared! +${gain} IQ` : 'Stage cleared!';
+    $('winStars').innerHTML = [0, 1, 2].map(i => `<span class="${i < stars ? '' : 'off'}">⭐</span>`).join('');
+    const tips = [];
+    if (!gemsAll) tips.push('Pick up every 💎');
+    if (inkFrac > PAR_RATIO) tips.push('finish below the ink par mark');
+    $('winTip').textContent = stars === 3 ? 'That was a perfect run.' : `For another star: ${tips.join(' and ')}.`;
+    $('winGems').textContent = `${state.gemsHit.filter(Boolean).length}/${s.gems.length}`;
+    $('winInk').textContent = Math.round(inkFrac * 100) + '%';
+    $('winTries').textContent = state.tries;
+    $('nextBtn').textContent = state.idx === STAGES.length - 1 ? 'See result →' : 'Next stage →';
+    renderPicker(); renderHud(); renderIQ();
+    setTimeout(() => $('winOverlay').classList.add('show'), 380);
+  }
+
+  function showEnd() {
+    $('winOverlay').classList.remove('show');
+    const stars = totalStars();
+    const iq = iqFromStars(stars);
+    $('endIQ').textContent = iq;
+    const rank = iq >= 161 ? 'Paradox Breaker 🏆' : iq >= 140 ? 'Genius' : iq >= 120 ? 'Gifted' : iq >= 100 ? 'Sharp' : 'Warming up';
+    $('endRank').textContent = rank;
+    $('endHint').textContent = stars >= MAX_STARS
+      ? 'You got all 30 stars.'
+      : `${stars}/${MAX_STARS} stars. Go back to a stage and 3-star it to raise your score.`;
+    $('endOverlay').classList.add('show');
+  }
+
+  // Check a new segment against everything; returns false if the attempt ended.
+  function checkSegment(a, b) {
+    for (const sp of liveSpheres(STAGES[state.idx], state.t)) {
+      if (distToSeg(sp, a, b) < sp.r + LINE_HALF) { fail('Hit a ball!'); return false; }
+    }
+    if (!inBounds(b)) { fail('Stay inside the circle!'); return false; }
+    STAGES[state.idx].gems.forEach((g, i) => {
+      if (state.gemsHit[i]) return;
+      const gp = gemPos(g);
+      if (distToSeg(gp, a, b) < gp.r + LINE_HALF) {
+        state.gemsHit[i] = true; sound.gem(); buzz(15);
+        for (let k = 0; k < 14; k++) state.debris.push({ x: gp.x, y: gp.y, vx: (Math.random() - .5) * 6, vy: (Math.random() - .5) * 6, size: 4, life: 1, decay: .04, c: 'gold' });
+        renderHud();
+      }
+    });
+    return true;
+  }
+
+  // ---------- Input ----------
+  const coords = (e) => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (state.won) return;
+    sound.init();
+    const p = coords(e);
+    if (dist(p, startP) > startP.r * 1.8) { toast('Start from the pulsing green dot'); return; }
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    resetAttempt();
+    state.path = [{ x: startP.x, y: startP.y }];
+    state.drawing = true;
+    sound.grain();
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!state.drawing || state.won) return;
+    e.preventDefault();
+    const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    for (const ev of (events.length ? events : [e])) {
+      if (!state.drawing) return;
+      const p = coords(ev);
+      const last = state.path[state.path.length - 1];
+      const d = dist(p, last);
+      if (d < 4) continue;
+
+      if (dist(p, goalP) < goalP.r * 1.3) {
+        if (!checkSegment(last, goalP)) return;
+        state.path.push({ x: goalP.x, y: goalP.y });
+        state.inkUsed += dist(last, goalP);
+        win();
+        return;
+      }
+      if (!checkSegment(last, p)) return;
+      state.inkUsed += d;
+      if (state.inkUsed > inkMax()) { fail('Out of ink!'); return; }
+      state.path.push(p);
+      if (Math.random() < 0.5) emitDebris(p);
+      if (Math.random() < 0.4) sound.grain();
+    }
+    renderHud();
+  });
+
+  const endStroke = () => {
+    if (!state.drawing || state.won) return;
+    state.ghost = state.path.slice();
+    resetAttempt();
+    state.tries++;
+    toast('Keep drawing until you reach the green dot');
+    renderHud();
+  };
+  canvas.addEventListener('pointerup', endStroke);
+  canvas.addEventListener('pointercancel', endStroke);
+
+  function emitDebris(p) {
+    for (let i = 0; i < 3; i++) {
+      state.debris.push({ x: p.x + (Math.random() - .5) * 6, y: p.y + (Math.random() - .5) * 6, vx: (Math.random() - .5) * 4, vy: (Math.random() - .5) * 4, size: 3 + Math.random() * 3, life: 1, decay: .06 + Math.random() * .04, c: 'green' });
+    }
+  }
+
+  // ---------- Render ----------
+  function strokePath(pts, color, width) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.stroke();
+  }
+
+  function drawPortal(p, pulse) {
+    if (pulse) {
+      const k = (state.t * 1.4) % 1;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * (1 + k * 0.9), 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(34,197,94,${1 - k})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = '#22c55e'; ctx.fill();
+    ctx.strokeStyle = '#14532d'; ctx.lineWidth = 3.5; ctx.stroke();
+  }
+
+  function drawSphere(s) {
+    ctx.beginPath();
+    ctx.ellipse(s.x + 3, s.y + s.r * 0.82, s.r * 0.95, s.r * 0.42, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,.14)'; ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    const g = ctx.createRadialGradient(s.x - s.r * .35, s.y - s.r * .35, s.r * .08, s.x, s.y, s.r);
+    const pal = s.c === 'red'
+      ? ['#f87171', '#ef4444', '#dc2626', '#991b1b']
+      : ['#60a5fa', '#3b82f6', '#1d4ed8', '#1e3a8a'];
+    [0, .35, .85, 1].forEach((o, i) => g.addColorStop(o, pal[i]));
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2.4; ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(s.x - s.r * .32, s.y - s.r * .32, s.r * .28, s.r * .16, -Math.PI / 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,.65)'; ctx.fill();
+  }
+
+  function drawGem(gp, got) {
+    if (got) return;
+    const bob = Math.sin(state.t * 4 + gp.x) * 2;
+    ctx.save();
+    ctx.translate(gp.x, gp.y + bob);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = '#facc15';
+    ctx.strokeStyle = '#854d0e';
+    ctx.lineWidth = 2;
+    ctx.fillRect(-gp.r * .7, -gp.r * .7, gp.r * 1.4, gp.r * 1.4);
+    ctx.strokeRect(-gp.r * .7, -gp.r * .7, gp.r * 1.4, gp.r * 1.4);
+    ctx.fillStyle = 'rgba(255,255,255,.7)';
+    ctx.fillRect(-gp.r * .5, -gp.r * .5, gp.r * .5, gp.r * .3);
+    ctx.restore();
+  }
+
+  let lastTs = performance.now();
+  function frame(ts) {
+    requestAnimationFrame(frame);
+    const dt = Math.min(0.05, (ts - lastTs) / 1000);
+    lastTs = ts;
+    state.t += dt;
+
+    const w = canvas.width / dpr, h = canvas.height / dpr;
+    const stage = STAGES[state.idx];
+    const spheres = liveSpheres(stage, state.t);
+
+    // Moving balls can crash into a line that's still being drawn.
+    if (state.drawing && !state.won && state.path.length > 1) {
+      outer:
+      for (const s of spheres) {
+        if (!s.moving) continue;
+        for (let i = 1; i < state.path.length; i++) {
+          if (distToSeg(s, state.path[i - 1], state.path[i]) < s.r + LINE_HALF) { fail('A ball crashed into your line!'); break outer; }
+        }
+      }
+    }
+
+    ctx.save();
+    if (state.shake > 0) {
+      ctx.translate((Math.random() - .5) * state.shake, (Math.random() - .5) * state.shake);
+      state.shake = Math.max(0, state.shake - 60 * dt);
+    }
+    ctx.clearRect(-20, -20, w + 40, h + 40);
+
+    // Arena
+    ctx.beginPath();
+    ctx.arc(C.x, C.y, R, 0, Math.PI * 2);
+    ctx.fillStyle = state.flash > 0 ? `rgba(254,226,226,${state.flash})` : '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 4.5; ctx.stroke();
+    state.flash = Math.max(0, state.flash - dt * 3);
+
+    // Ghost of the last attempt
+    if (state.ghost.length > 1 && !state.drawing) {
+      ctx.save();
+      ctx.setLineDash([6, 8]);
+      strokePath(state.ghost, 'rgba(100,116,139,.35)', 4);
+      ctx.restore();
+    }
+
+    drawPortal(startP, !state.drawing && !state.won);
+    drawPortal(goalP, state.drawing);
+
+    stage.gems.forEach((g, i) => drawGem(gemPos(g), state.gemsHit[i]));
+    spheres.forEach(drawSphere);
+
+    if (state.path.length > 1) {
+      strokePath(state.path, '#14532d', 17);
+      strokePath(state.path, '#22c55e', 11);
+    }
+
+    for (let i = state.debris.length - 1; i >= 0; i--) {
+      const p = state.debris[i];
+      p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+      if (p.life <= 0) { state.debris.splice(i, 1); continue; }
+      const gold = p.c === 'gold';
+      ctx.fillStyle = gold ? `rgba(250,204,21,${p.life})` : `rgba(34,197,94,${p.life})`;
+      ctx.fillRect(p.x, p.y, p.size, p.size);
+      ctx.strokeStyle = gold ? `rgba(133,77,14,${p.life})` : `rgba(20,83,45,${p.life})`;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(p.x, p.y, p.size, p.size);
+    }
+    ctx.restore();
+  }
+
+  // ---------- Buttons ----------
+  $('nextBtn').addEventListener('click', () => {
+    if (state.idx === STAGES.length - 1) showEnd();
+    else loadStage(state.idx + 1);
+  });
+  $('retryBtn').addEventListener('click', () => loadStage(state.idx));
+  $('improveBtn').addEventListener('click', () => {
+    const i = STAGES.findIndex((_, k) => (save.best[k] || 0) < 3);
+    loadStage(i === -1 ? 0 : i);
+  });
+  $('helpBtn').addEventListener('click', () => $('helpOverlay').classList.add('show'));
+  $('helpClose').addEventListener('click', () => $('helpOverlay').classList.remove('show'));
+  $('muteBtn').addEventListener('click', () => {
+    sound.muted = !sound.muted;
+    $('muteBtn').textContent = sound.muted ? '🔇' : '🔊';
+  });
+
+  // The arena's size shifts after web fonts load or the viewport changes; keep the canvas bitmap in sync.
+  let lastSize = '';
+  const onArenaResize = () => {
+    const r = arena.getBoundingClientRect();
+    const key = `${Math.round(r.width)}x${Math.round(r.height)}@${window.devicePixelRatio}`;
+    if (key === lastSize) return;
+    lastSize = key;
+    resize();
+  };
+  if (window.ResizeObserver) new ResizeObserver(onArenaResize).observe(arena);
+  window.addEventListener('resize', onArenaResize);
+
+  requestAnimationFrame(() => {
+    onArenaResize();
+    const firstUnplayed = Math.min(save.unlocked - 1, STAGES.length - 1);
+    loadStage(firstUnplayed);
+    if (totalStars() === 0) $('helpOverlay').classList.add('show');
+    requestAnimationFrame(frame);
+  });
+})();
+</script>
+</body>
+</html>
