@@ -25,8 +25,8 @@ Open `index.html` in a browser (it works best on a phone). There is no build ste
 2. **Tidy paths.** The shape is cut into long paths that cover every cell. Paths prefer straight runs of 2–7 cells and turn toward the neighbour with the fewest open neighbours, which keeps the fill tight and avoids stranded pockets.
 3. **Arrows.** Each path gets its arrowhead on the end that faces deeper into the picture, so most lines start out blocked.
 4. **Repair.** A greedy clear is run; this is safe because removing a line only ever frees lanes. While lines are stuck, one is flipped, an end cell is peeled off, or, as a last resort, the top-most stuck cell becomes a one-cell arrow pointing up (always free). The loop ends with a full clearing order, so every board is solvable.
-5. **Two-headed lines.** Some lines get a second arrow, favouring ones whose back end starts blocked. A second way out can only help, so solvability is kept.
-6. **Tidy up.** One-cell arrows left by the repair step are merged into a neighbouring line's end whenever the board stays solvable.
+5. **Tidy up.** One-cell arrows left by the repair step are merged into a neighbouring line's end whenever the board stays solvable.
+6. **Two-headed lines.** Some lines get a second arrow, favouring ones whose back end starts blocked. A second way out can only help, so solvability is kept.
 7. **Pick the hardest.** Several candidates are generated. The one that needs the most clearing rounds and starts with the fewest free lines wins.
 
 Progress, theme and settings are saved in `localStorage`.
