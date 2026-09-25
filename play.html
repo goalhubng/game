@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#050b14">
+<title>Penalty King · Play</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<style>
+  html, body { overflow: hidden; overscroll-behavior: none; }
+  body { background: #050b14; }
+  #pitch { position: fixed; inset: 0; touch-action: none; display: block; }
+
+  .hud {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: max(10px, env(safe-area-inset-top)) 12px 8px;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .hud > * { pointer-events: auto; }
+  .hud-btn {
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid var(--card-border);
+    color: var(--white);
+    text-decoration: none;
+    font-size: 16px;
+  }
+  .hud-center { text-align: center; min-width: 0; }
+  #hudTitle {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .hud-shots { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 4px; font-size: 15px; }
+  .hud-shots .dot {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2px dashed rgba(255,255,255,0.35);
+    display: grid; place-items: center;
+    font-size: 14px;
+    background: rgba(0,0,0,0.35);
+  }
+  .hud-shots .dot.cur { border: 2px solid var(--gold); }
+  .hud-score { font-family: "Anton", Impact, sans-serif; font-size: 24px; }
+  .hud-lv { font-size: 11px; font-weight: 800; background: var(--gold); color: var(--ink); border-radius: 6px; padding: 2px 6px; }
+  #hudCoins {
+    background: rgba(0,0,0,0.45);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    padding: 7px 11px;
+    font-weight: 800;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .subhud {
+    position: fixed;
+    left: 0; right: 0;
+    top: calc(max(10px, env(safe-area-inset-top)) + 58px);
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 0 12px;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .subhud span {
+    background: rgba(0,0,0,0.5);
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 12px;
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .subhud b { color: var(--white); }
+  .subhud i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  #hudWind { color: #bfe9ff; font-weight: 800; }
+
+  .banner {
+    position: fixed;
+    left: 50%;
+    top: 46%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-family: "Anton", Impact, sans-serif;
+    font-size: clamp(34px, 10vw, 64px);
+    width: calc(100% - 32px);
+    text-align: center;
+    line-height: 1.05;
+    letter-spacing: 1px;
+    opacity: 0;
+    pointer-events: none;
+    text-shadow: 0 4px 0 rgba(0,0,0,0.45), 0 0 30px rgba(0,0,0,0.4);
+    z-index: 6;
+  }
+  .banner.show { animation: pop 1.4s ease-out forwards; }
+  .banner.good { color: var(--gold); }
+  .banner.bad { color: var(--white); }
+  @keyframes pop {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+    25% { transform: translate(-50%, -50%) scale(1); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -60%) scale(1); }
+  }
+
+  .hint {
+    position: fixed;
+    left: 50%;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    transform: translate(-50%, 10px);
+    width: max-content;
+    max-width: calc(100% - 32px);
+    text-align: center;
+    background: rgba(0,0,0,0.6);
+    border-radius: 12px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .hint.show { opacity: 1; transform: translate(-50%, 0); }
+
+  .coin-float {
+    position: fixed;
+    right: 16px;
+    top: 56px;
+    font-weight: 800;
+    color: var(--gold);
+    animation: rise 1.2s ease-out forwards;
+    pointer-events: none;
+    z-index: 7;
+  }
+  @keyframes rise { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-30px); } }
+
+  .how { list-style: none; margin: 14px 0 18px; display: grid; gap: 8px; }
+  .how li { background: rgba(0,0,0,0.25); border-radius: 12px; padding: 10px 12px; font-size: 14px; color: var(--muted); }
+  .how b { color: var(--white); }
+
+  .res-note { text-align: center; font-size: 13px; color: var(--muted); background: rgba(0,0,0,0.25); border-radius: 10px; padding: 8px; margin-bottom: 10px; }
+  .res-title { text-align: center; font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+  .res-big { text-align: center; font-family: "Anton", Impact, sans-serif; font-size: 72px; line-height: 1; }
+  .res-sub { text-align: center; color: var(--muted); margin-top: 6px; font-size: 15px; }
+  .res-stats { display: flex; justify-content: center; gap: 10px; margin: 14px 0; font-weight: 800; font-size: 14px; }
+  .res-stats span { background: rgba(0,0,0,0.3); border-radius: 999px; padding: 6px 12px; }
+  .res-actions { display: grid; gap: 10px; }
+</style>
+</head>
+<body>
+  <canvas id="pitch" aria-label="Penalty pitch"></canvas>
+
+  <header class="hud">
+    <a class="hud-btn" href="index.html" aria-label="Back to home">✕</a>
+    <div class="hud-center">
+      <div id="hudTitle"></div>
+      <div class="hud-shots" id="hudShots"></div>
+    </div>
+    <span id="hudCoins">🪙 0</span>
+  </header>
+  <div class="subhud"><span id="hudKeeper"></span><span id="hudWind" hidden></span></div>
+
+  <div class="banner" id="banner" aria-live="assertive"></div>
+  <div class="hint" id="hint"></div>
+
+  <div class="overlay show" id="intro">
+    <div class="sheet">
+      <div id="introBody"></div>
+      <button class="btn btn-primary" id="kickoff">Kick off ⚽</button>
+      <a class="btn btn-link" href="index.html">Back</a>
+    </div>
+  </div>
+
+  <div class="overlay" id="results">
+    <div class="sheet" id="resultsBody"></div>
+  </div>
+
+  <script src="js/store.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/share.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

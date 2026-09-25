@@ -6,32 +6,15 @@
 <meta name="theme-color" content="#0b3d1f">
 <title>Penalty King</title>
 <meta name="description" content="One shot. One keeper. Five penalties a day. Can you be Penalty King?">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
 <style>
-  :root {
-    --pitch-dark: #0b3d1f;
-    --pitch: #14602f;
-    --pitch-light: #1c7a3d;
-    --gold: #ffc72c;
-    --gold-deep: #e0a500;
-    --white: #ffffff;
-    --ink: #0a1a10;
-    --muted: rgba(255, 255, 255, 0.72);
-    --card: rgba(0, 0, 0, 0.28);
-    --card-border: rgba(255, 255, 255, 0.14);
-    --miss: #ff5a5a;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html, body { height: 100%; }
-
   body {
-    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    color: var(--white);
-    background: var(--pitch-dark);
     background-image:
       radial-gradient(ellipse at 50% 0%, rgba(255, 199, 44, 0.18), transparent 55%),
       repeating-linear-gradient(180deg, var(--pitch) 0 48px, var(--pitch-light) 48px 96px);
@@ -50,11 +33,8 @@
   }
 
   /* ---------- Top bar ---------- */
-  .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .topbar .left { display: flex; gap: 8px; }
   .pill {
     display: inline-flex;
     align-items: center;
@@ -66,7 +46,6 @@
     font-weight: 800;
     font-size: 14px;
   }
-  .pill .fire { font-size: 16px; }
   .icon-btn {
     width: 40px; height: 40px;
     border-radius: 50%;
@@ -78,15 +57,8 @@
   }
 
   /* ---------- Hero ---------- */
-  .hero {
-    text-align: center;
-    position: relative;
-  }
-  .crown {
-    font-size: 34px;
-    display: block;
-    animation: bob 2.4s ease-in-out infinite;
-  }
+  .hero { text-align: center; position: relative; }
+  .crown { font-size: 34px; display: block; animation: bob 2.4s ease-in-out infinite; }
   @keyframes bob {
     0%, 100% { transform: translateY(0) rotate(-4deg); }
     50% { transform: translateY(-6px) rotate(4deg); }
@@ -101,18 +73,10 @@
     text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
   }
   h1 .king { color: var(--gold); display: block; }
-  .tagline {
-    margin-top: 10px;
-    color: var(--muted);
-    font-size: 15px;
-  }
+  .tagline { margin-top: 10px; color: var(--muted); font-size: 15px; }
 
   /* ---------- Goal scene ---------- */
-  .scene {
-    position: relative;
-    height: 170px;
-    margin-top: 4px;
-  }
+  .scene { position: relative; height: 170px; margin-top: 4px; }
   .goal {
     position: absolute;
     left: 50%;
@@ -148,7 +112,6 @@
     left: 50%;
     bottom: 0;
     font-size: 28px;
-    transform: translate(-50%, 0) scale(1);
     animation: shot 3.2s ease-in infinite;
   }
   @keyframes shot {
@@ -196,26 +159,10 @@
     text-align: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
   }
-  .daily-label {
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--gold);
-  }
-  .daily-title {
-    font-family: "Anton", Impact, sans-serif;
-    font-size: 30px;
-    margin: 4px 0 2px;
-    letter-spacing: 0.5px;
-  }
+  .daily-label { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+  .daily-title { font-family: "Anton", Impact, sans-serif; font-size: 30px; margin: 4px 0 2px; letter-spacing: 0.5px; }
   .daily-sub { color: var(--muted); font-size: 14px; }
-  .shots {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 14px 0 16px;
-  }
+  .shots { display: flex; justify-content: center; gap: 10px; margin: 14px 0 16px; }
   .shot {
     width: 38px; height: 38px;
     border-radius: 50%;
@@ -224,47 +171,21 @@
     place-items: center;
     font-size: 20px;
   }
-
-  .btn {
-    display: block;
-    width: 100%;
-    border: none;
-    border-radius: 14px;
-    padding: 16px;
-    font-family: inherit;
-    font-weight: 800;
-    font-size: 18px;
-    cursor: pointer;
-    text-decoration: none;
-    text-align: center;
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
-  }
-  .btn:active { transform: translateY(3px); }
-  .btn-primary {
-    background: var(--gold);
-    color: var(--ink);
-    box-shadow: 0 5px 0 var(--gold-deep);
-    animation: pulse 1.8s ease-in-out infinite;
-  }
-  .btn-primary:active { box-shadow: 0 2px 0 var(--gold-deep); }
+  .shot.filled { border: 2px solid rgba(255,255,255,0.25); background: rgba(0,0,0,0.25); }
+  .daily .btn-primary { animation: pulse 1.8s ease-in-out infinite; }
+  .daily.done .btn-primary { animation: none; }
   @keyframes pulse {
     0%, 100% { box-shadow: 0 5px 0 var(--gold-deep), 0 0 0 0 rgba(255,199,44,0.5); }
     50% { box-shadow: 0 5px 0 var(--gold-deep), 0 0 0 10px rgba(255,199,44,0); }
   }
-  .countdown {
-    margin-top: 12px;
-    font-size: 13px;
-    color: var(--muted);
-  }
+  .daily-actions { display: grid; gap: 10px; }
+  .countdown { margin-top: 12px; font-size: 13px; color: var(--muted); }
   .countdown strong { color: var(--white); font-variant-numeric: tabular-nums; }
 
   /* ---------- Mode grid ---------- */
-  .modes {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .mode {
+    display: block;
     background: var(--card);
     border: 1px solid var(--card-border);
     border-radius: 16px;
@@ -273,14 +194,16 @@
     color: var(--white);
     font-family: inherit;
     cursor: pointer;
+    text-decoration: none;
     transition: transform 0.15s ease, background 0.15s ease;
   }
   .mode:hover { background: rgba(0,0,0,0.4); transform: translateY(-2px); }
   .mode-icon { font-size: 26px; }
   .mode-name { font-weight: 800; font-size: 16px; margin-top: 8px; }
   .mode-desc { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .mode-best { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 800; color: var(--gold); }
 
-  /* ---------- Yesterday / share ---------- */
+  /* ---------- Yesterday ---------- */
   .last {
     background: var(--card);
     border: 1px solid var(--card-border);
@@ -294,86 +217,108 @@
   .last-label { font-size: 12px; color: var(--muted); font-weight: 600; }
   .last-result { font-size: 20px; letter-spacing: 2px; margin-top: 2px; }
   .last-score { font-weight: 800; font-size: 14px; }
-  .btn-share {
-    background: #25d366;
-    color: #04210f;
-    border: none;
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-family: inherit;
-    font-weight: 800;
-    font-size: 14px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
 
-  /* ---------- Leaderboard teaser ---------- */
-  .board {
+  /* ---------- Career ---------- */
+  .panel {
     background: var(--card);
     border: 1px solid var(--card-border);
     border-radius: 16px;
-    padding: 14px 16px;
+    padding: 14px 16px 16px;
   }
-  .board h2 {
+  .panel h2 {
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     color: var(--gold);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
-  .row {
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat { background: rgba(0,0,0,0.22); border-radius: 12px; padding: 10px 6px; text-align: center; }
+  .stat b { display: block; font-family: "Anton", Impact, sans-serif; font-weight: 400; font-size: 24px; }
+  .stat span { font-size: 11px; color: var(--muted); }
+  .heat-wrap { margin-top: 14px; }
+  .heat-title { font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+  .heat {
     display: grid;
-    grid-template-columns: 28px 1fr auto;
-    align-items: center;
-    padding: 8px 0;
-    border-top: 1px solid rgba(255,255,255,0.08);
-    font-size: 14px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 44px);
+    border: 4px solid var(--white);
+    border-bottom: none;
+    border-radius: 3px 3px 0 0;
   }
-  .row:first-of-type { border-top: none; }
-  .rank { font-weight: 800; color: var(--muted); }
-  .name small { color: var(--muted); margin-left: 6px; }
-  .pts { font-weight: 800; font-variant-numeric: tabular-nums; }
-  .row.me { color: var(--gold); }
-  .row.me .rank { color: var(--gold); }
+  .heat div {
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 13px;
+    border: 1px dashed rgba(255,255,255,0.18);
+  }
+  .heat-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
 
-  footer {
-    margin-top: auto;
+  footer { margin-top: auto; text-align: center; color: rgba(255,255,255,0.5); font-size: 12px; }
+
+  /* ---------- Sheets ---------- */
+  .skins { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 14px 0; }
+  .skin {
+    background: rgba(0,0,0,0.25);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 12px 8px;
     text-align: center;
-    color: rgba(255,255,255,0.5);
-    font-size: 12px;
-  }
-
-  .toast {
-    position: fixed;
-    left: 50%;
-    bottom: 24px;
-    transform: translate(-50%, 20px);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    background: var(--ink);
     color: var(--white);
-    border: 1px solid var(--gold);
-    border-radius: 12px;
-    padding: 12px 18px;
-    font-weight: 600;
-    font-size: 14px;
-    transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
-    max-width: calc(100% - 32px);
-    text-align: center;
+    font-family: inherit;
+    cursor: pointer;
   }
-  .toast.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
+  .skin.on { border-color: var(--gold); }
+  .skin .ballp {
+    width: 46px; height: 46px;
+    margin: 0 auto 8px;
+    border-radius: 50%;
+    box-shadow: inset -6px -6px 10px rgba(0,0,0,0.35);
+  }
+  .skin .n { font-weight: 800; font-size: 14px; }
+  .skin .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .skin.locked { opacity: 0.6; }
 
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation: none !important; transition: none !important; }
-    .goal-flash, .ball { opacity: 0; }
+  .field { margin: 14px 0; }
+  .field label { display: block; font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+  .field input[type=text] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    background: rgba(0,0,0,0.3);
+    color: var(--white);
+    font-family: inherit;
+    font-size: 16px;
   }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .seg button {
+    padding: 10px 4px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    background: rgba(0,0,0,0.25);
+    color: var(--white);
+    font-family: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .seg button.on { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+  .seg-note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .toggle { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.08); font-weight: 600; }
+  .toggle input { width: 20px; height: 20px; accent-color: var(--gold); }
+  .danger { color: var(--bad); }
+
+  @media (prefers-reduced-motion: reduce) { .goal-flash, .ball { opacity: 0; } }
 </style>
 </head>
 <body>
   <main class="wrap">
     <header class="topbar">
-      <span class="pill" title="Daily streak"><span class="fire">🔥</span> <span id="streak">0</span> day streak</span>
+      <div class="left">
+        <span class="pill" title="Daily streak">🔥 <span id="streak">0</span></span>
+        <span class="pill" title="Coins">🪙 <span id="coins">0</span></span>
+      </div>
       <button class="icon-btn" aria-label="Settings" id="settingsBtn">⚙️</button>
     </header>
 
@@ -391,119 +336,265 @@
       </div>
     </section>
 
-    <section class="daily" aria-labelledby="dailyTitle">
+    <section class="daily" id="daily" aria-labelledby="dailyTitle">
       <div class="daily-label">Daily Challenge <span id="dayNo"></span></div>
-      <div class="daily-title" id="dailyTitle">Beat the Wall</div>
-      <div class="daily-sub">Same 5 penalties for everyone. One attempt.</div>
-      <div class="shots" aria-label="Five shots remaining">
-        <span class="shot"></span><span class="shot"></span><span class="shot"></span><span class="shot"></span><span class="shot"></span>
-      </div>
-      <button class="btn btn-primary" id="playDaily">▶ Take Your Shots</button>
+      <div class="daily-title" id="dailyTitle">Beat the Keepers</div>
+      <div class="daily-sub" id="dailySub">Same 5 penalties for everyone. One attempt.</div>
+      <div class="shots" id="dailyShots"></div>
+      <div class="daily-actions" id="dailyActions"></div>
       <div class="countdown">Next challenge in <strong id="countdown">--:--:--</strong></div>
     </section>
 
     <section class="modes" aria-label="Game modes">
-      <button class="mode" data-mode="Quick Shootout">
+      <a class="mode" href="play.html?mode=quick">
         <div class="mode-icon">⚡</div>
         <div class="mode-name">Quick Shootout</div>
-        <div class="mode-desc">Unlimited practice vs the keeper</div>
-      </button>
-      <button class="mode" data-mode="Be the Keeper">
+        <div class="mode-desc">Endless. 3 lives. Keepers level up.</div>
+        <span class="mode-best" id="quickBest"></span>
+      </a>
+      <a class="mode" href="play.html?mode=keeper">
         <div class="mode-icon">🧤</div>
         <div class="mode-name">Be the Keeper</div>
         <div class="mode-desc">Read the run-up. Make the save.</div>
-      </button>
-      <button class="mode" data-mode="Challenge a Friend">
+        <span class="mode-best" id="keeperBest"></span>
+      </a>
+      <a class="mode" href="play.html?mode=friend">
         <div class="mode-icon">🤝</div>
         <div class="mode-name">Challenge a Friend</div>
-        <div class="mode-desc">Send a link, settle it on the spot</div>
-      </button>
-      <button class="mode" data-mode="Locker Room">
+        <div class="mode-desc">Same keepers, same wind. Send the link.</div>
+      </a>
+      <button class="mode" id="lockerBtn">
         <div class="mode-icon">👕</div>
         <div class="mode-name">Locker Room</div>
-        <div class="mode-desc">Kits, balls & celebrations</div>
+        <div class="mode-desc">Spend coins on new balls</div>
       </button>
     </section>
 
-    <section class="last" aria-label="Yesterday's result">
+    <section class="last" id="yesterday" hidden aria-label="Yesterday's result">
       <div>
         <div class="last-label">Yesterday</div>
-        <div class="last-result">⚽⚽❌⚽⚽</div>
-        <div class="last-score">4/5 · Top 18%</div>
+        <div class="last-result" id="yResult"></div>
+        <div class="last-score" id="yScore"></div>
       </div>
-      <button class="btn-share" id="shareBtn">Share 📲</button>
     </section>
 
-    <section class="board" aria-label="Today's leaders">
-      <h2>🏆 Today's Kings</h2>
-      <div class="row"><span class="rank">1</span><span class="name">Tobi_Finisher <small>Lagos</small></span><span class="pts">5/5</span></div>
-      <div class="row"><span class="rank">2</span><span class="name">AdaCurls <small>Enugu</small></span><span class="pts">5/5</span></div>
-      <div class="row"><span class="rank">3</span><span class="name">KanoKeeperKiller <small>Kano</small></span><span class="pts">5/5</span></div>
-      <div class="row me"><span class="rank">–</span><span class="name">You</span><span class="pts">Not played</span></div>
+    <section class="panel" aria-labelledby="careerTitle">
+      <h2 id="careerTitle">📊 Your Career</h2>
+      <div class="stats" id="stats"></div>
+      <div class="heat-wrap">
+        <div class="heat-title">Where you shoot</div>
+        <div class="heat" id="heat"></div>
+        <div class="heat-note" id="heatNote">Take some penalties to build your shot map.</div>
+      </div>
     </section>
 
     <footer>Penalty King · a GoalHub game</footer>
   </main>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="overlay" id="locker">
+    <div class="sheet">
+      <h2>Locker Room</h2>
+      <p class="lead">You have <b>🪙 <span id="lockerCoins">0</span></b> · score goals and make saves to earn more</p>
+      <div class="skins" id="skins"></div>
+      <button class="btn btn-ghost" data-close>Done</button>
+    </div>
+  </div>
 
+  <div class="overlay" id="settings">
+    <div class="sheet">
+      <h2>Settings</h2>
+      <div class="field">
+        <label for="nameInput">Your name (shown on challenge links)</label>
+        <input type="text" id="nameInput" maxlength="20" placeholder="e.g. Tobi" autocomplete="nickname">
+      </div>
+      <div class="field">
+        <label>Difficulty (Quick Shootout)</label>
+        <div class="seg" id="diffSeg">
+          <button data-d="amateur">Amateur</button>
+          <button data-d="pro">Pro</button>
+          <button data-d="legend">Legend</button>
+        </div>
+        <div class="seg-note">Legend: no aim guide, wind on every shot. The Daily Challenge is always Pro so it's fair for everyone.</div>
+      </div>
+      <label class="toggle">Sound <input type="checkbox" id="soundToggle"></label>
+      <label class="toggle">Vibration <input type="checkbox" id="hapticToggle"></label>
+      <button class="btn btn-link danger" id="resetBtn">Reset all progress</button>
+      <button class="btn btn-ghost" data-close>Done</button>
+    </div>
+  </div>
+
+  <script src="js/store.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/share.js"></script>
 <script>
-  // Daily challenge number: days since launch date
-  const LAUNCH = Date.UTC(2026, 8, 1);
-  const dayNo = Math.floor((Date.now() - LAUNCH) / 86400000) + 1;
-  document.getElementById("dayNo").textContent = "#" + dayNo;
+  const S = PK.store, st = S.state;
+  const $ = (id) => document.getElementById(id);
+  const today = S.dayNo();
 
-  // Countdown to next UTC midnight
-  const cd = document.getElementById("countdown");
+  function render() {
+    $("streak").textContent = S.currentStreak();
+    $("coins").textContent = st.coins;
+    $("dayNo").textContent = "#" + today;
+
+    // Daily challenge card
+    const played = st.daily[today];
+    const shots = $("dailyShots");
+    shots.innerHTML = "";
+    const emo = played ? [...S.emojiRow(played.r)] : [];
+    for (let i = 0; i < 5; i++) {
+      const s = document.createElement("span");
+      s.className = "shot" + (played ? " filled" : "");
+      s.textContent = emo[i] || "";
+      shots.appendChild(s);
+    }
+    $("daily").classList.toggle("done", !!played);
+    if (played) {
+      $("dailyTitle").textContent = `${played.score}/5 today`;
+      $("dailySub").textContent = played.score === 5 ? "Perfect. You're today's Penalty King 👑" : "Come back tomorrow to keep your streak alive.";
+      $("dailyActions").innerHTML = `
+        <button class="btn btn-primary" id="shareToday">Share today's result 📲</button>
+        <button class="btn btn-ghost" id="challengeToday">🤝 Challenge a friend</button>`;
+      $("shareToday").onclick = () => {
+        const streak = S.currentStreak();
+        PK.share.shareResult({
+          text: `Penalty King #${today} ${S.emojiRow(played.r)} ${played.score}/5${streak > 1 ? `\n🔥 ${streak} day streak` : ""}`,
+          url: location.href.replace(/[^/]*([?#].*)?$/, "") + "index.html",
+          card: { title: `Daily Challenge #${today}`, result: played.r, big: `${played.score}/5`, subtitle: streak > 1 ? `🔥 ${streak} day streak` : "Can you beat me?", footer: "Play free · no download" },
+        });
+      };
+      $("challengeToday").onclick = () => {
+        if (!st.name) {
+          const n = prompt("Your name (so your friend knows who challenged them):", "");
+          if (n) { st.name = n.trim().slice(0, 20); S.save(); }
+        }
+        PK.share.shareResult({
+          text: `I scored ${played.score}/5 ${S.emojiRow(played.r)} on today's Penalty King. Same keepers, same wind. Can you beat me? 👇`,
+          url: PK.share.challengeLink({ seed: S.dailySeed(today), result: played.r, name: st.name }),
+        });
+      };
+    } else {
+      $("dailyTitle").textContent = "Beat the Keepers";
+      $("dailySub").textContent = "Same 5 penalties for everyone. One attempt.";
+      $("dailyActions").innerHTML = `<a class="btn btn-primary" href="play.html?mode=daily">▶ Take Your Shots</a>`;
+    }
+
+    // Yesterday
+    const y = st.daily[today - 1];
+    $("yesterday").hidden = !y;
+    if (y) {
+      $("yResult").textContent = S.emojiRow(y.r);
+      $("yScore").textContent = `${y.score}/5`;
+    }
+
+    // Personal bests on the mode cards
+    $("quickBest").textContent = st.stats.quickBest ? `Best: ${st.stats.quickBest}` : "";
+    $("keeperBest").textContent = st.stats.keeperBest ? `Best: ${st.stats.keeperBest}/5` : "";
+
+    // Career stats
+    const s = st.stats;
+    const acc = s.shots ? Math.round((s.goals / s.shots) * 100) + "%" : "–";
+    const items = [
+      [s.goals, "Goals"], [acc, "Conversion"], [s.topBins, "Top bins"],
+      [s.saves, "Saves"], [st.bestStreak, "Best streak"], [s.woodwork, "Woodwork"],
+    ];
+    $("stats").innerHTML = items.map(([v, l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+
+    // Shot map: rows are high (zones 3-5) then low (zones 0-2)
+    const z = st.zones;
+    const total = z.reduce((a, b) => a + b, 0);
+    const order = [3, 4, 5, 0, 1, 2];
+    const max = Math.max(...z, 0.0001);
+    $("heat").innerHTML = order.map((i) => {
+      const pct = total ? Math.round((z[i] / total) * 100) : 0;
+      const a = total ? 0.1 + 0.75 * (z[i] / max) : 0;
+      return `<div style="background: rgba(255,90,60,${a.toFixed(2)})">${total ? pct + "%" : ""}</div>`;
+    }).join("");
+    if (total >= 5) {
+      const fav = order.reduce((b, i) => (z[i] > z[b] ? i : b), order[0]);
+      const names = ["bottom left", "low centre", "bottom right", "top left", "high centre", "top right"];
+      $("heatNote").textContent = `Favourite spot: ${names[fav]}. The Reader has noticed 👀`;
+    }
+  }
+
+  // Countdown to the next challenge (midnight UTC)
   function tick() {
     const now = new Date();
     const next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
-    let s = Math.max(0, Math.floor((next - now.getTime()) / 1000));
-    const h = String(Math.floor(s / 3600)).padStart(2, "0");
-    const m = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
-    const sec = String(s % 60).padStart(2, "0");
-    cd.textContent = `${h}:${m}:${sec}`;
+    const s = Math.max(0, Math.floor((next - now.getTime()) / 1000));
+    const pad = (n) => String(n).padStart(2, "0");
+    $("countdown").textContent = `${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
+    if (S.dayNo() !== today) location.reload();
   }
+
+  // ---------- Sheets ----------
+  function openSheet(id) { $(id).classList.add("show"); }
+  function close(el) { el.closest(".overlay").classList.remove("show"); }
+  document.querySelectorAll("[data-close]").forEach((b) => (b.onclick = () => close(b)));
+  document.querySelectorAll(".overlay").forEach((o) => o.addEventListener("click", (e) => { if (e.target === o) o.classList.remove("show"); }));
+
+  function renderLocker() {
+    $("lockerCoins").textContent = st.coins;
+    $("skins").innerHTML = S.SKINS.map((sk) => {
+      const owned = st.owned.includes(sk.id);
+      const streakLock = sk.streak && !owned && st.bestStreak < sk.streak;
+      let status;
+      if (st.skin === sk.id) status = "Equipped ✓";
+      else if (owned) status = "Tap to equip";
+      else if (sk.streak) status = streakLock ? `🔒 ${sk.streak}-day streak` : "Unlocked! Tap to claim";
+      else status = `🪙 ${sk.price}`;
+      const locked = !owned && (streakLock || (!sk.streak && st.coins < sk.price));
+      return `<button class="skin ${st.skin === sk.id ? "on" : ""} ${locked ? "locked" : ""}" data-id="${sk.id}">
+        <div class="ballp" style="background: radial-gradient(circle at 35% 35%, ${sk.a} 0 45%, ${sk.b} 46% 60%, ${sk.a} 61%)"></div>
+        <div class="n">${sk.name}</div><div class="s">${status}</div></button>`;
+    }).join("");
+    $("skins").querySelectorAll(".skin").forEach((b) => (b.onclick = () => pickSkin(b.dataset.id)));
+  }
+
+  function pickSkin(id) {
+    const sk = S.SKINS.find((s) => s.id === id);
+    if (!st.owned.includes(id)) {
+      if (sk.streak) {
+        if (st.bestStreak < sk.streak) return PK.toast(`Reach a ${sk.streak}-day streak to unlock`);
+      } else if (st.coins < sk.price) {
+        return PK.toast(`You need ${sk.price - st.coins} more coins`);
+      } else {
+        st.coins -= sk.price;
+        PK.sfx.coin();
+      }
+      st.owned.push(id);
+      PK.toast(`${sk.name} unlocked! 🎉`);
+    }
+    st.skin = id;
+    S.save();
+    renderLocker();
+    render();
+  }
+
+  function renderSettings() {
+    $("nameInput").value = st.name;
+    $("soundToggle").checked = st.sound;
+    $("hapticToggle").checked = st.haptics;
+    $("diffSeg").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.d === st.difficulty));
+  }
+  $("nameInput").addEventListener("input", (e) => { st.name = e.target.value.trim().slice(0, 20); S.save(); });
+  $("soundToggle").onchange = (e) => { st.sound = e.target.checked; S.save(); };
+  $("hapticToggle").onchange = (e) => { st.haptics = e.target.checked; S.save(); };
+  $("diffSeg").querySelectorAll("button").forEach((b) => (b.onclick = () => { st.difficulty = b.dataset.d; S.save(); renderSettings(); }));
+  $("resetBtn").onclick = () => {
+    if (confirm("Reset all progress? Coins, streaks, stats and unlocks will be lost.")) {
+      try { localStorage.removeItem("pk_v1"); } catch (e) { /* ignore */ }
+      location.reload();
+    }
+  };
+
+  $("lockerBtn").onclick = () => { renderLocker(); openSheet("locker"); };
+  $("settingsBtn").onclick = () => { renderSettings(); openSheet("settings"); };
+
+  // Coming back from a game via the back button restores a cached page with stale state.
+  window.addEventListener("pageshow", (e) => { if (e.persisted) location.reload(); });
+  render();
   tick();
   setInterval(tick, 1000);
-
-  // Streak from local storage (best effort)
-  try {
-    const streak = parseInt(localStorage.getItem("pk_streak") || "0", 10);
-    document.getElementById("streak").textContent = isNaN(streak) ? 0 : streak;
-  } catch (e) { /* storage unavailable */ }
-
-  // Toast helper
-  const toast = document.getElementById("toast");
-  let toastTimer;
-  function showToast(msg) {
-    toast.textContent = msg;
-    toast.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
-  }
-
-  document.getElementById("playDaily").addEventListener("click", () =>
-    showToast("Daily Challenge coming soon ⚽"));
-  document.querySelectorAll(".mode").forEach(btn =>
-    btn.addEventListener("click", () => showToast(`${btn.dataset.mode} coming soon`)));
-  document.getElementById("settingsBtn").addEventListener("click", () =>
-    showToast("Settings coming soon"));
-
-  // Share yesterday's result
-  document.getElementById("shareBtn").addEventListener("click", async () => {
-    const text = `⚽⚽❌⚽⚽ 4/5 — Penalty King #${dayNo - 1}\nCan you beat me?`;
-    if (navigator.share) {
-      try { await navigator.share({ text }); } catch (e) { /* cancelled */ }
-    } else {
-      try {
-        await navigator.clipboard.writeText(text);
-        showToast("Result copied — paste it anywhere!");
-      } catch (e) {
-        showToast(text);
-      }
-    }
-  });
 </script>
 </body>
 </html>
