@@ -141,6 +141,24 @@
     .switch.on { background: var(--accent); }
     .switch.on::after { transform: translateX(20px); }
 
+    /* Home */
+    .home { position: absolute; inset: 0; z-index: 25; display: none; flex-direction: column; background: var(--panel);
+      padding: calc(env(safe-area-inset-top) + 10px) 20px calc(env(safe-area-inset-bottom) + 20px); }
+    .home.show { display: flex; }
+    .home-top { display: flex; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 12px; justify-content: center; margin-top: 2px; }
+    .brand h1 { margin: 0; font-size: 40px; line-height: 1; font-weight: 900; color: var(--title); letter-spacing: -.01em; }
+    .tagline { margin: 8px 0 0; text-align: center; color: var(--muted); font-weight: 800; font-size: 15px; }
+    .demo { position: relative; flex: 1; min-height: 120px; margin: 10px -4px; }
+    .demo canvas { pointer-events: none; }
+    .demo-name { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 12px; font-weight: 800; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+    .play { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 17px 22px; border-radius: 18px;
+      background: var(--title); color: #fff; box-shadow: 0 10px 22px -10px var(--shadow); }
+    .play:active { transform: scale(.98); }
+    .play b { font-size: 22px; font-weight: 900; }
+    .play span { font-size: 15px; font-weight: 800; opacity: .9; display: flex; align-items: center; gap: 6px; }
+    .stats { margin-top: 14px; text-align: center; font-size: 13px; font-weight: 800; color: var(--muted); min-height: 18px; }
+
     .levels { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 14px; max-height: 52vh; overflow: auto; padding: 2px; }
     .lv { aspect-ratio: 1; border-radius: 14px; background: var(--btn); box-shadow: inset 0 0 0 2px var(--line); font-weight: 900; font-size: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-variant-numeric: tabular-nums; }
     .lv small { font-size: 9px; letter-spacing: -1px; color: #3b8fd9; min-height: 10px; }
@@ -181,18 +199,34 @@
     </button>
   </div>
 
-  <!-- Menu -->
-  <div class="veil show" id="startVeil">
-    <div class="sheet">
-      <h2>Lane Out</h2>
-      <div class="menu-level" id="menuLevel">Level 1</div>
-      <button class="cta" id="playBtn">Play</button>
-      <div class="row2">
-        <button class="cta2" id="levelsBtn">Levels<small id="levelsSub">0 cleared</small></button>
-        <button class="cta2" id="dailyBtn">Daily puzzle<small id="dailySub">New today</small></button>
-      </div>
+  <!-- Home -->
+  <section class="home show" id="home" aria-label="Home">
+    <div class="home-top">
+      <button class="ico" id="homeTheme" aria-label="Change theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.9 1.7-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.8-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.1" fill="currentColor"/><circle cx="10.5" cy="7" r="1.1" fill="currentColor"/><circle cx="15" cy="7.5" r="1.1" fill="currentColor"/></svg>
+      </button>
+      <button class="ico" id="homeSettings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><circle cx="12" cy="12" r="3.2"/></svg>
+      </button>
     </div>
-  </div>
+    <div class="brand">
+      <svg width="44" height="44" viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10 44V22h14v14h22" stroke="var(--title)" stroke-width="5"/>
+        <path d="M40 30l6 6-6 6" stroke="var(--title)" stroke-width="5"/>
+        <path d="M32 26V10" stroke="var(--ink)" stroke-width="5"/>
+        <path d="M26 16l6-6 6 6" stroke="var(--ink)" stroke-width="5"/>
+      </svg>
+      <h1>Lane Out</h1>
+    </div>
+    <p class="tagline">Slide every line out. Find the order.</p>
+    <div class="demo" id="demo"><canvas id="demoCv"></canvas><div class="demo-name" id="demoName"></div></div>
+    <button class="play" id="playBtn"><b>Play</b><span id="menuLevel">Level 1</span></button>
+    <div class="row2">
+      <button class="cta2" id="levelsBtn">Levels<small id="levelsSub">0 cleared</small></button>
+      <button class="cta2" id="dailyBtn">Daily puzzle<small id="dailySub">New today</small></button>
+    </div>
+    <div class="stats" id="stats"></div>
+  </section>
 
   <!-- Level picker -->
   <div class="veil" id="levelsVeil">
@@ -211,7 +245,10 @@
       <div class="result-drops" id="winDrops"></div>
       <p id="winText"></p>
       <button class="cta" id="nextBtn">Next level</button>
-      <button class="cta alt" id="replayBtn">Replay</button>
+      <div class="row2">
+        <button class="cta2" id="replayBtn">Replay</button>
+        <button class="cta2" id="winHome">Home</button>
+      </div>
     </div>
   </div>
 
@@ -221,6 +258,7 @@
       <h2>Out of drops</h2>
       <p>Before you tap, hold a line down to see where it will go.</p>
       <button class="cta" id="retryBtn">Try again</button>
+      <button class="cta alt" id="loseHome">Home</button>
     </div>
   </div>
 
@@ -385,17 +423,18 @@
 
   function levelConfig(level, opts = {}) {
     let cols;
-    if (opts.daily) cols = 24;
-    else if (level <= 3) cols = 5 + level;
-    else cols = Math.min(28, 9 + Math.floor((level - 4) * 1.1));
+    if (opts.demo) cols = 18;
+    else if (opts.daily) cols = 34;
+    else if (level <= 3) cols = 6 + level;
+    else cols = Math.min(40, 12 + Math.floor((level - 4) * 1.4));
     let rows = Math.round(cols * 1.15);
-    const maxLen = opts.daily ? 22 : Math.min(24, 5 + level);
+    const maxLen = opts.demo ? 14 : opts.daily ? 28 : Math.min(30, 6 + level);
     let mask = null, draw = null, emoji = null, name = 'Warm-up';
-    if (level <= 3 && !opts.daily) {
+    if (level <= 3 && !opts.daily && !opts.demo) {
       rows = Math.round(cols * 1.2);
       mask = shapeMask(SHAPES.square, cols, rows);
     } else {
-      const pick = opts.daily ? PICTURES[opts.seed % PICTURES.length] : PICTURES[(level * 5 + 1) % PICTURES.length];
+      const pick = (opts.daily || opts.demo) ? PICTURES[opts.seed % PICTURES.length] : PICTURES[(level * 5 + 1) % PICTURES.length];
       const ras = rasterize(pick[0], cols);
       if (ras) { rows = ras.rows; mask = ras.mask; draw = ras.draw; emoji = pick[0]; name = pick[1]; }
       else { const fb = FALLBACK[level % FALLBACK.length]; name = fb[1]; mask = shapeMask(SHAPES[fb[0]], cols, rows); }
@@ -598,11 +637,45 @@
     return { solvable: true, depth, initialFree };
   }
 
+  // The repair step can leave one-cell arrows. Fold each into a neighbouring line's end
+  // whenever the board stays solvable, so big boards don't fill up with stray ticks.
+  function mergeSingles(best, cfg) {
+    const { cols, rows } = cfg;
+    let lines = best.lines;
+    const at = new Map();
+    const index = () => { at.clear(); lines.forEach((l, i) => l.cells.forEach(([c, r]) => at.set(r * cols + c, i))); };
+    index();
+    for (let i = 0; i < lines.length; i++) {
+      const s = lines[i];
+      if (s.cells.length !== 1) continue;
+      const [c, r] = s.cells[0];
+      let done = false;
+      for (const [dx, dy] of DIRS) {
+        const j = at.get((r + dy) * cols + c + dx);
+        if (j === undefined || j === i) continue;
+        const L = lines[j];
+        const tail = L.cells[0], head = L.cells[L.cells.length - 1];
+        const cands = [];
+        if (tail[0] === c + dx && tail[1] === r + dy) cands.push({ cells: [[c, r], ...L.cells], dir: L.cells.length > 1 ? L.dir : [dx, dy] });
+        if (head[0] === c + dx && head[1] === r + dy) cands.push({ cells: [...L.cells, [c, r]], dir: [-dx, -dy] });
+        for (const m of cands) {
+          const trial = lines.slice();
+          trial[j] = m; trial.splice(i, 1);
+          const st = analyse(trial, cols, rows);
+          if (st.solvable) { lines = trial; best.depth = st.depth; best.initialFree = st.initialFree; done = true; break; }
+        }
+        if (done) break;
+      }
+      if (done) { index(); i--; }
+    }
+    best.lines = lines;
+  }
+
   function generateLevel(level, opts = {}) {
     const cfg = levelConfig(level, opts);
-    const baseSeed = opts.daily ? opts.seed : level * 7919 + 13;
+    const baseSeed = (opts.daily || opts.demo) ? opts.seed : level * 7919 + 13;
     const bias = opts.daily ? 0.85 : level <= 2 ? 0.35 : Math.min(0.9, 0.55 + level * 0.02);
-    const tries = cfg.cols > 20 ? 3 : 5;
+    const tries = opts.demo ? 1 : cfg.cols > 30 ? 2 : cfg.cols > 20 ? 3 : 5;
     let best = null;
     for (let a = 0; a < tries; a++) {
       const R = mulberry(baseSeed + a * 104729);
@@ -615,6 +688,7 @@
       const score = st.depth - 6 * st.initialFree / lines.length - 4 * singles / lines.length;
       if (!best || score > best.score) best = { lines, score, depth: st.depth, initialFree: st.initialFree };
     }
+    if (!opts.demo) mergeSingles(best, cfg);
     return { cols: cfg.cols, rows: cfg.rows, lines: best.lines, depth: best.depth, initialFree: best.initialFree,
       name: cfg.name, emoji: cfg.emoji, draw: cfg.draw, level };
   }
@@ -622,6 +696,7 @@
   // ================= Game state =================
   const $ = (id) => document.getElementById(id);
   const cv = $('cv'), ctx = cv.getContext('2d'), stage = $('stage');
+  window.__mainCtx = ctx;
   let W = 0, H = 0, dpr = 1;
   let G = null, lines = [], occ = null;
   let mode = 'level', dailyKey = '';
@@ -687,7 +762,8 @@
     busyEnd = false; removed = 0; streak = 0; revealT = -1; shake = 0;
     view.s = 1; view.x = 0; view.y = 0; zoomAnim = null;
     $('levelTitle').textContent = mode === 'daily' ? 'Daily puzzle' : `Level ${n}`;
-    ['winVeil', 'loseVeil', 'levelsVeil', 'startVeil'].forEach(v => $(v).classList.remove('show'));
+    ['winVeil', 'loseVeil', 'levelsVeil'].forEach(v => $(v).classList.remove('show'));
+    hideHome();
     fit(); renderDrops(); renderHud();
     const tips = {
       1: 'Tap a line. It slides out the way its arrow points.',
@@ -745,8 +821,11 @@
   if (window.ResizeObserver) new ResizeObserver(onResize).observe(stage);
   window.addEventListener('resize', onResize);
 
-  const px = (c) => layout.ox + (c + 0.5) * layout.cs;
-  const py = (r) => layout.oy + (r + 0.5) * layout.cs;
+  // Drawing target: the game board by default, swapped to the home-page demo while it draws.
+  let dg = null, dlay = null;
+  const LAY = () => dlay || layout;
+  const px = (c) => LAY().ox + (c + 0.5) * LAY().cs;
+  const py = (r) => LAY().oy + (r + 0.5) * LAY().cs;
   const toWorld = (x, y) => [(x - view.x) / view.s, (y - view.y) / view.s];
   function clampView() {
     view.s = Math.max(1, Math.min(5, view.s));
@@ -971,7 +1050,8 @@
   }
   // Draws a line occupying path positions [s, s + len - 1] with its arrowhead at the front.
   function drawLine(l, P, s, color, width, withHead = true) {
-    const { cs } = layout;
+    const { cs } = LAY();
+    const ctx = dg || window.__mainCtx;
     const len = l.cells.length;
     let pts, dx = l.dir[0], dy = l.dir[1];
     if (len === 1) {
@@ -993,7 +1073,7 @@
     if (!withHead) return;
     const h = pts[pts.length - 1];
     const hx = px(h[0]), hy = py(h[1]);
-    const tip = Math.min(cs * 0.4, 13), back = cs * 0.02, half = Math.max(width * 1.55, Math.min(cs * 0.2, 7));
+    const tip = Math.min(cs * 0.36, 11), back = cs * 0.02, half = Math.max(width * 1.7, Math.min(cs * 0.17, 6));
     ctx.beginPath();
     ctx.moveTo(hx + dx * tip, hy + dy * tip);
     ctx.lineTo(hx - dx * back - dy * half, hy - dy * back + dx * half);
@@ -1007,6 +1087,7 @@
   function frame(now) {
     requestAnimationFrame(frame);
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (homeOn) { drawDemo(dt, now); return; }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
     if (!G) return;
@@ -1021,7 +1102,7 @@
     const sx = shake > 0 ? Math.sin(now / 22) * 5 * shake * shake : 0;
     ctx.setTransform(dpr * view.s, 0, 0, dpr * view.s, dpr * (view.x + sx), dpr * view.y);
     const { cs, ox, oy } = layout;
-    const lw = Math.max(1.3 / view.s, Math.min(cs * 0.13, 4.2));
+    const lw = Math.max(1 / view.s, Math.min(cs * 0.1, 3));
 
     if (showGrid) {
       ctx.fillStyle = colors.line;
@@ -1137,12 +1218,113 @@
   document.documentElement.setAttribute('data-skin', initialTheme);
   readColors();
 
+  function dailyStreak() {
+    const d = new Date();
+    const key = (x) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
+    if (save.daily[key(d)] === undefined) d.setDate(d.getDate() - 1);
+    let n = 0;
+    while (save.daily[key(d)] !== undefined) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
   function renderMenu() {
-    $('menuLevel').textContent = `Level ${save.level}`;
-    $('levelsSub').textContent = `${Object.keys(save.best).length} cleared`;
+    const cleared = Object.keys(save.best).length;
+    const perfect = Object.values(save.best).filter(v => v === 3).length;
+    const streak = dailyStreak();
+    $('menuLevel').innerHTML = `Level ${save.level} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`;
+    $('levelsSub').textContent = `${cleared} cleared`;
     const k = todayKey();
     $('dailySub').textContent = save.daily[k] !== undefined ? `Solved · ${'💧'.repeat(save.daily[k])}` : 'New today';
+    const parts = [];
+    if (cleared) parts.push(`${cleared} level${cleared === 1 ? '' : 's'} cleared`);
+    if (perfect) parts.push(`${perfect} perfect`);
+    if (streak) parts.push(`🔥 ${streak}-day daily streak`);
+    $('stats').textContent = parts.length ? parts.join(' · ') : 'Your progress is saved on this device.';
   }
+
+  // ---------- Home page with a self-playing demo board ----------
+  let homeOn = true, demo = null;
+  const home = $('home'), demoCv = $('demoCv'), dctx = demoCv.getContext('2d');
+  let dW = 0, dH = 0;
+  function sizeDemo() {
+    const r = $('demo').getBoundingClientRect();
+    dW = r.width; dH = r.height - 18;
+    demoCv.width = Math.round(r.width * dpr); demoCv.height = Math.round(r.height * dpr);
+    demoCv.style.width = r.width + 'px'; demoCv.style.height = r.height + 'px';
+    if (demo) layoutDemo();
+  }
+  function layoutDemo() {
+    const cs = Math.min((dW - 8) / demo.cols, (dH - 8) / demo.rows);
+    demo.lay = { cs, ox: (dW - cs * demo.cols) / 2, oy: (dH - cs * demo.rows) / 2 };
+  }
+  if (window.ResizeObserver) new ResizeObserver(sizeDemo).observe($('demo'));
+  function newDemo() {
+    const g = generateLevel(0, { demo: true, seed: Math.floor(Math.random() * 1e9) });
+    demo = { cols: g.cols, rows: g.rows, emoji: g.emoji, draw: g.draw, name: g.name, t: 0, wait: 0.9, reveal: -1,
+      lines: g.lines.map((l, i) => ({ id: i, cells: l.cells, dir: l.dir, state: 'idle', s: 0, v: 0 })) };
+    $('demoName').textContent = '';
+    layoutDemo();
+  }
+  function demoFree(l) {
+    const [hc, hr] = l.cells[l.cells.length - 1];
+    for (let c = hc + l.dir[0], r = hr + l.dir[1]; c >= 0 && r >= 0 && c < demo.cols && r < demo.rows; c += l.dir[0], r += l.dir[1]) {
+      if (demo.lines.some(o => o !== l && o.state === 'idle' && o.cells.some(([x, y]) => x === c && y === r))) return false;
+    }
+    return true;
+  }
+  function drawDemo(dt, now) {
+    if (!demo) { sizeDemo(); newDemo(); }
+    dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dctx.clearRect(0, 0, dW, dH + 18);
+    demo.t += dt;
+    const idle = demo.lines.filter(l => l.state === 'idle');
+    if (idle.length && demo.t > demo.wait) {
+      const free = idle.filter(demoFree);
+      const l = free[Math.floor(Math.random() * free.length)];
+      if (l) {
+        l.state = 'exit'; l.v = 6;
+        const [hc, hr] = l.cells[l.cells.length - 1];
+        l.path = l.cells.map(p => p.slice());
+        for (let i = 1; i <= Math.max(demo.cols, demo.rows) + l.cells.length + 4; i++) l.path.push([hc + l.dir[0] * i, hr + l.dir[1] * i]);
+        let k = 0; for (let c = hc, r = hr; c >= 0 && r >= 0 && c < demo.cols && r < demo.rows; c += l.dir[0], r += l.dir[1]) k++;
+        l.goal = k - 1 + l.cells.length + 1;
+      }
+      demo.t = 0; demo.wait = 0.16 + Math.random() * 0.12;
+    }
+    dg = dctx; dlay = demo.lay;
+    const cs = demo.lay.cs, lw = Math.max(1, Math.min(cs * 0.1, 2.6));
+    if (demo.reveal >= 0) {
+      demo.reveal += dt;
+      const e = Math.min(1, demo.reveal / 0.8);
+      dctx.save(); dctx.globalAlpha = e * (demo.reveal > 2.4 ? Math.max(0, 1 - (demo.reveal - 2.4) / 0.4) : 1);
+      if (demo.emoji && demo.draw) {
+        const k = cs / RS;
+        dctx.font = `${demo.draw.font * k}px ${EMOJI_FONT}`; dctx.textAlign = 'center'; dctx.textBaseline = 'middle';
+        dctx.fillText(demo.emoji, demo.lay.ox + demo.draw.cx * k, demo.lay.oy + demo.draw.cy * k);
+      }
+      dctx.restore();
+      if (demo.reveal > 2.8) newDemo();
+    }
+    for (const l of demo.lines) {
+      if (l.state === 'idle') drawLine(l, l.cells, 0, colors.ink, lw);
+      else if (l.state === 'exit') {
+        l.v = Math.min(80, l.v + (20 + l.v * 3.2) * dt); l.s += l.v * dt;
+        const leave = (l.s - (l.goal - l.cells.length)) / l.cells.length;
+        dctx.globalAlpha = Math.max(0, Math.min(1, 1 - leave));
+        drawLine(l, l.path, l.s, colors.ink, lw);
+        dctx.globalAlpha = 1;
+        if (l.s >= l.goal) l.state = 'gone';
+      }
+    }
+    dg = null; dlay = null;
+    if (demo.reveal < 0 && demo.lines.every(l => l.state === 'gone')) { demo.reveal = 0; $('demoName').textContent = demo.name; }
+  }
+  function showHome() {
+    renderMenu();
+    homeOn = true; home.classList.add('show');
+    ['winVeil', 'loseVeil'].forEach(v => $(v).classList.remove('show'));
+    requestAnimationFrame(sizeDemo);
+  }
+  function hideHome() { homeOn = false; home.classList.remove('show'); }
   function renderLevels() {
     const grid = $('levelsGrid');
     grid.innerHTML = '';
@@ -1163,14 +1345,18 @@
   $('themeBtn').addEventListener('click', () => applyTheme(THEMES[(THEMES.indexOf(save.theme || initialTheme) + 1) % THEMES.length]));
   $('gridBtn').addEventListener('click', () => { showGrid = !showGrid; $('gridBtn').classList.toggle('on', showGrid); });
   $('hintBtn').addEventListener('click', useHint);
-  $('homeBtn').addEventListener('click', () => { renderMenu(); $('startVeil').classList.add('show'); });
+  $('homeBtn').addEventListener('click', showHome);
+  $('winHome').addEventListener('click', () => { if (mode === 'level') save.level = Math.max(save.level, Math.min(save.maxLevel, save.level + 1)); persist(); G = null; showHome(); });
+  $('loseHome').addEventListener('click', () => { G = null; showHome(); });
+  $('homeTheme').addEventListener('click', () => $('themeBtn').click());
+  $('homeSettings').addEventListener('click', () => $('setVeil').classList.add('show'));
   $('playBtn').addEventListener('click', () => {
     audio();
-    if (mode === 'level' && G && G.level === save.level && !busyEnd) $('startVeil').classList.remove('show');
+    if (mode === 'level' && G && G.level === save.level && !busyEnd) { hideHome(); fit(); }
     else startLevel(save.level);
   });
-  $('levelsBtn').addEventListener('click', () => { renderLevels(); $('startVeil').classList.remove('show'); $('levelsVeil').classList.add('show'); });
-  $('levelsClose').addEventListener('click', () => { $('levelsVeil').classList.remove('show'); renderMenu(); $('startVeil').classList.add('show'); });
+  $('levelsBtn').addEventListener('click', () => { renderLevels(); $('levelsVeil').classList.add('show'); });
+  $('levelsClose').addEventListener('click', () => { $('levelsVeil').classList.remove('show'); });
   $('dailyBtn').addEventListener('click', () => { audio(); startLevel(0, { daily: true }); });
   $('nextBtn').addEventListener('click', () => startLevel(mode === 'daily' ? save.level : save.level + 1));
   $('replayBtn').addEventListener('click', restart);
@@ -1185,12 +1371,9 @@
   };
   sw('swSound', 'sound'); sw('swVibe', 'vibe');
 
-  // Boot: the current level sits behind the menu.
-  renderMenu();
-  startLevel(save.level);
-  $('toast').classList.remove('show');
-  $('startVeil').classList.add('show');
+  // Boot on the home page.
   onResize();
+  showHome();
   requestAnimationFrame(frame);
 
   // Hooks for automated checks.
