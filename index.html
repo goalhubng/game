@@ -1173,7 +1173,7 @@
     // Everything routes through one master bus with a compressor so overlapping sounds don't clip.
     // Sound and music settings are saved; the context is suspended while the tab is hidden.
     let audioCtx = null; let masterGain = null; let sfxBus = null; let musicBus = null; let noiseBuffer = null;
-    let soundOn = userSave.soundOn !== false; let bgmOn = !!userSave.musicOn;
+    let soundOn = userSave.soundOn !== false; let bgmOn = userSave.musicOn !== false;
     let musicTimer = null; let musicStep = 0; let nextNoteTime = 0;
 
     function initAudio() {
@@ -1182,8 +1182,8 @@
           audioCtx = new (window.AudioContext || window.webkitAudioContext)();
           const comp = audioCtx.createDynamicsCompressor();
           comp.threshold.value = -14; comp.ratio.value = 6;
-          masterGain = audioCtx.createGain(); masterGain.gain.value = soundOn ? 0.9 : 0;
-          sfxBus = audioCtx.createGain(); sfxBus.gain.value = 0.8;
+          masterGain = audioCtx.createGain(); masterGain.gain.value = soundOn ? 1 : 0;
+          sfxBus = audioCtx.createGain(); sfxBus.gain.value = 1;
           musicBus = audioCtx.createGain(); musicBus.gain.value = 0.32;
           sfxBus.connect(masterGain); musicBus.connect(masterGain); masterGain.connect(comp); comp.connect(audioCtx.destination);
           noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
@@ -1191,8 +1191,32 @@
           for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
         }
         if (audioCtx.state === 'suspended' && !document.hidden) audioCtx.resume();
+        unlockPhoneAudio();
         if (bgmOn && !musicTimer) startBGM();
       } catch (e) {}
+    }
+
+    // Phones need extra help to make Web Audio audible:
+    // - iOS only unlocks audio from a touchend/click, and wants a sound started inside that gesture;
+    // - iOS mutes Web Audio when the ringer switch is on silent unless a media element is playing,
+    //   so a looping silent clip (or the newer audioSession API) puts the page in "playback" mode.
+    let phoneAudioUnlocked = false; let silentLoop = null;
+    const SILENT_WAV = 'data:audio/wav;base64,UklGRvQHAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YdAHAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+    function unlockPhoneAudio() {
+      if (phoneAudioUnlocked || !audioCtx) return;
+      try {
+        const src = audioCtx.createBufferSource();
+        src.buffer = audioCtx.createBuffer(1, 1, 22050);
+        src.connect(audioCtx.destination); src.start(0);
+      } catch (e) {}
+      try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+      const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isIOS && !silentLoop) {
+        silentLoop = new Audio(SILENT_WAV);
+        silentLoop.loop = true; silentLoop.setAttribute('playsinline', ''); silentLoop.volume = 0.01;
+        silentLoop.play().catch(() => { silentLoop = null; });
+      }
+      if (audioCtx.state === 'running') phoneAudioUnlocked = true;
     }
 
     function syncAudioButtons() {
@@ -1205,7 +1229,7 @@
 
     function setSound(on) {
       soundOn = on; userSave.soundOn = on;
-      if (masterGain) masterGain.gain.setTargetAtTime(on ? 0.9 : 0, audioCtx.currentTime, 0.02);
+      if (masterGain) masterGain.gain.setTargetAtTime(on ? 1 : 0, audioCtx.currentTime, 0.02);
       if (!on && 'speechSynthesis' in window) window.speechSynthesis.cancel();
       syncAudioButtons();
     }
@@ -1221,7 +1245,8 @@
 
     document.addEventListener('visibilitychange', () => {
       if (!audioCtx) return;
-      if (document.hidden) audioCtx.suspend(); else { audioCtx.resume(); nextNoteTime = audioCtx.currentTime + 0.05; }
+      if (document.hidden) { audioCtx.suspend(); silentLoop?.pause(); }
+      else { audioCtx.resume(); silentLoop?.play().catch(() => {}); nextNoteTime = audioCtx.currentTime + 0.05; }
     });
 
     // Low-level voices
@@ -1282,15 +1307,15 @@
       'D5',0,'C5',0, 0,'A4',0,'G4', 'F4',0,0,'G4', 0,'A4',0,0,
       'G4',0,'A4',0, 0,'C5',0,'D5', 0,'C5',0,'A4', 'G4',0,0,0
     ];
-    const BASS = [[87.31, 130.81], [73.42, 110], [58.27, 87.31], [65.41, 98]];
+    const BASS = [[174.61, 261.63], [146.83, 220], [116.54, 174.61], [130.81, 196]];
     const BASS_STEPS = { 0: 0, 3: 0, 6: 1, 10: 0, 14: 1 };
 
     function scheduleStep(step, t) {
       const inBar = step % 16, bar = Math.floor(step / 16) % 4;
-      if (inBar === 0 || inBar === 7 || inBar === 10) voice(150, 'sine', t, 0.22, 0.5, musicBus, 42);
+      if (inBar === 0 || inBar === 7 || inBar === 10) { voice(160, 'sine', t, 0.2, 0.5, musicBus, 50); noise(t, 0.02, 0.25, 'lowpass', 3000, musicBus); }
       if (inBar === 4 || inBar === 12) noise(t, 0.12, 0.18, 'bandpass', 1800, musicBus);
       noise(t, 0.04, inBar % 2 ? 0.09 : 0.04, 'highpass', 7000, musicBus);
-      if (BASS_STEPS[inBar] !== undefined) voice(BASS[bar][BASS_STEPS[inBar]], 'triangle', t, 0.24, 0.3, musicBus);
+      if (BASS_STEPS[inBar] !== undefined) voice(BASS[bar][BASS_STEPS[inBar]], 'triangle', t, 0.22, 0.22, musicBus);
       const note = MELODY[step % 64];
       if (note) { voice(N[note], 'sine', t, 0.28, 0.16, musicBus); voice(N[note] * 4, 'sine', t, 0.05, 0.02, musicBus); }
     }
@@ -2456,7 +2481,7 @@
     // INITIALIZATION
     syncAudioButtons();
     // Browsers only allow audio after a user gesture; start it (and saved music) on the first one.
-    ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, initAudio, { passive: true }));
+    ['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, initAudio, { passive: true }));
     if (userSave.activeLevel) {
       loseLife();
       setTimeout(() => toast("You left a stage mid-way last time: -1 ❤️"), 400);
