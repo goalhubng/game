@@ -244,8 +244,16 @@
     .chip-swatch.choc { background: linear-gradient(135deg, #a0643a, #5a3218); }
     .chip-swatch.boss { background: linear-gradient(135deg, #ff7aa8, #d10050); }
     .chip-swatch.score { background: linear-gradient(135deg, #ffe07a, #f9a908); }
+    .chip-swatch.ing { background: none; font-size: 14px; line-height: 16px; text-align: center; }
 
     #bossBarContainer { display: none; width: 100%; background: linear-gradient(90deg, rgba(80,0,30,0.7), rgba(0,0,0,0.6)); border: 1.5px solid var(--pink); border-radius: 16px; padding: 8px 14px; }
+    #bossBarContainer { position: relative; padding-left: 64px !important; }
+    .boss-face { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 40px; line-height: 1; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.6)); animation: bossIdle 1.6s ease-in-out infinite; }
+    .boss-face.attack { animation: bossAttack 0.7s ease-in-out; }
+    .boss-face.hurt { animation: bossHurt 0.35s ease-in-out; }
+    @keyframes bossIdle { 50% { transform: translateY(-58%) rotate(-4deg); } }
+    @keyframes bossAttack { 30% { transform: translateY(-50%) scale(1.6) rotate(-12deg); } 60% { transform: translateY(-50%) scale(1.4) rotate(12deg); } }
+    @keyframes bossHurt { 50% { transform: translateY(-50%) translateX(-6px) scale(0.85); filter: brightness(2) drop-shadow(0 0 8px #fff); } }
     .boss-head { display: flex; justify-content: space-between; font-size: 11px; font-weight: 900; color: #ffd0e0; }
     .boss-track { width: 100%; height: 10px; background: #260010; border-radius: 7px; overflow: hidden; margin-top: 5px; }
     .boss-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ff0055, #ff7700); transition: width 0.3s ease; }
@@ -543,6 +551,7 @@
       </div>
 
       <div id="bossBarContainer">
+        <div class="boss-face" id="bossFace">👹</div>
         <div class="boss-head"><span id="bossNameTxt">⚠️ BOSS</span><span id="bossHPTxt">15,000 HP</span></div>
         <div class="boss-track"><div id="bossHPFill" class="boss-fill"></div></div>
       </div>
@@ -791,18 +800,39 @@
     const CITY_BASES = ["Marina", "Lekki", "Ikeja", "Abeokuta", "Ijebu", "Ibadan", "Bodija", "Oshogbo", "Akure", "Owo", "Benin", "Warri", "Asaba", "Onitsha", "Awka", "Enugu", "Nsukka", "Makurdi", "Lokoja", "Zuba", "Abuja", "Maitama", "Keffi", "Jos", "Bukuru", "Bauchi", "Zaria", "Kano", "Dala", "Sahara"];
     const HUB_SUFFIXES = ["Crossing", "Terminal", "Bypass", "Motor Park", "Tollgate", "Boulevard", "Junction", "Heights"];
 
+    // One named road villain per sector
+    const BOSSES = [
+      { e: '🚧', n: 'Roadblock Rex' }, { e: '🕳️', n: 'Pothole Ogre' }, { e: '🐊', n: 'Creek Croc' }, { e: '⛏️', n: 'Quarry Golem' },
+      { e: '🌊', n: 'Flood Serpent' }, { e: '🐢', n: 'Go-Slow Giant' }, { e: '🪨', n: 'Granite Troll' }, { e: '🌪️', n: 'Dust Devil' },
+      { e: '🌫️', n: 'Harmattan Haze' }, { e: '🔥', n: 'Sahara Sun King' }
+    ];
+    const CANDY_NAMES = ['pink hearts', 'orange squares', 'yellow circles', 'green triangles', 'blue diamonds', 'purple hexagons'];
+    const INGREDIENTS = ['🥥', '🌶️'];
+    // 7x7 board shapes; 'x' marks a hole candies fall past
+    const SHAPES = [
+      ['x.....x', '.......', '.......', '.......', '.......', '.......', 'x.....x'],
+      ['xx...xx', 'x.....x', '.......', '.......', '.......', 'x.....x', 'xx...xx'],
+      ['.......', '.......', '.x...x.', '.......', '.x...x.', '.......', '.......'],
+      ['x.....x', '.......', '.......', 'x.....x', '.......', '.......', 'x.....x'],
+      ['.......', '.......', '.......', '...x...', '.......', '.......', '.......'],
+      ['xx...xx', 'x.....x', '.......', '.......', '.......', '.......', '.......']
+    ];
+
     function getStageConfig(lvl) {
       const isBoss = (lvl % 10 === 0);
       const sIdx = Math.min(9, Math.floor((lvl - 1) / 100));
       const sector = SECTOR_DATA[sIdx];
       const city = CITY_BASES[(lvl - 1) % CITY_BASES.length];
       const suff = HUB_SUFFIXES[Math.floor((lvl - 1) / 3) % HUB_SUFFIXES.length];
-      const name = isBoss ? `⚠️ ${city} Hazard (Lv ${lvl})` : `${city} ${suff} (Lv ${lvl})`;
+      const boss = BOSSES[sIdx];
+      const name = isBoss ? `⚠️ ${boss.n} (Lv ${lvl})` : `${city} ${suff} (Lv ${lvl})`;
       const colorCount = (lvl >= 80) ? 6 : (lvl >= 15 ? 5 : 4);
-      const objectiveType = isBoss ? 'BOSS' : (lvl === 1 ? 'JELLY' : (lvl === 2 ? 'SCORE' : (lvl % 3 === 0 ? 'DUAL' : (lvl % 2 === 0 ? 'CHOCOLATE' : 'JELLY'))));
+      const objectiveType = isBoss ? 'BOSS' : lvl === 1 ? 'JELLY' : lvl === 2 ? 'SCORE'
+        : (lvl >= 6 && lvl % 5 === 4) ? 'INGREDIENT' : (lvl >= 5 && lvl % 7 === 5) ? 'COLLECT'
+        : lvl % 3 === 0 ? 'DUAL' : lvl % 2 === 0 ? 'CHOCOLATE' : 'JELLY';
       // Tuned with a simulated player: targets scale with how many points a move is realistically worth
       // for the colour count, ramping up across the tour and within each 100-stage sector.
-      const moves = 16 - Math.floor(((lvl - 1) % 100) / 34) + (objectiveType === 'DUAL' ? 4 : 0) + (colorCount === 6 ? 2 : 0) + (isBoss ? 2 : 0) + (userSave?.perks?.turbo ? 1 : 0);
+      const moves = 16 - Math.floor(((lvl - 1) % 100) / 34) + (objectiveType === 'DUAL' ? 4 : 0) + (objectiveType === 'INGREDIENT' ? 5 : 0) + (objectiveType === 'COLLECT' ? 1 : 0) + (objectiveType === 'CHOCOLATE' ? 2 : 0) + (colorCount === 6 ? 2 : 0) + (isBoss ? 2 : 0) + (userSave?.perks?.turbo ? 1 : 0);
       const pointsPerMove = { 4: 2400, 5: 800, 6: 470 }[colorCount];
       const difficulty = 0.35 + 0.45 * Math.min(1, lvl / 600) + 0.1 * (((lvl - 1) % 100) / 99) + (isBoss ? 0.15 : 0);
       const baseMoves = moves - (userSave?.perks?.turbo ? 1 : 0);
@@ -813,7 +843,11 @@
         chocCount: (objectiveType === 'CHOCOLATE' || objectiveType === 'DUAL' || lvl >= 4) ? Math.min(6, 3 + Math.floor(lvl / 250)) : 0,
         cageCount: (lvl >= 7) ? Math.min(4, 2 + Math.floor(lvl / 300)) : 0,
         coneCount: (lvl >= 8) ? Math.min(3, 2 + Math.floor(lvl / 400)) : 0,
-        isBoss, bossHP: target
+        isBoss, bossHP: target, boss: isBoss ? boss : null,
+        ingredientCount: objectiveType === 'INGREDIENT' ? Math.min(3, 2 + Math.floor(lvl / 300)) : 0,
+        collectColor: lvl % colorCount, collectCount: objectiveType === 'COLLECT' ? Math.min(20, (colorCount === 6 ? 12 : 16) + Math.floor(lvl / 100)) : 0,
+        shape: (lvl >= 20 && !isBoss && lvl % 4 !== 1) ? SHAPES[(lvl * 7) % SHAPES.length] : null,
+        chocSpreads: lvl >= 300 && (objectiveType === 'CHOCOLATE' || objectiveType === 'DUAL')
       };
     }
 
@@ -1618,6 +1652,7 @@
     let lastInteraction = Date.now(); let hintMove = null; let dragStart = null;
     let effects = []; let particles = []; let shake = 0; let displayScore = 0;
     let winPending = false; let rushBonus = 0; let rushTimer = 0;
+    let voidGrid = []; let ingredientsCollected = 0; let collected = 0; let turnPending = false; let chocClearedThisTurn = false; let chocIdleTurns = 0; let lastBossAttack = 0;
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const fxReduced = () => prefersReducedMotion || userSave.settings.reduceFx;
 
@@ -1660,7 +1695,7 @@
         for (let r = 0; r < ROWS; r++) {
           for (let c = 0; c < COLS; c++) {
             grid[r][c] = null;
-            if (coneGrid[r][c] === 0) grid[r][c] = new Candy(safeType(r, c), r, c);
+            if (coneGrid[r][c] === 0 && !voidGrid[r][c]) grid[r][c] = new Candy(safeType(r, c), r, c);
           }
         }
       } while (!findMove());
@@ -1674,6 +1709,8 @@
 
     function objectiveDone() {
       const t = currentCfg.objectiveType;
+      if (t === 'INGREDIENT' && ingredientsCollected < currentCfg.ingredientCount) return false;
+      if (t === 'COLLECT' && collected < currentCfg.collectCount) return false;
       if ((t === 'JELLY' || t === 'DUAL') && countLayer(jellyGrid) > 0) return false;
       if ((t === 'CHOCOLATE' || t === 'DUAL') && countLayer(chocGrid) > 0) return false;
       return true;
@@ -1683,15 +1720,17 @@
       const t = cfg.objectiveType;
       if (t === 'BOSS') return 'Defeat the Boss';
       if (t === 'SCORE') return 'Reach Target';
+      if (t === 'INGREDIENT') return `Drop ${cfg.ingredientCount} ingredients 🥥🌶️`;
+      if (t === 'COLLECT') return `Collect ${cfg.collectCount} ${CANDY_NAMES[cfg.collectColor]}`;
       const parts = [];
       if (t === 'JELLY' || t === 'DUAL') parts.push('Jellies');
       if (t === 'CHOCOLATE' || t === 'DUAL') parts.push('Choc');
       return `Clear ${parts.join(' + ')}`;
     }
 
-    function chip(kind, text, done = false) {
-      const doneLabel = { jelly: 'Jelly', choc: 'Choc', boss: 'Boss down', score: 'Target' }[kind];
-      return `<span class="chip ${done ? 'done' : ''}"><span class="chip-swatch ${kind}"></span>${done ? `✓ ${doneLabel}` : text}</span>`;
+    function chip(kind, text, done = false, style = '', inner = '') {
+      const doneLabel = { jelly: 'Jelly', choc: 'Choc', boss: 'Boss down', score: 'Target', ing: 'Ingredients', col: 'Collected' }[kind];
+      return `<span class="chip ${done ? 'done' : ''}"><span class="chip-swatch ${kind}" style="${style}">${inner}</span>${done ? `✓ ${doneLabel}` : text}</span>`;
     }
 
     function updateHUD() {
@@ -1710,7 +1749,9 @@
         const t = currentCfg.objectiveType;
         let html = '';
         if (currentCfg.isBoss) {
+          const prevHP = bossCurrentHP;
           bossCurrentHP = Math.max(0, currentCfg.bossHP - score);
+          if (bossCurrentHP < prevHP) { const f = document.getElementById('bossFace'); if (f && !f.classList.contains('attack')) { f.classList.remove('hurt'); void f.offsetWidth; f.classList.add('hurt'); } }
           safeSetText('bossHPTxt', `${bossCurrentHP.toLocaleString()} HP`);
           const fill = document.getElementById('bossHPFill');
           if (fill) fill.style.width = `${(bossCurrentHP / currentCfg.bossHP) * 100}%`;
@@ -1718,6 +1759,8 @@
         } else {
           if (t === 'JELLY' || t === 'DUAL') { const n = countLayer(jellyGrid); html += chip('jelly', `${n} jelly`, n === 0); }
           if (t === 'CHOCOLATE' || t === 'DUAL') { const n = countLayer(chocGrid); html += chip('choc', `${n} choc`, n === 0); }
+          if (t === 'INGREDIENT') { const n = Math.max(0, currentCfg.ingredientCount - ingredientsCollected); html += chip('ing', `${n} to drop`, n === 0, '', '🥥'); }
+          if (t === 'COLLECT') { const n = Math.max(0, currentCfg.collectCount - collected); html += chip('col', `${n} left`, n === 0, `background:${CANDIES[currentCfg.collectColor].color}`); }
           const left = Math.max(0, currentCfg.target - score);
           html += chip('score', `${left.toLocaleString()} pts`, left === 0);
         }
@@ -1741,15 +1784,15 @@
       };
       if (isBlitzActive) return;
       // Cones: at most one per column so every column keeps flowing
-      place(currentCfg.coneCount, [2, 3, 4, 5], (r, c) => !coneGrid.some(row => row[c] > 0), (r, c) => { coneGrid[r][c] = 2; });
+      place(currentCfg.coneCount, [2, 3, 4, 5], (r, c) => !voidGrid[r][c] && !coneGrid.some(row => row[c] > 0), (r, c) => { coneGrid[r][c] = 2; });
       if (t === 'JELLY' || t === 'DUAL') {
-        for (let r = 2; r <= 4; r++) for (let c = 2; c <= 4; c++) if (!coneGrid[r][c]) jellyGrid[r][c] = 1;
-        place(t === 'DUAL' ? 0 : Math.min(4, Math.floor(lvl / 200)), [1, 2, 3, 4, 5], (r, c) => !coneGrid[r][c] && !jellyGrid[r][c], (r, c) => { jellyGrid[r][c] = 1; });
+        for (let r = 2; r <= 4; r++) for (let c = 2; c <= 4; c++) if (!coneGrid[r][c] && !voidGrid[r][c]) jellyGrid[r][c] = 1;
+        place(t === 'DUAL' ? 0 : Math.min(4, Math.floor(lvl / 200)), [1, 2, 3, 4, 5], (r, c) => !voidGrid[r][c] && !coneGrid[r][c] && !jellyGrid[r][c], (r, c) => { jellyGrid[r][c] = 1; });
       }
       if (!userSave?.perks?.bumper) {
-        place(t === 'DUAL' ? Math.min(4, currentCfg.chocCount) : currentCfg.chocCount, [4, 5, 6], (r, c) => !coneGrid[r][c] && !chocGrid[r][c], (r, c) => { chocGrid[r][c] = true; });
+        place(t === 'DUAL' ? Math.min(4, currentCfg.chocCount) : currentCfg.chocCount, [4, 5, 6], (r, c) => !voidGrid[r][c] && !coneGrid[r][c] && !chocGrid[r][c], (r, c) => { chocGrid[r][c] = true; });
       }
-      place(currentCfg.cageCount, [0, 1, 2, 3, 4, 5, 6], (r, c) => !coneGrid[r][c] && !cageGrid[r][c], (r, c) => { cageGrid[r][c] = true; });
+      place(currentCfg.cageCount, [0, 1, 2, 3, 4, 5, 6], (r, c) => !voidGrid[r][c] && !coneGrid[r][c] && !cageGrid[r][c], (r, c) => { cageGrid[r][c] = true; });
     }
 
     function startMatchGame(lvl) {
@@ -1778,16 +1821,26 @@
       const bossBox = document.getElementById('bossBarContainer');
       if (currentCfg.isBoss) {
         bossBox.style.display = 'block'; bossCurrentHP = currentCfg.bossHP;
-        safeSetText('bossNameTxt', `⚠️ ${currentCfg.name.toUpperCase()}`);
+        safeSetText('bossNameTxt', `${currentCfg.boss.n.toUpperCase()}`);
+        safeSetText('bossFace', currentCfg.boss.e);
       } else { bossBox.style.display = 'none'; }
 
-      grid = []; jellyGrid = []; chocGrid = []; cageGrid = []; coneGrid = [];
+      grid = []; jellyGrid = []; chocGrid = []; cageGrid = []; coneGrid = []; voidGrid = [];
+      ingredientsCollected = 0; collected = 0; turnPending = false; chocClearedThisTurn = false; chocIdleTurns = 0; lastBossAttack = 0;
       for (let r = 0; r < ROWS; r++) {
-        grid[r] = []; jellyGrid[r] = []; chocGrid[r] = []; cageGrid[r] = []; coneGrid[r] = [];
-        for (let c = 0; c < COLS; c++) { jellyGrid[r][c] = 0; chocGrid[r][c] = false; cageGrid[r][c] = false; coneGrid[r][c] = 0; }
+        grid[r] = []; jellyGrid[r] = []; chocGrid[r] = []; cageGrid[r] = []; coneGrid[r] = []; voidGrid[r] = [];
+        for (let c = 0; c < COLS; c++) {
+          jellyGrid[r][c] = 0; chocGrid[r][c] = false; cageGrid[r][c] = false; coneGrid[r][c] = 0;
+          voidGrid[r][c] = !isBlitzActive && currentCfg.shape?.[r][c] === 'x';
+        }
       }
       buildLayout(lvl);
       fillBoard();
+      if (currentCfg.objectiveType === 'INGREDIENT') {
+        // Start ingredients two rows down so they have a real chance of reaching the bottom
+        const cols = [...Array(COLS).keys()].filter(c => grid[2][c] && !cageGrid[2][c]).sort(() => Math.random() - 0.5);
+        cols.slice(0, Math.min(2, currentCfg.ingredientCount)).forEach(c => { grid[2][c] = makeIngredient(2, c); });
+      }
       if (pendingPreBoosts) {
         const pool = grid.flat().filter(cd => cd && cd.special === 'NONE' && !cageGrid[cd.r][cd.c]).sort(() => Math.random() - 0.5);
         if (pendingPreBoosts.stripe) pool.splice(0, 2).forEach(cd => { cd.special = Math.random() < 0.5 ? 'STRIPE_H' : 'STRIPE_V'; });
@@ -1829,6 +1882,7 @@
       if (userSave.shuffles <= 0) { toast("No shuffles left — get more in the shop!"); openModal('shopModal'); return; }
       userSave.shuffles--; persistState(); activateBooster(null);
       shuffleBoard(true); sfxSparkle(); showBanner("SHUFFLE! 🔀"); updateHUD();
+      if (findRuns().length) { combo = 0; lastSwap = null; state = 'CLEARING'; }
     }
     window.useShuffle = useShuffle;
     window.activateBooster = activateBooster;
@@ -1859,6 +1913,7 @@
       }
       if (activeBooster === 'HAMMER') {
         if (!grid[pos.r][pos.c] && !coneGrid[pos.r][pos.c]) return;
+        if (grid[pos.r][pos.c]?.special === 'INGREDIENT') { toast("Ingredients can't be smashed — drop them to the bottom!"); return; }
         userSave.hammers--; persistState(); activateBooster(null);
         sfxBoom(); pendingClear.push(key(pos.r, pos.c)); combo = 0; lastSwap = null; state = 'CLEARING';
         return;
@@ -1981,16 +2036,21 @@
           addFlash('bomb', bp.r, bp.c, targets);
         }
       }
-      const hasMatch = triggered || analyzeMatches().hasMatch;
+      // Swapping an ingredient down is always allowed, so you can steer it to the bottom
+      // (A and B are read after the swap, so the ingredient that moved down now sits in the lower cell)
+      const ingredientDrop = (B.special === 'INGREDIENT' && b.r > a.r) || (A.special === 'INGREDIENT' && a.r > b.r);
+      const hasMatch = triggered || ingredientDrop || analyzeMatches().hasMatch;
       if (isFree) {
         userSave.swaps--; persistState(); activateBooster(null);
         lastSwap = [a, b]; combo = 0; state = hasMatch ? 'CLEARING' : 'IDLE';
       } else if (hasMatch) {
         if (!isBlitzActive) {
-          moves--;
+          moves--; turnPending = true;
           if (userSave.activeLevel !== currentLvl) { userSave.activeLevel = currentLvl; persistState(); }
         }
         lastSwap = [a, b]; combo = 0; state = 'CLEARING';
+        // A plain ingredient drop has nothing to clear: run the landing step so it can be collected
+        if (ingredientDrop && !triggered && !analyzeMatches().hasMatch) state = 'DROPPING';
       } else {
         swapCells(a, b);
         swapAnim = { a, b, t: 0, isFree: false, back: true };
@@ -2038,6 +2098,7 @@
           if (!canSwap(b)) continue;
           const A = grid[a.r][a.c], B = grid[b.r][b.c];
           if (A.special === 'BOMB' || B.special === 'BOMB' || (isPower(A) && isPower(B))) return [a, b];
+          if (A.special === 'INGREDIENT' && b.r > a.r) return [a, b];
           grid[a.r][a.c] = B; grid[b.r][b.c] = A;
           const ok = findRuns().length > 0;
           grid[a.r][a.c] = A; grid[b.r][b.c] = B;
@@ -2077,12 +2138,13 @@
       if (coneGrid[r][c] > 0) { smashCone(r, c); return []; }
       if (cageGrid[r][c]) { cageGrid[r][c] = false; sfxClink(); burst(c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE + TILE_SIZE / 2, '#dfe7ef', 12, 4); return []; }
       const cd = grid[r][c];
-      if (!cd) return [];
+      if (!cd || cd.special === 'INGREDIENT') return [];
       grid[r][c] = null;
       popCandy(cd, r, c);
       score += 60 * mult;
+      if (currentCfg?.objectiveType === 'COLLECT' && cd.type === currentCfg.collectColor) collected++;
       if (jellyGrid[r][c] > 0) jellyGrid[r][c] = 0;
-      if (chocGrid[r][c]) chocGrid[r][c] = false;
+      if (chocGrid[r][c]) { chocGrid[r][c] = false; chocClearedThisTurn = true; }
       return specialCells(cd, r, c);
     }
 
@@ -2116,7 +2178,7 @@
       });
 
       // Clear, chaining through any specials that get hit
-      const queue = [...toClear], seen = new Set(queue), coneHits = new Set();
+      const queue = [...toClear], seen = new Set(queue), coneHits = new Set(), chocHits = new Set();
       let cleared = 0;
       while (queue.length) {
         const k = queue.shift();
@@ -2129,10 +2191,13 @@
           for (const [dr, dc] of [[1,0],[-1,0],[0,1],[0,-1]]) {
             const rr = r + dr, cc = c + dc;
             if (inBounds(rr, cc) && coneGrid[rr][cc] > 0 && !seen.has(key(rr, cc))) coneHits.add(key(rr, cc));
+            if (inBounds(rr, cc) && chocGrid[rr][cc]) chocHits.add(key(rr, cc));
           }
         }
       }
       coneHits.forEach(k => { const [r, c] = unkey(k); if (coneGrid[r][c] > 0) smashCone(r, c); });
+      // Chocolate also melts when a match happens right next to it
+      chocHits.forEach(k => { const [r, c] = unkey(k); if (chocGrid[r][c]) { chocGrid[r][c] = false; chocClearedThisTurn = true; burst(c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE + TILE_SIZE / 2, '#8a5028', 6, 3); } });
       creates.forEach((special, k) => {
         const [r, c] = unkey(k); const cd = grid[r][c];
         if (!cd) return;
@@ -2153,12 +2218,41 @@
       return true;
     }
 
+    function makeIngredient(r, c) {
+      const cd = new Candy(-2, r, c, 'INGREDIENT');
+      cd.ing = INGREDIENTS[Math.floor(Math.random() * INGREDIENTS.length)];
+      return cd;
+    }
+    const ingredientsOnBoard = () => grid.flat().filter(cd => cd?.special === 'INGREDIENT').length;
+    function ingredientDue() {
+      if (!currentCfg || currentCfg.objectiveType !== 'INGREDIENT') return false;
+      const onBoard = ingredientsOnBoard();
+      if (onBoard + ingredientsCollected >= currentCfg.ingredientCount || onBoard >= 2) return false;
+      return onBoard === 0 || Math.random() < 0.18;
+    }
+    // The lowest cell a falling piece can actually land in (holes, cones and cages don't count)
+    const lowestOpenRow = c => { for (let r = ROWS - 1; r >= 0; r--) if (!voidGrid[r][c] && !coneGrid[r][c] && !cageGrid[r][c]) return r; return -1; };
+    // An ingredient that reaches the bottom of its column is collected
+    function collectIngredients() {
+      let got = false;
+      for (let c = 0; c < COLS; c++) {
+        const r = lowestOpenRow(c), cd = grid[r]?.[c];
+        if (cd?.special === 'INGREDIENT' && cd.y >= cd.targetY) {
+          grid[r][c] = null; ingredientsCollected++; got = true;
+          burst(c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE + TILE_SIZE / 2, '#ffe07a', 18, 5);
+          addFloat(`${cd.ing} +1000`, key(r, c)); score += 1000; sfxSparkle(); buzz(40);
+        }
+      }
+      if (got) { applyGravity(); updateHUD(); }
+      return got;
+    }
+
     // Candies fall past cones and cages into the next open cell; the top is refilled.
     function applyGravity() {
       for (let c = 0; c < COLS; c++) {
         const slots = []; const candies = [];
         for (let r = ROWS - 1; r >= 0; r--) {
-          if (coneGrid[r][c] > 0 || cageGrid[r][c]) continue;
+          if (coneGrid[r][c] > 0 || cageGrid[r][c] || voidGrid[r][c]) continue;
           slots.push(r);
           if (grid[r][c]) candies.push(grid[r][c]);
           grid[r][c] = null;
@@ -2166,7 +2260,7 @@
         slots.forEach((r, i) => {
           let candy = candies[i];
           if (!candy) {
-            candy = new Candy(randomType(), r, c);
+            candy = ingredientDue() ? makeIngredient(r, c) : new Candy(randomType(), r, c);
             candy.y = -(i - candies.length + 1) * TILE_SIZE;
           }
           candy.r = r; candy.c = c; candy.x = c * TILE_SIZE; candy.targetY = r * TILE_SIZE;
@@ -2204,7 +2298,7 @@
             }
           }
         }
-        if (!moving) state = 'CLEARING';
+        if (!moving && !collectIngredients()) state = 'CLEARING';
       } else if (state === 'RUSH') {
         // Sugar Rush: each leftover move becomes a striped candy, then they all go off
         if (++rushTimer % 6 !== 0) return;
@@ -2218,7 +2312,7 @@
           sfxSparkle(); updateHUD();
         } else {
           moves = 0; updateHUD();
-          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c] && grid[r][c].special !== 'NONE') pendingClear.push(key(r, c));
+          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c] && grid[r][c].special !== 'NONE' && grid[r][c].special !== 'INGREDIENT') pendingClear.push(key(r, c));
           combo = 0; lastSwap = null; state = 'CLEARING';
         }
       } else if (state === 'IDLE' && !isVictoryLocked && !hintMove && userSave.settings.hints && Date.now() - lastInteraction > 6000) {
@@ -2282,7 +2376,7 @@
       if (state === 'OVER') return;
       if (winPending) { finalizeWin(); return; }
       if (isVictoryLocked) return;
-      if (isBlitzActive) { ensurePlayableBoard(); state = 'IDLE'; return; }
+      if (isBlitzActive) { if (!ensurePlayableBoard()) state = 'IDLE'; return; }
       if (score >= currentCfg.target && objectiveDone()) {
         isVictoryLocked = true; winPending = true;
         userSave.activeLevel = null; persistState();
@@ -2304,8 +2398,48 @@
         ]);
         openModal('gameResultModal');
       } else {
-        ensurePlayableBoard();
+        if (turnPending) { turnPending = false; afterTurn(); }
+        if (ensurePlayableBoard()) return;
         state = 'IDLE';
+      }
+    }
+
+    function afterTurn() {
+      const made = currentCfg.moves - moves;
+      if (currentCfg.isBoss && made > 0 && made % 3 === 0 && lastBossAttack !== made) { lastBossAttack = made; bossAttack(); }
+      // Chocolate grows after two turns in a row where you didn't clear any
+      chocIdleTurns = chocClearedThisTurn ? 0 : chocIdleTurns + 1;
+      if (currentCfg.chocSpreads && chocIdleTurns >= 2) { chocIdleTurns = 0; spreadChocolate(); }
+      chocClearedThisTurn = false;
+    }
+
+    function bossAttack() {
+      const face = document.getElementById('bossFace');
+      if (face) { face.classList.remove('attack'); void face.offsetWidth; face.classList.add('attack'); }
+      const pool = grid.flat().filter(cd => cd && cd.special === 'NONE' && !cageGrid[cd.r][cd.c]).sort(() => Math.random() - 0.5);
+      if (Math.random() < 0.5) {
+        pool.slice(0, 2).forEach(cd => { cageGrid[cd.r][cd.c] = true; burst(cd.x + TILE_SIZE / 2, cd.y + TILE_SIZE / 2, '#dfe7ef', 8, 3); });
+        showBanner(`${currentCfg.boss.e} CAGE ATTACK!`);
+      } else {
+        const cd = pool[0];
+        if (cd) { grid[cd.r][cd.c] = null; coneGrid[cd.r][cd.c] = 1; burst(cd.x + TILE_SIZE / 2, cd.y + TILE_SIZE / 2, '#ff7a1a', 14, 4); }
+        showBanner(`${currentCfg.boss.e} ROADBLOCK!`);
+      }
+      shake = Math.max(shake, 9); sfxBlast(); buzz([40, 30, 40]);
+    }
+
+    function spreadChocolate() {
+      if (countLayer(chocGrid) === 0 || countLayer(chocGrid) >= 14) return;
+      const choc = [];
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (chocGrid[r][c]) choc.push([r, c]);
+      for (let tries = 0; tries < 20; tries++) {
+        const [r, c] = choc[Math.floor(Math.random() * choc.length)];
+        const [dr, dc] = [[1,0],[-1,0],[0,1],[0,-1]][Math.floor(Math.random() * 4)];
+        const rr = r + dr, cc = c + dc;
+        if (inBounds(rr, cc) && !voidGrid[rr][cc] && !coneGrid[rr][cc] && !chocGrid[rr][cc]) {
+          chocGrid[rr][cc] = true; burst(cc * TILE_SIZE + TILE_SIZE / 2, rr * TILE_SIZE + TILE_SIZE / 2, '#8a5028', 8, 2);
+          showBanner("CHOCOLATE SPREADS! 🍫"); updateHUD(); return;
+        }
       }
     }
 
@@ -2331,22 +2465,16 @@
         if (!findRuns().length && findMove()) break;
       }
       if (animate) candies.forEach(cd => { cd.squash = 1; burst(cd.x + TILE_SIZE / 2, cd.y + TILE_SIZE / 2, CANDIES[cd.type]?.color || '#fff', 2, 2); });
-      if (findRuns().length) { state = 'CLEARING'; combo = 0; }
     }
 
+    // Returns true when the reshuffle left matches on the board that still need clearing.
     function ensurePlayableBoard() {
-      if (findMove()) return;
+      if (findMove()) return false;
       showBanner("SHUFFLE!");
-      const candies = grid.flat().filter(cd => cd && cd.special === 'NONE' && !cageGrid[cd.r][cd.c]);
-      for (let tries = 0; tries < 50; tries++) {
-        for (let i = candies.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [candies[i].type, candies[j].type] = [candies[j].type, candies[i].type];
-        }
-        if (!findRuns().length && findMove()) return;
-      }
-      for (const cd of candies) cd.type = randomType();
-      if (findRuns().length) { pendingClear = []; state = 'CLEARING'; }
+      shuffleBoard(true);
+      if (!findMove()) { for (const cd of grid.flat()) if (cd && cd.special === 'NONE' && !cageGrid[cd.r][cd.c]) cd.type = randomType(); }
+      if (findRuns().length) { pendingClear = []; combo = 0; state = 'CLEARING'; return true; }
+      return false;
     }
 
     function dismissResult() { closeModal('gameResultModal'); navigate('map-view'); }
@@ -2430,6 +2558,16 @@
 
     function drawCandy(item) {
       const cx = item.x + TILE_SIZE / 2; const cy = item.y + TILE_SIZE / 2; const rad = TILE_SIZE * 0.35;
+      if (item.special === 'INGREDIENT') {
+        ctx.fillStyle = "rgba(0,0,0,0.28)"; ctx.beginPath(); ctx.ellipse(cx, cy + rad * 0.92, rad * 0.75, rad * 0.2, 0, 0, Math.PI * 2); ctx.fill();
+        const g = ctx.createRadialGradient(cx - rad * 0.3, cy - rad * 0.3, rad * 0.1, cx, cy, rad * 1.05);
+        g.addColorStop(0, '#fffbe6'); g.addColorStop(1, '#f2d27a');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, rad * 1.02, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#c98a1a'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.font = `${Math.round(rad * 1.25)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(item.ing || '🥥', cx, cy + 2); ctx.textBaseline = 'alphabetic';
+        return;
+      }
       if (item.special === 'BOMB') {
         const g = ctx.createRadialGradient(cx - rad * 0.3, cy - rad * 0.3, rad * 0.1, cx, cy, rad);
         g.addColorStop(0, '#7a4a2a'); g.addColorStop(1, '#2a1406');
@@ -2492,6 +2630,7 @@
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
           const x = c * TILE_SIZE, y = r * TILE_SIZE, g = 3, w = TILE_SIZE - g * 2;
+          if (voidGrid[r]?.[c]) continue;
           ctx.fillStyle = (r + c) % 2 === 0 ? "rgba(255,255,255,0.09)" : "rgba(255,255,255,0.05)";
           roundRect(x + g, y + g, w, w, 10); ctx.fill();
           if (jellyGrid[r]?.[c] > 0) {
