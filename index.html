@@ -20,16 +20,7 @@
       --display: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     .brand, .hero-text h1, .modal-card h2, #resStars { font-family: var(--display); }
-    body::before {
-      content: ""; position: fixed; inset: -20%; z-index: 0; pointer-events: none;
-      background: radial-gradient(circle at 20% 30%, rgba(255, 42, 122, 0.12) 0 8%, transparent 9%),
-                  radial-gradient(circle at 75% 20%, rgba(255, 190, 26, 0.10) 0 6%, transparent 7%),
-                  radial-gradient(circle at 65% 75%, rgba(0, 180, 255, 0.10) 0 7%, transparent 8%),
-                  radial-gradient(circle at 30% 80%, rgba(0, 230, 138, 0.10) 0 5%, transparent 6%);
-      filter: blur(18px); animation: drift 30s ease-in-out infinite alternate;
-    }
-    @keyframes drift { to { transform: translate(4%, -3%) rotate(6deg); } }
-    @media (prefers-reduced-motion: reduce) { body::before, .moves-ring.low { animation: none; } }
+    @media (prefers-reduced-motion: reduce) { .moves-ring.low, .play-btn, .hero-bus, .road-dash, .danfo-token, .map-node.current .node-circle, .hub-dot { animation: none; } }
     html { background: #020704; }
     :root { color-scheme: dark; }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -38,19 +29,19 @@
                   radial-gradient(circle at 82% 18%, rgba(255, 42, 122, 0.14) 0%, transparent 45%),
                   radial-gradient(circle at 50% 80%, rgba(0, 230, 138, 0.18) 0%, transparent 55%),
                   radial-gradient(circle at 50% 30%, #0d3822 0%, #05140c 60%, #020704 100%);
-      background-attachment: fixed; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; padding-bottom: 140px;
+      color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; padding-bottom: 140px;
     }
 
     header {
       width: 100%; max-width: 1240px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;
-      background: rgba(6, 18, 12, 0.85); backdrop-filter: blur(28px) saturate(190%); -webkit-backdrop-filter: blur(28px) saturate(190%);
+      background: rgba(6, 18, 12, 0.97);
       border-bottom: 1px solid var(--glass-border-light); box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 1000;
     }
     .brand { font-size: 20px; font-weight: 900; cursor: pointer; letter-spacing: 0.5px; text-shadow: 0 0 18px var(--primary-glow); }
     .brand span { color: var(--gold); }
     .header-nav, .header-pills { display: flex; align-items: center; gap: 8px; }
     .pill {
-      background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.08);
       border: 1px solid var(--glass-border); padding: 7px 14px; border-radius: 24px; font-size: 13px; font-weight: 800;
       display: flex; align-items: center; gap: 6px; color: #fff; cursor: pointer; transition: all 0.2s;
     }
@@ -199,7 +190,7 @@
     #game-view { width: 100%; grid-template-columns: 280px auto 280px; gap: 24px; align-items: start; justify-content: center; }
     .portal-sidebar { display: flex; flex-direction: column; gap: 16px; }
     .portal-card {
-      background: var(--glass-dense); backdrop-filter: blur(28px); border: 1px solid var(--glass-border-light); border-radius: 24px; padding: 20px; box-shadow: 0 14px 35px rgba(0,0,0,0.5);
+      background: var(--glass-dense); border: 1px solid var(--glass-border-light); border-radius: 24px; padding: 20px; box-shadow: 0 14px 35px rgba(0,0,0,0.5);
     }
     .target-metric-box { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 11px 13px; display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 700; }
     .game-center-col { display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 480px; margin: 0 auto; width: 100%; }
@@ -300,7 +291,7 @@
 
     .bottom-nav {
       position: fixed; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 540px;
-      background: rgba(8, 26, 16, 0.94); backdrop-filter: blur(32px) saturate(200%); -webkit-backdrop-filter: blur(32px) saturate(200%);
+      background: rgba(8, 26, 16, 0.94);
       border: 1.5px solid var(--glass-border-light); border-radius: 32px; display: flex; justify-content: space-around; align-items: center;
       padding: 10px 14px; z-index: 999999; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
     }
@@ -313,7 +304,7 @@
     }
 
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(2, 8, 4, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      position: fixed; inset: 0; background: rgba(2, 8, 4, 0.85);
       display: none; align-items: center; justify-content: center; z-index: 1000000;
     }
     .modal-overlay.active { display: flex !important; }
@@ -657,7 +648,14 @@
   <div id="toast"></div>
   <canvas id="confetti" aria-hidden="true"></canvas>
 
+  <div id="errorBar" hidden style="position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom, 0px)); z-index:3000000; background:#5a0018; color:#fff; border:1.5px solid #ff6b9d; border-radius:14px; padding:10px 14px; font:600 12px/1.4 system-ui, sans-serif; user-select:text; -webkit-user-select:text;"></div>
   <script>
+    window.addEventListener('error', e => {
+      const bar = document.getElementById('errorBar');
+      if (!bar) return;
+      bar.hidden = false;
+      bar.textContent = `Game error: ${e.message} (line ${e.lineno || '?'}). Please screenshot this and send it over.`;
+    });
     function toast(msg) {
       const t = document.getElementById('toast');
       if (!t) return;
