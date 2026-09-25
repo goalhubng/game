@@ -266,17 +266,17 @@
       transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index: 50; white-space: nowrap; text-align: center;
     }
 
-    .booster-dock { display: flex; justify-content: center; gap: 14px; width: 100%; }
+    .booster-dock { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; width: 100%; max-width: 460px; }
     .booster-btn {
-      position: relative; display: flex; align-items: center; gap: 8px; padding: 10px 18px 10px 12px; border-radius: 22px; cursor: pointer;
+      position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px 7px; border-radius: 20px; cursor: pointer;
       background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03)), var(--glass-dense); color: #fff;
       border: 1px solid var(--glass-border); box-shadow: 0 4px 0 rgba(0,0,0,0.4); transition: transform 0.15s, box-shadow 0.15s;
     }
     .booster-btn:hover { transform: translateY(-2px); }
     .booster-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.4); }
     .booster-btn.active { background: linear-gradient(180deg, #ffd54a, #f9a908); color: #3a2400; border-color: #fff; box-shadow: 0 4px 0 #b36b00, 0 0 24px var(--gold-glow); }
-    .booster-icon { font-size: 24px; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: rgba(0,0,0,0.3); }
-    .booster-name { font-weight: 900; font-size: 13px; }
+    .booster-icon { font-size: 24px; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: rgba(0,0,0,0.3); }
+    .booster-name { font-weight: 900; font-size: 11px; white-space: nowrap; }
     .booster-count {
       position: absolute; top: -6px; right: -6px; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 12px; display: grid; place-items: center;
       background: var(--pink); color: #fff; font-size: 12px; font-weight: 900; border: 2px solid #fff;
@@ -351,6 +351,24 @@
     .btn-action:disabled, .shop-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     #resActions { display: flex; flex-direction: column; gap: 10px; }
     .menu-stack { display: flex; flex-direction: column; gap: 10px; }
+    .intro-lv { display: inline-block; font-family: var(--display); font-weight: 700; font-size: 14px; letter-spacing: 1px; color: #3a2400;
+      background: linear-gradient(180deg, #ffd54a, #f9a908); padding: 4px 14px; border-radius: 12px; box-shadow: 0 3px 0 #b36b00; margin-bottom: 8px; }
+    .intro-stars { color: var(--gold); font-size: 13px; font-weight: 800; margin: 2px 0 12px; }
+    .intro-goal { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 10px; margin-bottom: 10px; }
+    .intro-goal small, .preboost-title { display: block; font-size: 10px; font-weight: 900; letter-spacing: 1.4px; color: #8fa89b; }
+    .intro-goal span { font-family: var(--display); font-size: 20px; font-weight: 700; }
+    .intro-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .intro-stats div { background: rgba(0,0,0,0.35); border-radius: 16px; padding: 8px; display: flex; flex-direction: column; }
+    .intro-stats b { font-family: var(--display); font-size: 24px; }
+    .intro-stats small { font-size: 11px; font-weight: 800; color: #8fa89b; }
+    .intro-tip { background: rgba(255,190,26,0.12); border: 1px solid rgba(255,190,26,0.45); border-radius: 16px; padding: 10px 12px; margin-bottom: 12px; text-align: left; font-size: 13px; line-height: 1.4; }
+    .intro-tip strong { color: var(--gold); }
+    .preboost-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0 14px; }
+    .preboost { position: relative; display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 16px; cursor: pointer; color: #fff; font-weight: 800; font-size: 12px;
+      background: rgba(0,0,0,0.35); border: 2px solid rgba(255,255,255,0.12); }
+    .preboost.on { border-color: var(--gold); background: rgba(255,190,26,0.18); box-shadow: 0 0 16px var(--gold-glow); }
+    .preboost .pb-icon { font-size: 24px; }
+    .preboost b { position: absolute; top: -8px; right: -6px; min-width: 22px; height: 22px; border-radius: 11px; background: var(--pink); border: 2px solid #fff; display: grid; place-items: center; font-size: 11px; }
     .menu-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .menu-row .dock-btn { justify-content: center; }
     .settings-card { text-align: left; }
@@ -541,6 +559,12 @@
         <button id="swapBtn" class="booster-btn" onclick="activateBooster('SWAP')">
           <span class="booster-icon">🖐️</span><span class="booster-name">Free Swap</span><span class="booster-count" id="swapBadge">2</span>
         </button>
+        <button id="rowBtn" class="booster-btn" onclick="activateBooster('ROW')">
+          <span class="booster-icon">🚀</span><span class="booster-name">Row Blaster</span><span class="booster-count" id="rowBadge">1</span>
+        </button>
+        <button id="shuffleBtn" class="booster-btn" onclick="useShuffle()">
+          <span class="booster-icon">🔀</span><span class="booster-name">Shuffle</span><span class="booster-count" id="shuffleBadge">2</span>
+        </button>
       </div>
       <div class="booster-hint" id="boosterHint"></div>
     </div>
@@ -632,7 +656,44 @@
         <div style="text-align:left;"><div style="font-weight:900; font-size:14px;">🖐️ Free Swap</div><div style="font-size:11px; color:#8fa89b;">Swap any two tiles</div></div>
         <button class="shop-btn" onclick="buyItem('SWAP', 450)">450 🪙</button>
       </div>
+      <div class="shop-item">
+        <div style="text-align:left;"><div style="font-weight:900; font-size:14px;">🚀 Row Blaster</div><div style="font-size:11px; color:#8fa89b;">Clear a whole row</div></div>
+        <button class="shop-btn" onclick="buyItem('ROW', 350)">350 🪙</button>
+      </div>
+      <div class="shop-item">
+        <div style="text-align:left;"><div style="font-weight:900; font-size:14px;">🔀 Shuffle</div><div style="font-size:11px; color:#8fa89b;">Mix up the board, free of moves</div></div>
+        <button class="shop-btn" onclick="buyItem('SHUFFLE', 250)">250 🪙</button>
+      </div>
+      <div class="shop-item">
+        <div style="text-align:left;"><div style="font-weight:900; font-size:14px;">🍬 Striped Start</div><div style="font-size:11px; color:#8fa89b;">Begin a stage with 2 striped candies</div></div>
+        <button class="shop-btn" onclick="buyItem('START_STRIPE', 400)">400 🪙</button>
+      </div>
+      <div class="shop-item">
+        <div style="text-align:left;"><div style="font-weight:900; font-size:14px;">💣 Bomb Start</div><div style="font-size:11px; color:#8fa89b;">Begin a stage with a colour bomb</div></div>
+        <button class="shop-btn" onclick="buyItem('START_BOMB', 700)">700 🪙</button>
+      </div>
       <button class="dock-btn" onclick="closeModal('shopModal')" style="margin-top:12px; width:100%; justify-content:center;">Back to Hub</button>
+    </div>
+  </div>
+
+  <div id="introModal" class="modal-overlay">
+    <div class="modal-card intro-card">
+      <div class="intro-lv" id="introLv">STAGE 1</div>
+      <h2 id="introName" style="font-size:24px; font-weight:700;">Marina Crossing</h2>
+      <div class="intro-stars" id="introStars"></div>
+      <div class="intro-goal"><small>GOAL</small><span id="introGoal">Clear Jellies</span></div>
+      <div class="intro-stats">
+        <div><b id="introMoves">16</b><small>Moves</small></div>
+        <div><b id="introTarget">1,000</b><small>Target points</small></div>
+      </div>
+      <div class="intro-tip" id="introTip" hidden></div>
+      <div class="preboost-title">Start with a booster</div>
+      <div class="preboost-row">
+        <button class="preboost" id="pbStripe" onclick="togglePreBoost('stripe')"><span class="pb-icon">🍬</span><span>2 Striped</span><b>0</b></button>
+        <button class="preboost" id="pbBomb" onclick="togglePreBoost('bomb')"><span class="pb-icon">💣</span><span>Colour bomb</span><b>0</b></button>
+      </div>
+      <button class="btn-action" onclick="startStage()">▶ PLAY</button>
+      <button class="dock-btn" style="width:100%; justify-content:center; margin-top:10px;" onclick="closeModal('introModal')">Not now</button>
     </div>
   </div>
 
@@ -759,7 +820,7 @@
     const REFILL_INTERVAL = 20 * 60 * 1000;
     const freshSave = () => ({
       unlocked: 1, stars: {}, hiScore: 0, coins: 2450, blitzHiScore: 0, lives: 5, lastLifeLostTime: null,
-      hammers: 3, swaps: 2, lastSpinDate: null, activeLevel: null,
+      hammers: 3, swaps: 2, rowBlasts: 1, shuffles: 2, startStripes: 1, startBombs: 0, lastSpinDate: null, activeLevel: null,
       settings: { sfxVol: 1, musicVol: 0.7, vibrate: true, reduceFx: false, hints: true },
       conesSmashed: 0, coneBountyBase: 0, passBountyDate: null, bombsMade: 0, claimedSouvenirs: [],
       equippedSkin: 'classic', ownedSkins: ['classic'], equippedHorn: 'classic', ownedHorns: ['classic'],
@@ -778,6 +839,7 @@
     userSave.lives = (typeof userSave.lives === 'number') ? Math.max(0, Math.min(5, userSave.lives)) : 5;
     userSave.hammers = Math.max(0, Number(userSave.hammers) || 0);
     userSave.swaps = Math.max(0, Number(userSave.swaps) || 0);
+    ['rowBlasts', 'shuffles', 'startStripes', 'startBombs'].forEach(k => { userSave[k] = Math.max(0, Number(userSave[k]) || 0); });
     userSave.coins = (typeof userSave.coins === 'number') ? userSave.coins : 2450;
     if (!userSave.stars) userSave.stars = {};
     if (!Array.isArray(userSave.ownedSkins)) userSave.ownedSkins = ['classic'];
@@ -792,6 +854,8 @@
       refreshMapUI();
       safeSetText('hammerBadge', userSave.hammers);
       safeSetText('swapBadge', userSave.swaps);
+      safeSetText('rowBadge', userSave.rowBlasts);
+      safeSetText('shuffleBadge', userSave.shuffles);
     }
 
     function regenLives() {
@@ -821,14 +885,55 @@
     }
     window.refillLivesShop = refillLivesShop;
 
-    function launchLevel(lvl) {
+    function launchLevel(lvl, skipIntro = false) {
       initAudio();
       lvl = Math.max(1, Math.min(TOTAL_STAGES, Number(lvl) || 1));
       if (lvl > userSave.unlocked) { toast(`🔒 Stage ${lvl} is locked — clear Stage ${userSave.unlocked} first`); sfxBonk(); return; }
       if (userSave.lives <= 0) { toast("💔 Out of lives! Wait for a refill or buy one."); openModal('shopModal'); return; }
       stopBlitzTimer();
-      startMatchGame(lvl);
+      if (skipIntro) { startMatchGame(lvl); return; }
+      showStageIntro(lvl);
     }
+
+    // STAGE INTRO: goal, budget and pre-stage boosters before you play
+    let introLvl = 1; let preBoosts = { stripe: false, bomb: false }; let pendingPreBoosts = null;
+    function showStageIntro(lvl) {
+      introLvl = lvl; preBoosts = { stripe: false, bomb: false };
+      const cfg = getStageConfig(lvl);
+      safeSetText('introLv', cfg.isBoss ? `BOSS STAGE ${lvl}` : `STAGE ${lvl}`);
+      safeSetText('introName', cfg.name.replace(/^⚠️\s*/, '').replace(/\s*\(Lv \d+\)$/, ''));
+      safeSetText('introGoal', objectiveText(cfg));
+      safeSetText('introMoves', cfg.moves);
+      safeSetText('introTarget', cfg.target.toLocaleString());
+      const best = userSave.stars[lvl] || 0;
+      safeSetText('introStars', best ? `Best: ${'★'.repeat(best)}${'☆'.repeat(3 - best)}` : 'Not cleared yet');
+      if (typeof renderIntroTip === 'function') renderIntroTip(cfg);
+      renderIntroBoosters();
+      openModal('introModal');
+    }
+    function renderIntroBoosters() {
+      [['stripe', 'startStripes', 'pbStripe'], ['bomb', 'startBombs', 'pbBomb']].forEach(([k, field, id]) => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.classList.toggle('on', preBoosts[k]);
+        btn.querySelector('b').innerText = userSave[field] > 0 ? userSave[field] : '+';
+      });
+    }
+    function togglePreBoost(k) {
+      const field = k === 'stripe' ? 'startStripes' : 'startBombs';
+      if (!preBoosts[k] && userSave[field] <= 0) { openModal('shopModal'); return; }
+      preBoosts[k] = !preBoosts[k]; sfxPop(2); renderIntroBoosters();
+    }
+    function startStage() {
+      closeModal('introModal');
+      if (userSave.lives <= 0) { toast("💔 Out of lives! Wait for a refill or buy one."); openModal('shopModal'); return; }
+      if (preBoosts.stripe && userSave.startStripes > 0) userSave.startStripes--; else preBoosts.stripe = false;
+      if (preBoosts.bomb && userSave.startBombs > 0) userSave.startBombs--; else preBoosts.bomb = false;
+      pendingPreBoosts = { ...preBoosts };
+      persistState();
+      startMatchGame(introLvl);
+    }
+    window.togglePreBoost = togglePreBoost; window.startStage = startStage;
     window.launchLevel = launchLevel;
 
     // PAUSE MENU
@@ -1574,8 +1679,8 @@
       return true;
     }
 
-    function objectiveText() {
-      const t = currentCfg.objectiveType;
+    function objectiveText(cfg = currentCfg) {
+      const t = cfg.objectiveType;
       if (t === 'BOSS') return 'Defeat the Boss';
       if (t === 'SCORE') return 'Reach Target';
       const parts = [];
@@ -1620,6 +1725,8 @@
       }
       safeSetText('hammerBadge', userSave.hammers);
       safeSetText('swapBadge', userSave.swaps);
+      safeSetText('rowBadge', userSave.rowBlasts);
+      safeSetText('shuffleBadge', userSave.shuffles);
     }
 
     function buildLayout(lvl) {
@@ -1681,6 +1788,12 @@
       }
       buildLayout(lvl);
       fillBoard();
+      if (pendingPreBoosts) {
+        const pool = grid.flat().filter(cd => cd && cd.special === 'NONE' && !cageGrid[cd.r][cd.c]).sort(() => Math.random() - 0.5);
+        if (pendingPreBoosts.stripe) pool.splice(0, 2).forEach(cd => { cd.special = Math.random() < 0.5 ? 'STRIPE_H' : 'STRIPE_V'; });
+        if (pendingPreBoosts.bomb) { const cd = pool.shift(); if (cd) { cd.special = 'BOMB'; cd.type = -1; } }
+        pendingPreBoosts = null;
+      }
       // Candies tumble in column by column at the start of a stage
       for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
         const cd = grid[r][c];
@@ -1700,15 +1813,24 @@
       showBanner.t = setTimeout(() => { b.style.opacity = '0'; b.style.transform = 'translate(-50%, -50%) scale(0.6)'; }, 700);
     }
 
+    const ARMABLE = { HAMMER: ['hammers', 'hammerBtn', '🔨 Tap any candy or cone to smash it'], SWAP: ['swaps', 'swapBtn', '🖐️ Tap any two candies to swap them'], ROW: ['rowBlasts', 'rowBtn', '🚀 Tap a candy to blast its whole row'] };
     function activateBooster(type) {
-      if (type === 'HAMMER' && activeBooster !== 'HAMMER' && userSave.hammers <= 0) { toast("No hammers left — get more in the shop!"); openModal('shopModal'); type = null; }
-      if (type === 'SWAP' && activeBooster !== 'SWAP' && userSave.swaps <= 0) { toast("No free swaps left — get more in the shop!"); openModal('shopModal'); type = null; }
+      if (type && activeBooster !== type && userSave[ARMABLE[type][0]] <= 0) {
+        toast(`No ${BOOSTERS[type].label} left — get more in the shop!`); openModal('shopModal'); type = null;
+      }
       activeBooster = (type === null || activeBooster === type) ? null : type;
       selectedTile = null;
-      document.getElementById('hammerBtn').classList.toggle('active', activeBooster === 'HAMMER');
-      document.getElementById('swapBtn').classList.toggle('active', activeBooster === 'SWAP');
-      safeSetText('boosterHint', activeBooster === 'HAMMER' ? '🔨 Tap any candy or cone to smash it' : (activeBooster === 'SWAP' ? '🖐️ Tap any two candies to swap them' : ''));
+      for (const [k, [, btn]] of Object.entries(ARMABLE)) document.getElementById(btn)?.classList.toggle('active', activeBooster === k);
+      safeSetText('boosterHint', activeBooster ? ARMABLE[activeBooster][2] : '');
     }
+
+    function useShuffle() {
+      if (state !== 'IDLE' || isVictoryLocked) return;
+      if (userSave.shuffles <= 0) { toast("No shuffles left — get more in the shop!"); openModal('shopModal'); return; }
+      userSave.shuffles--; persistState(); activateBooster(null);
+      shuffleBoard(true); sfxSparkle(); showBanner("SHUFFLE! 🔀"); updateHUD();
+    }
+    window.useShuffle = useShuffle;
     window.activateBooster = activateBooster;
 
     function getTileFromEvent(e) {
@@ -1728,6 +1850,13 @@
       if (!pos || state !== 'IDLE' || isVictoryLocked) return;
       lastInteraction = Date.now(); hintMove = null;
 
+      if (activeBooster === 'ROW') {
+        userSave.rowBlasts--; persistState(); activateBooster(null);
+        sfxBlast(); addFlash('row', pos.r, pos.c);
+        for (let c = 0; c < COLS; c++) pendingClear.push(key(pos.r, c));
+        combo = 0; lastSwap = null; state = 'CLEARING';
+        return;
+      }
       if (activeBooster === 'HAMMER') {
         if (!grid[pos.r][pos.c] && !coneGrid[pos.r][pos.c]) return;
         userSave.hammers--; persistState(); activateBooster(null);
@@ -1777,13 +1906,67 @@
       state = 'SWAPPING';
     }
 
+    const isStripe = cd => cd?.special === 'STRIPE_H' || cd?.special === 'STRIPE_V';
+    const isPower = cd => isStripe(cd) || cd?.special === 'WRAP' || cd?.special === 'BOMB';
+    function mostCommonType() {
+      const counts = {};
+      for (const row of grid) for (const x of row) if (x && x.type >= 0) counts[x.type] = (counts[x.type] || 0) + 1;
+      return Number(Object.keys(counts).sort((p, q) => counts[q] - counts[p])[0] ?? 0);
+    }
+
+    // Two special candies swapped together make a bigger effect, centred where they meet (b).
+    function comboSwap(A, B, b) {
+      if (!isPower(A) || !isPower(B)) return false;
+      const kinds = [A.special, B.special];
+      const has = k => kinds.some(x => x === k || (k === 'STRIPE' && (x === 'STRIPE_H' || x === 'STRIPE_V')));
+      const push = (r, c) => { if (inBounds(r, c)) pendingClear.push(key(r, c)); };
+      if (has('BOMB') && (has('STRIPE') || has('WRAP')) && !(A.special === 'BOMB' && B.special === 'BOMB')) {
+        // Colour bomb + striped/wrapped: every candy of that colour turns special and goes off
+        const other = A.special === 'BOMB' ? B : A, bomb = other === A ? B : A;
+        const makes = other.special === 'WRAP' ? 'WRAP' : null;
+        bomb.special = 'NONE'; pendingClear.push(key(bomb.r, bomb.c));
+        const targets = [];
+        for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+          const cd = grid[r][c];
+          if (cd && cd.type === other.type && cd.special === 'NONE') { cd.special = makes || (Math.random() < 0.5 ? 'STRIPE_H' : 'STRIPE_V'); targets.push(key(r, c)); }
+        }
+        pendingClear.push(key(other.r, other.c), ...targets);
+        addFlash('bomb', bomb.r, bomb.c, targets);
+        showBanner(makes ? "WRAPPED STORM! 💥" : "STRIPE STORM! ⚡");
+        return true;
+      }
+      if (A.special === 'BOMB' || B.special === 'BOMB') return false; // bomb+bomb / bomb+candy handled by caller
+      A.special = 'NONE'; B.special = 'NONE';
+      if (has('WRAP') && !has('STRIPE')) {
+        for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) push(b.r + dr, b.c + dc);
+        addFlash('wrap', b.r, b.c); addFlash('wrap', b.r, b.c);
+        showBanner("MEGA BLAST! 💥");
+      } else if (has('WRAP')) {
+        for (let d = -1; d <= 1; d++) {
+          for (let k = 0; k < COLS; k++) push(b.r + d, k);
+          for (let k = 0; k < ROWS; k++) push(k, b.c + d);
+          if (inBounds(b.r + d, b.c)) addFlash('row', b.r + d, b.c);
+          if (inBounds(b.r, b.c + d)) addFlash('col', b.r, b.c + d);
+        }
+        showBanner("GIANT CROSS! ✚");
+      } else {
+        for (let k = 0; k < COLS; k++) push(b.r, k);
+        for (let k = 0; k < ROWS; k++) push(k, b.c);
+        addFlash('row', b.r, b.c); addFlash('col', b.r, b.c);
+        showBanner("CROSS FIRE! ✚");
+      }
+      return true;
+    }
+
     function finishSwap() {
       const { a, b, isFree, back } = swapAnim;
       swapAnim = null;
       if (back) { state = 'IDLE'; return; }
       const A = grid[a.r][a.c], B = grid[b.r][b.c];
-      let triggered = false;
-      if (A.special === 'BOMB' || B.special === 'BOMB') {
+      let triggered = comboSwap(A, B, b);
+      if (triggered) {
+        // handled by comboSwap
+      } else if (A.special === 'BOMB' || B.special === 'BOMB') {
         triggered = true;
         const bombs = [[A, a], [B, b]].filter(([cd]) => cd.special === 'BOMB');
         if (bombs.length === 2) {
@@ -1793,12 +1976,10 @@
           const [bomb, bp] = bombs[0]; const other = bomb === A ? B : A;
           bomb.special = 'NONE'; pendingClear.push(key(bp.r, bp.c));
           const targets = [];
-          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c]?.type === other.type) { pendingClear.push(key(r, c)); targets.push(key(r, c)); }
+          const colour = other.type >= 0 ? other.type : mostCommonType();
+          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c]?.type === colour) { pendingClear.push(key(r, c)); targets.push(key(r, c)); }
           addFlash('bomb', bp.r, bp.c, targets);
         }
-      } else if (A.special !== 'NONE' && B.special !== 'NONE') {
-        triggered = true;
-        pendingClear.push(key(a.r, a.c), key(b.r, b.c));
       }
       const hasMatch = triggered || analyzeMatches().hasMatch;
       if (isFree) {
@@ -1856,7 +2037,7 @@
         for (const b of [{ r, c: c + 1 }, { r: r + 1, c }]) {
           if (!canSwap(b)) continue;
           const A = grid[a.r][a.c], B = grid[b.r][b.c];
-          if (A.special === 'BOMB' || B.special === 'BOMB' || (A.special !== 'NONE' && B.special !== 'NONE')) return [a, b];
+          if (A.special === 'BOMB' || B.special === 'BOMB' || (isPower(A) && isPower(B))) return [a, b];
           grid[a.r][a.c] = B; grid[b.r][b.c] = A;
           const ok = findRuns().length > 0;
           grid[a.r][a.c] = A; grid[b.r][b.c] = B;
@@ -2139,6 +2320,19 @@
       closeModal('gameResultModal'); updateHUD(); showBanner("+5 MOVES!");
     }
     window.buyExtraMoves = buyExtraMoves;
+
+    function shuffleBoard(animate) {
+      const candies = grid.flat().filter(cd => cd && cd.special === 'NONE' && !cageGrid[cd.r][cd.c]);
+      for (let tries = 0; tries < 60; tries++) {
+        for (let i = candies.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [candies[i].type, candies[j].type] = [candies[j].type, candies[i].type];
+        }
+        if (!findRuns().length && findMove()) break;
+      }
+      if (animate) candies.forEach(cd => { cd.squash = 1; burst(cd.x + TILE_SIZE / 2, cd.y + TILE_SIZE / 2, CANDIES[cd.type]?.color || '#fff', 2, 2); });
+      if (findRuns().length) { state = 'CLEARING'; combo = 0; }
+    }
 
     function ensurePlayableBoard() {
       if (findMove()) return;
@@ -2590,12 +2784,17 @@
     }
     window.spinWheel = spinWheel;
 
+    const BOOSTERS = {
+      HAMMER: { field: 'hammers', label: '🔨 Hammer' }, SWAP: { field: 'swaps', label: '🖐️ Free Swap' },
+      ROW: { field: 'rowBlasts', label: '🚀 Row Blaster' }, SHUFFLE: { field: 'shuffles', label: '🔀 Shuffle' },
+      START_STRIPE: { field: 'startStripes', label: '🍬 Striped Start' }, START_BOMB: { field: 'startBombs', label: '💣 Bomb Start' }
+    };
     function buyItem(t, cost) {
       if (userSave.coins < cost) { toast("Not enough coins!"); return; }
       userSave.coins -= cost;
-      if (t === 'HAMMER') userSave.hammers++;
-      if (t === 'SWAP') userSave.swaps++;
-      persistState(); sfxChime(); toast(t === 'HAMMER' ? "🔨 Hammer added!" : "🖐️ Free Swap added!");
+      userSave[BOOSTERS[t].field]++;
+      persistState(); sfxChime(); toast(`${BOOSTERS[t].label} added!`);
+      if (document.getElementById('introModal')?.classList.contains('active')) renderIntroBoosters();
     }
     window.buyItem = buyItem;
 
