@@ -102,7 +102,21 @@
     .stat b { font-family: var(--display); font-size: 20px; font-weight: 700; line-height: 1.1; }
     .stat small { white-space: nowrap; font-size: 10px; font-weight: 800; color: #8fa89b; text-transform: uppercase; letter-spacing: 0.6px; }
 
-    .mode-hub-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .mode-hub-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    .event-banner { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 22px; color: #fff; text-align: left;
+      background: linear-gradient(135deg, var(--c1), var(--c2)); box-shadow: 0 5px 0 rgba(0,0,0,0.35), inset 0 2px 0 rgba(255,255,255,0.3); }
+    .event-banner .ev-icon { font-size: 40px; }
+    .event-banner .ev-kicker { font-size: 10px; font-weight: 900; letter-spacing: 1.4px; opacity: 0.85; }
+    .event-banner .ev-name { font-family: var(--display); font-size: 20px; font-weight: 700; line-height: 1.1; }
+    .event-banner .ev-desc { font-size: 12px; font-weight: 700; opacity: 0.95; }
+    .event-banner .ev-days { margin-left: auto; font-size: 11px; font-weight: 900; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 12px; white-space: nowrap; }
+    .album-set { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 12px; margin-bottom: 12px; text-align: left; }
+    .album-set h3 { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 900; margin-bottom: 10px; gap: 8px; }
+    .album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .sticker { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 14px; background: rgba(255,255,255,0.06); font-size: 10px; font-weight: 800; text-align: center; }
+    .sticker .st-e { font-size: 28px; }
+    .sticker.missing { opacity: 0.4; }
+    .sticker.missing .st-e { filter: grayscale(1) brightness(0.4); }
     .hub-tile {
       position: relative; border: none; color: #fff; cursor: pointer; border-radius: 22px; padding: 14px 8px 12px;
       display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px;
@@ -401,6 +415,7 @@
       #game-view.active { display: flex !important; flex-direction: column; align-items: center; padding: 12px; }
       .portal-sidebar, .header-nav { display: none; }
       .mode-hub-grid { grid-template-columns: 1fr 1fr; }
+      .event-banner .ev-days { display: none; }
       .home-split-row { grid-template-columns: 1fr; }
     }
     @media (max-width: 560px) {
@@ -460,6 +475,8 @@
         </div>
       </section>
 
+      <div class="event-banner" id="eventBanner"></div>
+
       <div class="stat-row">
         <div class="stat"><span class="stat-icon">⭐</span><b id="homeStars">0</b><small>Stars</small></div>
         <div class="stat"><span class="stat-icon">🔨</span><b id="homeHammers">3</b><small>Hammers</small></div>
@@ -475,6 +492,8 @@
         <button class="hub-tile" style="--c1:#45e08f; --c2:#009a52;" onclick="openGarage()"><span class="hub-tile-icon">🚌</span><span class="hub-tile-title">Pimp Danfo</span><span class="hub-tile-sub">Skins &amp; Horns</span></button>
         <button class="hub-tile" style="--c1:#ff6ba6; --c2:#d10050;" onclick="startQuickBlitz()"><span class="hub-tile-icon">⚡</span><span class="hub-tile-title">Quick Blitz</span><span class="hub-tile-sub">60-Sec Rush</span></button>
         <button class="hub-tile" style="--c1:#2fe0c8; --c2:#00887f;" onclick="openModal('shopModal')"><span class="hub-tile-icon">🛒</span><span class="hub-tile-title">Sweet Shop</span><span class="hub-tile-sub">Lives &amp; Tools</span></button>
+        <button class="hub-tile" style="--c1:#ff5c5c; --c2:#b3122c;" onclick="startDailyChallenge()"><span class="hub-dot" id="dotDaily" hidden>!</span><span class="hub-tile-icon">🏅</span><span class="hub-tile-title">Daily Challenge</span><span class="hub-tile-sub" id="dailySub">New stage every day</span></button>
+        <button class="hub-tile" style="--c1:#5ce1e6; --c2:#1f7ea8;" onclick="openAlbum()"><span class="hub-dot" id="dotAlbum" hidden></span><span class="hub-tile-icon">🧩</span><span class="hub-tile-title">Sticker Album</span><span class="hub-tile-sub" id="albumSub">0 / 24</span></button>
         <button class="hub-tile" style="--c1:#ff9a6b; --c2:#c7432a;" onclick="openScrapbook()"><span class="hub-dot" id="dotScrap" hidden></span><span class="hub-tile-icon">📖</span><span class="hub-tile-title">Scrapbook</span><span class="hub-tile-sub">Souvenirs</span></button>
       </div>
 
@@ -695,6 +714,15 @@
     </div>
   </div>
 
+  <div id="albumModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 style="font-size:24px; font-weight:900; color:var(--gold);">STICKER ALBUM</h2>
+      <p style="color:#b8e2cd; font-size:12px; margin-bottom:12px;">Earn stickers by getting 3 stars, beating bosses and winning the Daily Challenge. Finish a set for a coin bonus!</p>
+      <div id="albumSets"></div>
+      <button class="dock-btn" onclick="closeModal('albumModal')" style="width:100%; justify-content:center;">Back to Hub</button>
+    </div>
+  </div>
+
   <div id="introModal" class="modal-overlay">
     <div class="modal-card intro-card">
       <div class="intro-lv" id="introLv">STAGE 1</div>
@@ -810,6 +838,38 @@
     const CITY_BASES = ["Marina", "Lekki", "Ikeja", "Abeokuta", "Ijebu", "Ibadan", "Bodija", "Oshogbo", "Akure", "Owo", "Benin", "Warri", "Asaba", "Onitsha", "Awka", "Enugu", "Nsukka", "Makurdi", "Lokoja", "Zuba", "Abuja", "Maitama", "Keffi", "Jos", "Bukuru", "Bauchi", "Zaria", "Kano", "Dala", "Sahara"];
     const HUB_SUFFIXES = ["Crossing", "Terminal", "Bypass", "Motor Park", "Tollgate", "Boulevard", "Junction", "Heights"];
 
+    // STICKER ALBUM
+    const STICKER_SETS = [
+      { id: 'kitchen', name: 'Naija Kitchen', reward: 500, items: [['🍛', 'Jollof Rice'], ['🍢', 'Suya'], ['🍩', 'Puff-Puff'], ['🥘', 'Egusi Soup'], ['🫘', 'Moi Moi'], ['🍌', 'Dodo']] },
+      { id: 'road', name: 'On the Road', reward: 500, items: [['🚌', 'Danfo'], ['🛺', 'Keke'], ['🏍️', 'Okada'], ['🚂', 'Train'], ['🛶', 'Canoe'], ['🚕', 'Taxi']] },
+      { id: 'landmarks', name: 'Landmarks', reward: 800, items: [['🪨', 'Zuma Rock'], ['⛰️', 'Olumo Rock'], ['🌉', 'Third Mainland Bridge'], ['🐘', 'Yankari'], ['🌊', 'Erin Ijesha Falls'], ['🏔️', 'Obudu Plateau']] },
+      { id: 'culture', name: 'Culture', reward: 800, items: [['🥁', 'Talking Drum'], ['🎀', 'Gele'], ['🎭', 'Masquerade'], ['🧵', 'Adire Cloth'], ['🎸', 'Highlife Guitar'], ['💃', 'Owambe Dance']] }
+    ];
+    const ALL_STICKERS = STICKER_SETS.flatMap(set => set.items.map(([e, n], i) => ({ id: `${set.id}-${i}`, e, n })));
+    // Gives a random sticker; a duplicate turns into 50 coins. Returns a short description.
+    function awardSticker() {
+      const st = ALL_STICKERS[Math.floor(Math.random() * ALL_STICKERS.length)];
+      if (userSave.stickers[st.id]) { userSave.coins += 50; return `${st.e} ${st.n} (duplicate: +50 🪙)`; }
+      userSave.stickers[st.id] = true;
+      return `${st.e} ${st.n} — new sticker!`;
+    }
+
+    // WEEKLY EVENTS: a different treat each week, the same for everyone
+    const EVENTS = [
+      { id: 'jollof', icon: '🍛', name: 'Jollof Festival', desc: 'Double coins for every stage you clear', c1: '#ff8a3c', c2: '#d6361f' },
+      { id: 'suya', icon: '🍢', name: 'Suya Night', desc: '+2 moves on every stage', c1: '#b3542a', c2: '#5e2410' },
+      { id: 'owambe', icon: '🎉', name: 'Owambe Party', desc: 'Every stage starts with a striped candy', c1: '#c04bff', c2: '#6a1fb0' },
+      { id: 'harmattan', icon: '🌬️', name: 'Harmattan Breeze', desc: 'Lives refill twice as fast', c1: '#e0b25a', c2: '#8a6420' }
+    ];
+    const DAY_MS = 86400000;
+    const dayNumber = (t = Date.now()) => Math.floor((t - new Date(t).getTimezoneOffset() * 60000) / DAY_MS);
+    function currentEvent() {
+      const week = Math.floor((dayNumber() + 3) / 7); // weeks start on Monday
+      const ev = EVENTS[week % EVENTS.length];
+      const daysLeft = 7 - ((dayNumber() + 3) % 7);
+      return { ...ev, daysLeft };
+    }
+
     // One named road villain per sector
     const BOSSES = [
       { e: '🚧', n: 'Roadblock Rex' }, { e: '🕳️', n: 'Pothole Ogre' }, { e: '🐊', n: 'Creek Croc' }, { e: '⛏️', n: 'Quarry Golem' },
@@ -829,6 +889,7 @@
     ];
 
     function getStageConfig(lvl) {
+      const eventMoves = currentEvent().id === 'suya' ? 2 : 0;
       const isBoss = (lvl % 10 === 0);
       const sIdx = Math.min(9, Math.floor((lvl - 1) / 100));
       const sector = SECTOR_DATA[sIdx];
@@ -842,10 +903,10 @@
         : lvl % 3 === 0 ? 'DUAL' : lvl % 2 === 0 ? 'CHOCOLATE' : 'JELLY';
       // Tuned with a simulated player: targets scale with how many points a move is realistically worth
       // for the colour count, ramping up across the tour and within each 100-stage sector.
-      const moves = 16 - Math.floor(((lvl - 1) % 100) / 34) + (objectiveType === 'DUAL' ? 4 : 0) + (objectiveType === 'INGREDIENT' ? 5 : 0) + (objectiveType === 'COLLECT' ? 1 : 0) + (objectiveType === 'CHOCOLATE' ? 2 : 0) + (colorCount === 6 ? 2 : 0) + (isBoss ? 2 : 0) + (userSave?.perks?.turbo ? 1 : 0);
+      const moves = 16 - Math.floor(((lvl - 1) % 100) / 34) + (objectiveType === 'DUAL' ? 4 : 0) + (objectiveType === 'INGREDIENT' ? 5 : 0) + (objectiveType === 'COLLECT' ? 1 : 0) + (objectiveType === 'CHOCOLATE' ? 2 : 0) + (colorCount === 6 ? 2 : 0) + (isBoss ? 2 : 0) + (userSave?.perks?.turbo ? 1 : 0) + eventMoves;
       const pointsPerMove = { 4: 2400, 5: 800, 6: 470 }[colorCount];
       const difficulty = 0.35 + 0.45 * Math.min(1, lvl / 600) + 0.1 * (((lvl - 1) % 100) / 99) + (isBoss ? 0.15 : 0);
-      const baseMoves = moves - (userSave?.perks?.turbo ? 1 : 0);
+      const baseMoves = moves - (userSave?.perks?.turbo ? 1 : 0) - eventMoves;
       const target = Math.max(500, Math.round(baseMoves * pointsPerMove * difficulty / 50) * 50);
 
       return {
@@ -861,11 +922,13 @@
       };
     }
 
-    const REFILL_INTERVAL = 20 * 60 * 1000;
+    const REFILL_MS = 20 * 60 * 1000;
+    const refillInterval = () => currentEvent().id === 'harmattan' ? REFILL_MS / 2 : REFILL_MS;
     const freshSave = () => ({
       unlocked: 1, stars: {}, hiScore: 0, coins: 2450, blitzHiScore: 0, lives: 5, lastLifeLostTime: null,
       hammers: 3, swaps: 2, rowBlasts: 1, shuffles: 2, startStripes: 1, startBombs: 0, lastSpinDate: null, activeLevel: null,
       settings: { sfxVol: 1, musicVol: 0.7, vibrate: true, reduceFx: false, hints: true }, seenTips: [], tutorialDone: {},
+      daily: { lastWin: null, streak: 0 }, stickers: {}, claimedSets: [],
       conesSmashed: 0, coneBountyBase: 0, passBountyDate: null, bombsMade: 0, claimedSouvenirs: [],
       equippedSkin: 'classic', ownedSkins: ['classic'], equippedHorn: 'classic', ownedHorns: ['classic'],
       perks: { turbo: false, bumper: false, magnet: false }, souvenirsClaimed: false,
@@ -892,6 +955,9 @@
     if (!Array.isArray(userSave.claimedAchievements)) userSave.claimedAchievements = [];
     if (!Array.isArray(userSave.claimedSouvenirs)) userSave.claimedSouvenirs = [];
     if (!Array.isArray(userSave.seenTips)) userSave.seenTips = [];
+    if (!userSave.daily || typeof userSave.daily !== 'object') userSave.daily = { lastWin: null, streak: 0 };
+    if (!userSave.stickers || typeof userSave.stickers !== 'object') userSave.stickers = {};
+    if (!Array.isArray(userSave.claimedSets)) userSave.claimedSets = [];
     if (!userSave.tutorialDone || typeof userSave.tutorialDone !== 'object') userSave.tutorialDone = {};
     userSave.settings = Object.assign({ sfxVol: 1, musicVol: 0.7, vibrate: true, reduceFx: false, hints: true }, userSave.settings || {});
 
@@ -907,16 +973,16 @@
     function regenLives() {
       if (userSave.lives >= 5) { userSave.lastLifeLostTime = null; return false; }
       if (!userSave.lastLifeLostTime) { userSave.lastLifeLostTime = Date.now(); return true; }
-      const gained = Math.floor((Date.now() - userSave.lastLifeLostTime) / REFILL_INTERVAL);
+      const gained = Math.floor((Date.now() - userSave.lastLifeLostTime) / refillInterval());
       if (gained <= 0) return false;
       userSave.lives = Math.min(5, userSave.lives + gained);
-      userSave.lastLifeLostTime = userSave.lives >= 5 ? null : userSave.lastLifeLostTime + gained * REFILL_INTERVAL;
+      userSave.lastLifeLostTime = userSave.lives >= 5 ? null : userSave.lastLifeLostTime + gained * refillInterval();
       return true;
     }
 
     function updateLivesTimer() {
       if (userSave.lives < 5 && userSave.lastLifeLostTime) {
-        const left = Math.max(0, REFILL_INTERVAL - (Date.now() - userSave.lastLifeLostTime));
+        const left = Math.max(0, refillInterval() - (Date.now() - userSave.lastLifeLostTime));
         const m = Math.floor(left / 60000), sec = Math.floor((left % 60000) / 1000);
         safeSetText('lifeTimer', `${m}:${String(sec).padStart(2, '0')}`);
       } else safeSetText('lifeTimer', '');
@@ -936,7 +1002,7 @@
       lvl = Math.max(1, Math.min(TOTAL_STAGES, Number(lvl) || 1));
       if (lvl > userSave.unlocked) { toast(`🔒 Stage ${lvl} is locked — clear Stage ${userSave.unlocked} first`); sfxBonk(); return; }
       if (userSave.lives <= 0) { toast("💔 Out of lives! Wait for a refill or buy one."); openModal('shopModal'); return; }
-      stopBlitzTimer();
+      stopBlitzTimer(); dailyActive = false;
       if (skipIntro) { startMatchGame(lvl); return; }
       showStageIntro(lvl);
     }
@@ -1024,7 +1090,7 @@
       3: ['Chocolate hides under candies. Match on it or next to it to melt it. 🍫', 'Match 5 in a row for a colour bomb 💣']
     };
     let tutorialActive = false;
-    const isDailyActive = () => typeof dailyActive !== 'undefined' && dailyActive;
+    const isDailyActive = () => dailyActive;
     function findTutorialMove() {
       if (currentLvl === 2) {
         // Prefer a swap that makes 4 or more in a row
@@ -1078,7 +1144,7 @@
     function openPause() {
       if (!currentCfg) return;
       gamePaused = true;
-      safeSetText('pauseInfo', isBlitzActive ? `Quick Blitz • ${blitzTime}s left • ${score.toLocaleString()} pts`
+      safeSetText('pauseInfo', dailyActive ? `Daily Challenge • ${moves} moves left • ${objectiveText()}` : isBlitzActive ? `Quick Blitz • ${blitzTime}s left • ${score.toLocaleString()} pts`
         : `Stage ${currentLvl} • ${moves} moves left • ${objectiveText()}`);
       syncPauseButtons();
       openModal('pauseModal');
@@ -1087,6 +1153,7 @@
     function restartStage() {
       closeModal('pauseModal'); gamePaused = false;
       if (isBlitzActive) { startQuickBlitz(); return; }
+      if (dailyActive) { startDailyChallenge(); return; }
       if (levelInProgress()) { pendingNav = 'restart'; openModal('quitModal'); return; }
       launchLevel(currentLvl);
     }
@@ -1507,6 +1574,17 @@
       const today = new Date().toDateString();
       const setDot = (id, show, txt = '!') => { const d = document.getElementById(id); if (d) { d.hidden = !show; d.innerText = txt; } };
       setDot('dotSpin', userSave.lastSpinDate !== today);
+      setDot('dotDaily', userSave.daily.lastWin !== dayNumber());
+      safeSetText('dailySub', userSave.daily.lastWin === dayNumber() ? `Done! 🔥 ${userSave.daily.streak}-day streak` : (userSave.daily.streak ? `🔥 Streak: ${userSave.daily.streak} days` : 'New stage every day'));
+      const stickerCount = Object.keys(userSave.stickers).length;
+      safeSetText('albumSub', `${stickerCount} / ${ALL_STICKERS.length} stickers`);
+      const setsReady = STICKER_SETS.filter(set => !userSave.claimedSets.includes(set.id) && set.items.every((_, i) => userSave.stickers[`${set.id}-${i}`])).length;
+      setDot('dotAlbum', setsReady > 0, setsReady);
+      const ev = currentEvent(), banner = document.getElementById('eventBanner');
+      if (banner) {
+        banner.style.setProperty('--c1', ev.c1); banner.style.setProperty('--c2', ev.c2);
+        banner.innerHTML = `<span class="ev-icon">${ev.icon}</span><div><div class="ev-kicker">THIS WEEK'S EVENT</div><div class="ev-name">${ev.name}</div><div class="ev-desc">${ev.desc}</div></div><span class="ev-days">${ev.daysLeft} day${ev.daysLeft === 1 ? '' : 's'} left</span>`;
+      }
       setDot('dotPass', userSave.lastDailyClaimDate !== today);
       const trophiesReady = TROPHIES.filter(t => t.check() && !userSave.claimedAchievements.includes(t.id)).length;
       setDot('dotTrophies', trophiesReady > 0, trophiesReady);
@@ -1941,6 +2019,11 @@
         const cols = [...Array(COLS).keys()].filter(c => grid[2][c] && !cageGrid[2][c]).sort(() => Math.random() - 0.5);
         cols.slice(0, Math.min(2, currentCfg.ingredientCount)).forEach(c => { grid[2][c] = makeIngredient(2, c); });
       }
+      if (!isBlitzActive && currentEvent().id === 'owambe') {
+        const pool = grid.flat().filter(cd => cd && cd.special === 'NONE' && !cageGrid[cd.r][cd.c]);
+        const cd = pool[Math.floor(Math.random() * pool.length)];
+        if (cd) cd.special = Math.random() < 0.5 ? 'STRIPE_H' : 'STRIPE_V';
+      }
       if (pendingPreBoosts) {
         const pool = grid.flat().filter(cd => cd && cd.special === 'NONE' && !cageGrid[cd.r][cd.c]).sort(() => Math.random() - 0.5);
         if (pendingPreBoosts.stripe) pool.splice(0, 2).forEach(cd => { cd.special = Math.random() < 0.5 ? 'STRIPE_H' : 'STRIPE_V'; });
@@ -2146,7 +2229,7 @@
       } else if (hasMatch) {
         if (!isBlitzActive) {
           moves--; turnPending = true;
-          if (userSave.activeLevel !== currentLvl) { userSave.activeLevel = currentLvl; persistState(); }
+          if (!dailyActive && userSave.activeLevel !== currentLvl) { userSave.activeLevel = currentLvl; persistState(); }
         }
         lastSwap = [a, b]; combo = 0; state = 'CLEARING';
         if (tutorialActive) hideTutorial(true);
@@ -2442,22 +2525,63 @@
 
     const EXTRA_MOVES_COST = 500;
 
+    let dailyActive = false;
+    const dailyLevel = () => { let l = 40 + (dayNumber() * 37) % 600; if (l % 10 === 0) l++; return l; };
+    function startDailyChallenge() {
+      initAudio(); stopBlitzTimer(); closeModal('gameResultModal');
+      dailyActive = true;
+      startMatchGame(dailyLevel());
+      const done = userSave.daily.lastWin === dayNumber();
+      safeSetText('hudLevel', '📅 DAILY'); safeSetText('hudStageName', done ? 'Replay (reward claimed)' : 'Daily Challenge');
+      safeSetText('dossierTitle', 'Daily Challenge');
+    }
+    window.startDailyChallenge = startDailyChallenge;
+
+    function finalizeDailyWin(stars) {
+      const today = dayNumber();
+      const firstToday = userSave.daily.lastWin !== today;
+      let reward = 0, sticker = null;
+      if (firstToday) {
+        userSave.daily.streak = userSave.daily.lastWin === today - 1 ? userSave.daily.streak + 1 : 1;
+        userSave.daily.lastWin = today;
+        reward = 300 + 50 * Math.min(7, userSave.daily.streak);
+        userSave.coins += reward; userSave.hammers++;
+        sticker = awardSticker();
+      }
+      userSave.hiScore = Math.max(userSave.hiScore, score);
+      persistState(); updateHUD();
+      sfxWin(); buzz([60, 40, 60, 40, 120]);
+      safeSetText('resTitle', 'DAILY CLEARED!');
+      setResultStars(stars);
+      if (!fxReduced()) launchConfetti();
+      safeSetText('resSubtitle', firstToday
+        ? `🔥 ${userSave.daily.streak}-day streak! +${reward} 🪙 +1 🔨\n🎁 Sticker: ${sticker}`
+        : `Score: ${score.toLocaleString()} • Today's reward is already claimed. Come back tomorrow!`);
+      setResultActions([['🏠 Back to Lobby', () => { closeModal('gameResultModal'); navigate('home-view'); }, true]]);
+      openModal('gameResultModal');
+    }
+
     function finalizeWin() {
       winPending = false; isVictoryLocked = true; state = 'OVER';
       displayScore = score; safeSetText('scoreVal', score.toLocaleString());
       const stars = score >= currentCfg.target * 1.5 ? 3 : (score >= currentCfg.target * 1.25 ? 2 : 1);
+      if (dailyActive) { finalizeDailyWin(stars); return; }
       const firstClear = !userSave.stars[currentLvl];
+      const firstThree = stars === 3 && (userSave.stars[currentLvl] || 0) < 3;
       userSave.stars[currentLvl] = Math.max(userSave.stars[currentLvl] || 0, stars);
       if (currentLvl === userSave.unlocked && userSave.unlocked < TOTAL_STAGES) userSave.unlocked++;
       userSave.hiScore = Math.max(userSave.hiScore, score);
       userSave.activeLevel = null;
-      const reward = (firstClear ? 150 : 40) + (userSave.perks.magnet ? (firstClear ? 75 : 20) : 0);
-      userSave.coins += reward; persistState(); updateHUD();
+      const eventMult = currentEvent().id === 'jollof' ? 2 : 1;
+      const reward = ((firstClear ? 150 : 40) + (userSave.perks.magnet ? (firstClear ? 75 : 20) : 0)) * eventMult;
+      userSave.coins += reward;
+      const sticker = (firstThree || (firstClear && currentCfg.isBoss)) ? awardSticker() : null;
+      persistState(); updateHUD();
       sfxWin(); buzz([60, 40, 60, 40, 120]);
       safeSetText('resTitle', currentCfg.isBoss ? "BOSS DEFEATED!" : "STAGE CLEARED!");
       setResultStars(stars);
       if (!fxReduced()) launchConfetti();
-      safeSetText('resSubtitle', `Final Score: ${score.toLocaleString()}${rushBonus ? ` (Sugar Rush +${rushBonus.toLocaleString()})` : ''} • +${reward} 🪙`);
+      safeSetText('resSubtitle', `Final Score: ${score.toLocaleString()}${rushBonus ? ` (Sugar Rush +${rushBonus.toLocaleString()})` : ''} • +${reward} 🪙${eventMult > 1 ? ' (Jollof Festival ×2)' : ''}${sticker ? `\n🎁 Sticker: ${sticker}` : ''}`);
       const next = currentLvl + 1;
       setResultActions([
         ...(next <= TOTAL_STAGES ? [[`NEXT STAGE ${next} ▶`, () => { closeModal('gameResultModal'); launchLevel(next); }, true]] : []),
@@ -2485,16 +2609,17 @@
         finalizeWin();
       } else if (moves <= 0) {
         state = 'OVER'; isVictoryLocked = true;
-        loseLife();
+        if (!dailyActive) loseLife();
         userSave.hiScore = Math.max(userSave.hiScore, score);
         persistState();
         sfxLose(); buzz(220);
         safeSetText('resTitle', "OUT OF MOVES!");
         setResultStars(0);
-        safeSetText('resSubtitle', score >= currentCfg.target ? `Score reached, but ${objectiveText().toLowerCase()} first! (-1 ❤️)` : `Final Score: ${score.toLocaleString()} / ${currentCfg.target.toLocaleString()} (-1 ❤️)`);
+        const lifeNote = dailyActive ? '' : ' (-1 ❤️)';
+        safeSetText('resSubtitle', score >= currentCfg.target ? `Score reached, but ${objectiveText().toLowerCase()} first!${lifeNote}` : `Final Score: ${score.toLocaleString()} / ${currentCfg.target.toLocaleString()}${lifeNote}`);
         setResultActions([
-          [`+5 MOVES (${EXTRA_MOVES_COST} 🪙, keep your life)`, buyExtraMoves, true],
-          ['🔁 Retry', () => { closeModal('gameResultModal'); launchLevel(currentLvl); }],
+          [`+5 MOVES (${EXTRA_MOVES_COST} 🪙${dailyActive ? '' : ', keep your life'})`, buyExtraMoves, true],
+          ['🔁 Retry', () => { closeModal('gameResultModal'); dailyActive ? startDailyChallenge() : launchLevel(currentLvl); }],
           ['🗺️ Back to Map', dismissResult]
         ]);
         openModal('gameResultModal');
@@ -2548,9 +2673,11 @@
     function buyExtraMoves() {
       if (userSave.coins < EXTRA_MOVES_COST) { toast(`Need ${EXTRA_MOVES_COST} 🪙 for extra moves`); return; }
       userSave.coins -= EXTRA_MOVES_COST;
-      userSave.lives = Math.min(5, userSave.lives + 1);
-      if (userSave.lives >= 5) userSave.lastLifeLostTime = null;
-      userSave.activeLevel = currentLvl;
+      if (!dailyActive) {
+        userSave.lives = Math.min(5, userSave.lives + 1);
+        if (userSave.lives >= 5) userSave.lastLifeLostTime = null;
+        userSave.activeLevel = currentLvl;
+      }
       persistState();
       moves += 5; isVictoryLocked = false; state = 'IDLE'; lastInteraction = Date.now();
       closeModal('gameResultModal'); updateHUD(); showBanner("+5 MOVES!");
@@ -2584,7 +2711,7 @@
 
     // Quitting a stage after making a move costs a life
     function levelInProgress() {
-      return !isBlitzActive && currentCfg && !isVictoryLocked && userSave.activeLevel === currentLvl;
+      return !isBlitzActive && !dailyActive && currentCfg && !isVictoryLocked && userSave.activeLevel === currentLvl;
     }
 
     // EFFECTS
@@ -2884,7 +3011,7 @@
     let isBlitzActive = false; let blitzTimer = null; let blitzTime = 60; let blitzComboMultiplier = 1;
     function startQuickBlitz() {
       initAudio(); stopBlitzTimer();
-      isBlitzActive = true; blitzTime = 60; blitzComboMultiplier = 1;
+      isBlitzActive = true; dailyActive = false; blitzTime = 60; blitzComboMultiplier = 1;
       startMatchGame(1);
       moves = 999;
       safeSetText('dossierTitle', "60-sec Rush"); safeSetText('dossierObjectiveText', 'Score Big');
@@ -2972,6 +3099,28 @@
       persistState(); sfxChime(); playEquippedHorn(); openScrapbook();
     }
     window.claimScrapbookJackpot = claimScrapbookJackpot;
+
+    function openAlbum() {
+      const box = document.getElementById('albumSets');
+      box.innerHTML = '';
+      STICKER_SETS.forEach(set => {
+        const have = set.items.filter((_, i) => userSave.stickers[`${set.id}-${i}`]).length;
+        const done = have === set.items.length, claimed = userSave.claimedSets.includes(set.id);
+        const d = document.createElement('div');
+        d.className = 'album-set';
+        d.innerHTML = `<h3><span>${set.name} · ${have}/${set.items.length}</span>${claimed ? '<small style="color:var(--primary)">✅ Claimed</small>' : `<button class="shop-btn" ${done ? '' : 'disabled'} onclick="claimStickerSet('${set.id}')">+${set.reward} 🪙</button>`}</h3>
+          <div class="album-grid">${set.items.map(([e, n], i) => { const got = userSave.stickers[`${set.id}-${i}`]; return `<div class="sticker ${got ? '' : 'missing'}"><span class="st-e">${got ? e : '❔'}</span>${got ? n : '???'}</div>`; }).join('')}</div>`;
+        box.appendChild(d);
+      });
+      openModal('albumModal');
+    }
+    function claimStickerSet(id) {
+      const set = STICKER_SETS.find(x => x.id === id);
+      if (!set || userSave.claimedSets.includes(id) || !set.items.every((_, i) => userSave.stickers[`${id}-${i}`])) return;
+      userSave.claimedSets.push(id); userSave.coins += set.reward;
+      persistState(); sfxWin(); toast(`🧩 ${set.name} complete! +${set.reward} 🪙`); openAlbum();
+    }
+    window.openAlbum = openAlbum; window.claimStickerSet = claimStickerSet;
 
     const WHEEL_PRIZES = [
       { label: "100 🪙", coins: 100 }, { label: "🔨", hammers: 1 }, { label: "300 🪙", coins: 300 }, { label: "🖐️", swaps: 1 },
