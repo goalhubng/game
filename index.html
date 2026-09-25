@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#f3e9d7" />
+  <title>Lane Out</title>
+  <style>
+    :root, [data-skin="paper"] {
+      --page: #e6d9c2;
+      --panel: #f3e9d7;
+      --ink: #6a4a2c;
+      --title: #b87a34;
+      --muted: #a58c6c;
+      --line: #dfcdb0;
+      --accent: #2f86d6;
+      --danger: #d4442f;
+      --btn: #fbf6ec;
+      --shadow: rgba(106, 74, 44, 0.2);
+    }
+    [data-skin="night"] {
+      color-scheme: dark;
+      --page: #0e1116;
+      --panel: #161a21;
+      --ink: #d9d2c5;
+      --title: #e9aa55;
+      --muted: #7d8593;
+      --line: #282e38;
+      --accent: #5aa9ff;
+      --danger: #ff6a55;
+      --btn: #20262f;
+      --shadow: rgba(0, 0, 0, 0.5);
+    }
+    [data-skin="sage"] {
+      --page: #d5e3d8;
+      --panel: #e8f1ea;
+      --ink: #2d4a3c;
+      --title: #3d8a67;
+      --muted: #75978a;
+      --line: #c7dacd;
+      --accent: #d9702c;
+      --danger: #d4442f;
+      --btn: #f5faf6;
+      --shadow: rgba(45, 74, 60, 0.18);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: ui-rounded, 'SF Pro Rounded', 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--page);
+      color: var(--ink);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      transition: background .3s;
+    }
+    button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
+    button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+    .app {
+      position: relative;
+      width: 100%; max-width: 440px;
+      height: 100%; max-height: 920px;
+      background: var(--panel);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      transition: background .3s;
+    }
+    @media (min-width: 520px) {
+      .app { border-radius: 34px; height: 94%; box-shadow: 0 30px 70px -20px var(--shadow); }
+    }
+
+    .bar { display: grid; grid-template-columns: 44px 1fr 44px 44px; align-items: center; gap: 2px; padding: 12px 4px 8px; margin: 0 10px; border-bottom: 2px solid var(--line); }
+    .bar h1 { margin: 0; text-align: center; font-size: 24px; font-weight: 800; color: var(--title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ico { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px; color: var(--muted); }
+    .ico:active { transform: scale(.92); }
+    .ico svg { width: 24px; height: 24px; }
+
+    .status { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px 0; min-height: 40px; }
+    .drops { display: flex; gap: 7px; }
+    .drop { width: 19px; height: 26px; transition: transform .3s, opacity .3s; }
+    .drop.lost { opacity: .25; transform: scale(.82); filter: grayscale(1); }
+    .drop.shake { animation: shake .45s; }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 60% { transform: translateX(5px); } }
+    .left { font-size: 13px; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    .stage { position: relative; flex: 1; min-height: 0; }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    .toast {
+      position: absolute; left: 50%; top: 6px; transform: translate(-50%, -6px); opacity: 0; max-width: calc(100% - 32px);
+      background: var(--ink); color: var(--panel); font-weight: 800; font-size: 13px; padding: 9px 15px; border-radius: 999px;
+      pointer-events: none; transition: opacity .25s, transform .25s; text-align: center; z-index: 5;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .tools { display: flex; justify-content: center; gap: 30px; padding: 6px 0 22px; }
+    .tool {
+      position: relative; width: 60px; height: 60px; border-radius: 50%;
+      background: var(--btn); color: var(--ink);
+      box-shadow: 0 6px 16px -6px var(--shadow), inset 0 0 0 2px var(--line);
+      display: grid; place-items: center; transition: transform .12s;
+    }
+    .tool:active { transform: scale(.92); }
+    .tool svg { width: 27px; height: 27px; }
+    .tool.on { color: var(--accent); box-shadow: 0 6px 16px -6px var(--shadow), inset 0 0 0 2px var(--accent); }
+    .badge {
+      position: absolute; top: -3px; right: -3px; min-width: 22px; height: 22px; padding: 0 6px;
+      border-radius: 11px; background: var(--danger); color: #fff; font-size: 12px; font-weight: 900;
+      display: grid; place-items: center; border: 2px solid var(--panel);
+    }
+    .badge.zero { background: var(--muted); }
+
+    /* Overlays */
+    .veil { position: absolute; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 24px; background: color-mix(in srgb, var(--page) 55%, transparent); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    .veil.show { display: flex; }
+    .sheet {
+      width: 100%; max-height: 100%; overflow: auto; background: var(--panel); border-radius: 28px; padding: 28px 22px 20px; text-align: center;
+      box-shadow: 0 30px 60px -20px var(--shadow), inset 0 0 0 2px var(--line);
+      animation: pop .3s cubic-bezier(.3,1.4,.6,1);
+    }
+    @media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
+    @keyframes pop { from { transform: scale(.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .sheet h2 { margin: 0; font-size: 32px; font-weight: 900; color: var(--title); text-wrap: balance; }
+    .sheet p { margin: 8px 0 0; color: var(--muted); font-weight: 700; font-size: 15px; line-height: 1.45; }
+    .cta { margin-top: 22px; width: 100%; padding: 16px; border-radius: 16px; background: var(--title); color: #fff; font-size: 18px; font-weight: 900; box-shadow: 0 8px 18px -8px var(--shadow); }
+    .cta:active { transform: scale(.97); }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .cta2 { padding: 13px 8px; border-radius: 14px; background: var(--btn); box-shadow: inset 0 0 0 2px var(--line); font-weight: 900; font-size: 15px; color: var(--ink); }
+    .cta2 small { display: block; font-size: 11px; color: var(--muted); font-weight: 800; margin-top: 2px; }
+    .cta.alt { background: transparent; color: var(--muted); box-shadow: none; margin-top: 6px; padding: 10px; font-size: 15px; }
+    .menu-level { font-size: 16px; color: var(--muted); font-weight: 800; margin-top: 6px; }
+    .result-drops { display: flex; justify-content: center; gap: 10px; margin: 14px 0 4px; }
+    .result-drops .drop { width: 30px; height: 40px; }
+    .reveal { font-size: 64px; line-height: 1; margin: 0 0 6px; }
+    .opt { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; border-bottom: 2px solid var(--line); font-weight: 800; text-align: left; gap: 12px; }
+    .opt:last-of-type { border-bottom: 0; }
+    .switch { flex: none; width: 50px; height: 30px; border-radius: 15px; background: var(--line); position: relative; transition: background .2s; }
+    .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+    .switch.on { background: var(--accent); }
+    .switch.on::after { transform: translateX(20px); }
+
+    .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    .album { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; max-height: 55vh; overflow: auto; padding: 2px; }
+    .pic { aspect-ratio: 1; border-radius: 14px; background: var(--btn); box-shadow: inset 0 0 0 2px var(--line);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; }
+    .pic span { font-size: 30px; line-height: 1; }
+    .pic small { font-size: 10px; font-weight: 800; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px; }
+    .pic.locked span { filter: brightness(0); opacity: .16; }
+    .pic:disabled { cursor: default; }
+    .pic .dots { font-size: 9px; color: #3b8fd9; min-height: 10px; }
+
+    /* Home */
+    .home { position: absolute; inset: 0; z-index: 25; display: none; flex-direction: column; background: var(--panel);
+      padding: calc(env(safe-area-inset-top) + 10px) 20px calc(env(safe-area-inset-bottom) + 20px); }
+    .home.show { display: flex; }
+    .home-top { display: flex; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 12px; justify-content: center; margin-top: 2px; }
+    .brand h1 { margin: 0; font-size: 40px; line-height: 1; font-weight: 900; color: var(--title); letter-spacing: -.01em; }
+    .tagline { margin: 8px 0 0; text-align: center; color: var(--muted); font-weight: 800; font-size: 15px; }
+    .demo { position: relative; flex: 1; min-height: 120px; margin: 10px -4px; }
+    .demo canvas { pointer-events: none; }
+    .demo-name { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 12px; font-weight: 800; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+    .play { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 17px 22px; border-radius: 18px;
+      background: var(--title); color: #fff; box-shadow: 0 10px 22px -10px var(--shadow); }
+    .play:active { transform: scale(.98); }
+    .play b { font-size: 22px; font-weight: 900; }
+    .play span { font-size: 15px; font-weight: 800; opacity: .9; display: flex; align-items: center; gap: 6px; }
+    .stats { margin-top: 14px; text-align: center; font-size: 13px; font-weight: 800; color: var(--muted); min-height: 18px; }
+
+    .levels { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 14px; max-height: 52vh; overflow: auto; padding: 2px; }
+    .lv { aspect-ratio: 1; border-radius: 14px; background: var(--btn); box-shadow: inset 0 0 0 2px var(--line); font-weight: 900; font-size: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-variant-numeric: tabular-nums; }
+    .lv small { font-size: 9px; letter-spacing: -1px; color: #3b8fd9; min-height: 10px; }
+    .lv.cur { background: var(--title); color: #fff; box-shadow: none; }
+    .lv.cur small { color: #fff; }
+    .lv:disabled { opacity: .35; cursor: default; }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="bar">
+    <button class="ico" id="homeBtn" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+    </button>
+    <h1 id="levelTitle">Level 1</h1>
+    <button class="ico" id="themeBtn" aria-label="Change theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.9 1.7-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.8-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.1" fill="currentColor"/><circle cx="10.5" cy="7" r="1.1" fill="currentColor"/><circle cx="15" cy="7.5" r="1.1" fill="currentColor"/></svg>
+    </button>
+    <button class="ico" id="settingsBtn" aria-label="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><circle cx="12" cy="12" r="3.2"/></svg>
+    </button>
+  </div>
+
+  <div class="status">
+    <div class="drops" id="drops"></div>
+    <div class="left" id="leftCount"></div>
+  </div>
+
+  <div class="stage" id="stage"><canvas id="cv"></canvas><div class="toast" id="toast"></div></div>
+
+  <div class="tools">
+    <button class="tool" id="gridBtn" aria-label="Toggle grid">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/></svg>
+    </button>
+    <button class="tool" id="undoBtn" aria-label="Undo last bump">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+      <span class="badge" id="undoBadge">1</span>
+    </button>
+    <button class="tool" id="hintBtn" aria-label="Hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/><path d="M10 10.5l1 1.5 1-1.5 1 1.5 1-1.5"/></svg>
+      <span class="badge" id="hintBadge">3</span>
+    </button>
+  </div>
+
+  <!-- Home -->
+  <section class="home show" id="home" aria-label="Home">
+    <div class="home-top">
+      <button class="ico" id="homeTheme" aria-label="Change theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.9 1.7-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.8-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.1" fill="currentColor"/><circle cx="10.5" cy="7" r="1.1" fill="currentColor"/><circle cx="15" cy="7.5" r="1.1" fill="currentColor"/></svg>
+      </button>
+      <button class="ico" id="homeSettings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><circle cx="12" cy="12" r="3.2"/></svg>
+      </button>
+    </div>
+    <div class="brand">
+      <svg width="44" height="44" viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10 44V22h14v14h22" stroke="var(--title)" stroke-width="5"/>
+        <path d="M40 30l6 6-6 6" stroke="var(--title)" stroke-width="5"/>
+        <path d="M32 26V10" stroke="var(--ink)" stroke-width="5"/>
+        <path d="M26 16l6-6 6 6" stroke="var(--ink)" stroke-width="5"/>
+      </svg>
+      <h1>Lane Out</h1>
+    </div>
+    <p class="tagline">Slide every line out. Find the order.</p>
+    <div class="demo" id="demo"><canvas id="demoCv"></canvas><div class="demo-name" id="demoName"></div></div>
+    <button class="play" id="playBtn"><b>Play</b><span id="menuLevel">Level 1</span></button>
+    <div class="row3">
+      <button class="cta2" id="levelsBtn">Levels<small id="levelsSub">0 cleared</small></button>
+      <button class="cta2" id="dailyBtn">Daily<small id="dailySub">New today</small></button>
+      <button class="cta2" id="albumBtn">Album<small id="albumSub">0 found</small></button>
+    </div>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <!-- Level picker -->
+  <div class="veil" id="levelsVeil">
+    <div class="sheet">
+      <h2>Levels</h2>
+      <div class="levels" id="levelsGrid"></div>
+      <button class="cta alt" id="levelsClose">Close</button>
+    </div>
+  </div>
+
+  <!-- Album -->
+  <div class="veil" id="albumVeil">
+    <div class="sheet">
+      <h2>Album</h2>
+      <p id="albumCount"></p>
+      <div class="album" id="albumGrid"></div>
+      <button class="cta alt" id="albumClose">Close</button>
+    </div>
+  </div>
+
+  <!-- Win -->
+  <div class="veil" id="winVeil">
+    <div class="sheet">
+      <div class="reveal" id="winPic"></div>
+      <h2 id="winTitle">Board clear!</h2>
+      <div class="result-drops" id="winDrops"></div>
+      <p id="winText"></p>
+      <button class="cta" id="nextBtn">Next level</button>
+      <div class="row2">
+        <button class="cta2" id="replayBtn">Replay</button>
+        <button class="cta2" id="winHome">Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lose -->
+  <div class="veil" id="loseVeil">
+    <div class="sheet">
+      <h2>Out of drops</h2>
+      <p>Before you tap, hold a line down to see where it will go.</p>
+      <button class="cta" id="loseUndo">Undo last bump 💧</button>
+      <button class="cta2" id="retryBtn" style="width:100%;margin-top:10px">Try again</button>
+      <button class="cta alt" id="loseHome">Home</button>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="veil" id="setVeil">
+    <div class="sheet" style="text-align:left">
+      <h2 style="text-align:center;margin-bottom:8px">Settings</h2>
+      <div class="opt"><span>Sound</span><button class="switch on" id="swSound" aria-label="Sound"></button></div>
+      <div class="opt"><span>Vibration</span><button class="switch on" id="swVibe" aria-label="Vibration"></button></div>
+      <div class="opt"><span>Restart level</span><button class="ico" id="restartBtn" aria-label="Restart" style="color:var(--title)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/></svg></button></div>
+      <button class="cta" id="setClose">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ================= Persistence =================
+  const KEY = 'laneOut.v2';
+  const save = { level: 1, maxLevel: 1, theme: null, sound: true, vibe: true, best: {}, daily: {}, album: {}, seenZoomTip: false, seenBothTip: false };
+  try { Object.assign(save, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+  save.maxLevel = Math.max(save.maxLevel || 1, save.level || 1);
+  save.album = save.album || {};
+  const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} };
+
+  // ================= Sound =================
+  // Soft air whoosh plus a wooden "tock" whose pitch climbs a pentatonic scale during a clean streak.
+  let actx = null, master = null;
+  function audio() {
+    if (!save.sound) return null;
+    try {
+      if (!actx) {
+        actx = new (window.AudioContext || window.webkitAudioContext)();
+        master = actx.createDynamicsCompressor();
+        master.connect(actx.destination);
+      }
+      if (actx.state === 'suspended') actx.resume();
+    } catch (e) { return null; }
+    return actx;
+  }
+  const PENTA = [0, 2, 4, 7, 9];
+  const noteHz = (step) => 392 * Math.pow(2, (PENTA[step % 5] + 12 * Math.floor(step / 5)) / 12);
+  function pluck(freq, vol = 0.12, delay = 0, dur = 0.45) {
+    const a = audio(); if (!a) return;
+    const t = a.currentTime + delay;
+    [[1, vol], [2.01, vol * 0.35], [3.98, vol * 0.12]].forEach(([mul, v]) => {
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(freq * mul, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(v, t + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur / mul);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + dur);
+    });
+  }
+  function whoosh(len) {
+    const a = audio(); if (!a) return;
+    const dur = 0.28 + Math.min(0.2, len * 0.008);
+    const buf = a.createBuffer(1, Math.floor(a.sampleRate * dur), a.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) { const x = i / d.length; d[i] = (Math.random() * 2 - 1) * Math.pow(Math.sin(Math.PI * x), 1.6); }
+    const src = a.createBufferSource(); src.buffer = buf;
+    const f = a.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 0.9;
+    f.frequency.setValueAtTime(380, a.currentTime);
+    f.frequency.exponentialRampToValueAtTime(2200, a.currentTime + dur * 0.8);
+    const g = a.createGain(); g.gain.value = 0.22;
+    src.connect(f); f.connect(g); g.connect(master); src.start();
+  }
+  function thud() {
+    const a = audio(); if (!a) return;
+    const t = a.currentTime;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(170, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.18);
+    g.gain.setValueAtTime(0.35, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.26);
+    pluck(155, 0.06, 0.01, 0.2);
+  }
+  const winSound = () => [0, 2, 4, 5, 7, 10].forEach((s, i) => pluck(noteHz(s + 3), 0.1, i * 0.09, 0.9));
+  const hintSound = () => { pluck(noteHz(7), 0.07); pluck(noteHz(9), 0.06, 0.08); };
+  const vibe = (p) => { if (save.vibe) try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
+
+  // ================= Pictures =================
+  // Emoji chosen for recognisable silhouettes; only their outline is used.
+  const PICTURES = [
+    ['🏆', 'Trophy'], ['🦋', 'Butterfly'], ['🐱', 'Cat'], ['🚀', 'Rocket'], ['🐟', 'Fish'], ['⭐', 'Star'], ['🐢', 'Turtle'],
+    ['🍄', 'Mushroom'], ['🎸', 'Guitar'], ['🦊', 'Fox'], ['🐧', 'Penguin'], ['☂️', 'Umbrella'], ['🐙', 'Octopus'], ['🏠', 'House'],
+    ['🦕', 'Dinosaur'], ['🐘', 'Elephant'], ['🦉', 'Owl'], ['👑', 'Crown'], ['🐳', 'Whale'], ['🌵', 'Cactus'], ['🦀', 'Crab'],
+    ['🐝', 'Bee'], ['⚓', 'Anchor'], ['🎈', 'Balloon'], ['🦒', 'Giraffe'], ['🐌', 'Snail'], ['🍐', 'Pear'], ['🔔', 'Bell'],
+    ['🐇', 'Rabbit'], ['🦩', 'Flamingo'], ['🕊️', 'Dove'], ['✈️', 'Plane'], ['⛵', 'Sailboat'], ['🎄', 'Tree'], ['❤️', 'Heart'],
+    ['🐞', 'Ladybug'], ['🦄', 'Unicorn'], ['🍦', 'Ice cream'], ['🎃', 'Pumpkin'], ['🐿️', 'Squirrel'], ['🦖', 'T-rex'], ['🐸', 'Frog']
+  ];
+  const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",sans-serif';
+  const RS = 10; // raster pixels per cell
+
+  function rasterize(emoji, cols) {
+    try {
+      // Measure the real ink box: emoji font metrics include a lot of padding.
+      const S = 256, sc = document.createElement('canvas'); sc.width = S; sc.height = S;
+      const sg = sc.getContext('2d', { willReadFrequently: true });
+      sg.font = `160px ${EMOJI_FONT}`; sg.textAlign = 'center'; sg.textBaseline = 'middle';
+      sg.fillText(emoji, S / 2, S / 2);
+      const sd = sg.getImageData(0, 0, S, S).data;
+      let x0 = S, y0 = S, x1 = -1, y1 = -1;
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        if (sd[(y * S + x) * 4 + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      }
+      if (x1 < 0) return null;
+      const iw = x1 - x0 + 1, ih = y1 - y0 + 1;
+      const rows = Math.max(Math.round(cols * 0.8), Math.min(Math.round(cols * 1.35), Math.round(cols * ih / iw)));
+      const w = cols * RS, h = rows * RS;
+      const k = Math.min(w * 0.99 / iw, h * 0.99 / ih);
+      const font = 160 * k;
+      const cx = w / 2 - ((x0 + x1) / 2 - S / 2) * k;
+      const cy = h / 2 - ((y0 + y1) / 2 - S / 2) * k;
+      const oc = document.createElement('canvas'); oc.width = w; oc.height = h;
+      const g = oc.getContext('2d', { willReadFrequently: true });
+      g.font = `${font}px ${EMOJI_FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(emoji, cx, cy);
+      const data = g.getImageData(0, 0, w, h).data;
+      const mask = new Uint8Array(cols * rows);
+      let count = 0;
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        let A = 0;
+        for (let y = r * RS; y < (r + 1) * RS; y++) for (let x = c * RS; x < (c + 1) * RS; x++) A += data[(y * w + x) * 4 + 3];
+        if (A / (RS * RS * 255) > 0.45) { mask[r * cols + c] = 1; count++; }
+      }
+      const ratio = count / (cols * rows);
+      // No emoji font: a hollow box or nothing is drawn, so use built-in shapes.
+      if (ratio < 0.18 || ratio > 0.97) return null;
+      return { rows, mask, draw: { font, cx, cy } };
+    } catch (e) { return null; }
+  }
+
+  const SHAPES = {
+    square: () => true,
+    heart: (x, y) => { x *= 1.22; y = -y * 1.22 + 0.3; const a = x * x + y * y - 1; return a * a * a - x * x * y * y * y <= 0; },
+    circle: (x, y) => x * x + y * y <= 1.02,
+    diamond: (x, y) => Math.abs(x) + Math.abs(y) <= 1.08,
+    hourglass: (x, y) => Math.abs(x) <= Math.abs(y) * 0.95 + 0.22,
+    plus: (x, y) => Math.abs(x) < 0.42 || Math.abs(y) < 0.36
+  };
+  const FALLBACK = [['heart', 'Heart'], ['circle', 'Moon'], ['diamond', 'Gem'], ['hourglass', 'Hourglass'], ['plus', 'Cross']];
+  function shapeMask(f, cols, rows) {
+    const mask = new Uint8Array(cols * rows);
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++)
+      mask[r * cols + c] = f((c + 0.5) / cols * 2 - 1, (r + 0.5) / rows * 2 - 1) ? 1 : 0;
+    return mask;
+  }
+
+  // ================= Level generation =================
+  function mulberry(seed) {
+    return () => {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  const DIRS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+
+  function levelConfig(level, opts = {}) {
+    let cols;
+    if (opts.demo) cols = 18;
+    else if (opts.daily) cols = 34;
+    else if (level <= 3) cols = 6 + level;
+    else cols = Math.min(40, 12 + Math.floor((level - 4) * 1.4));
+    let rows = Math.round(cols * 1.15);
+    const maxLen = opts.demo ? 14 : opts.daily ? 28 : Math.min(30, 6 + level);
+    let mask = null, draw = null, emoji = null, name = 'Warm-up';
+    if (level <= 3 && !opts.daily && !opts.demo) {
+      rows = Math.round(cols * 1.2);
+      mask = shapeMask(SHAPES.square, cols, rows);
+    } else {
+      const pick = (opts.daily || opts.demo) ? PICTURES[opts.seed % PICTURES.length] : PICTURES[(level * 5 + 1) % PICTURES.length];
+      const ras = rasterize(pick[0], cols);
+      if (ras) { rows = ras.rows; mask = ras.mask; draw = ras.draw; emoji = pick[0]; name = pick[1]; }
+      else { const fb = FALLBACK[level % FALLBACK.length]; name = fb[1]; mask = shapeMask(SHAPES[fb[0]], cols, rows); }
+    }
+    // Drop lone cells that would become stray dots.
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      if (!mask[r * cols + c]) continue;
+      let n = 0;
+      for (const [dx, dy] of DIRS) { const x = c + dx, y = r + dy; if (x >= 0 && y >= 0 && x < cols && y < rows && mask[y * cols + x]) n++; }
+      if (!n) mask[r * cols + c] = 0;
+    }
+    return { cols, rows, mask, draw, emoji, name, maxLen };
+  }
+
+  // Step 1: cut the picture into long, tidy paths that cover every cell.
+  function partition(cfg, R) {
+    const { cols, rows, mask, maxLen } = cfg;
+    const N = cols * rows;
+    const owner = new Int32Array(N).fill(-1);
+    const inside = (c, r) => c >= 0 && r >= 0 && c < cols && r < rows;
+    const open = (c, r) => inside(c, r) && mask[r * cols + c] && owner[r * cols + c] < 0;
+    const freeN = (c, r) => { let n = 0; for (const [dx, dy] of DIRS) if (open(c + dx, r + dy)) n++; return n; };
+    const paths = [];
+
+    function extend(path, id, target) {
+      let dir = null, run = 0, runMax = 2 + Math.floor(R() * 6);
+      if (path.length >= 2) {
+        const a = path[path.length - 2], b = path[path.length - 1];
+        dir = [b[0] - a[0], b[1] - a[1]]; run = 1;
+      }
+      while (path.length < target) {
+        const [lc, lr] = path[path.length - 1];
+        const opts = DIRS.filter(([dx, dy]) => open(lc + dx, lr + dy));
+        if (!opts.length) break;
+        let pick = null;
+        const straight = dir && opts.find(([dx, dy]) => dx === dir[0] && dy === dir[1]);
+        if (straight && run < runMax && R() < 0.82) pick = straight;
+        else {
+          // Prefer the neighbour with the fewest open neighbours so no pockets get stranded.
+          let best = Infinity;
+          for (const o of opts) {
+            if (straight && o === straight && run >= runMax && opts.length > 1) continue;
+            owner[(lr + o[1]) * cols + lc + o[0]] = id;
+            const f = freeN(lc + o[0], lr + o[1]) + R() * 0.9;
+            owner[(lr + o[1]) * cols + lc + o[0]] = -1;
+            if (f < best) { best = f; pick = o; }
+          }
+        }
+        if (!dir || pick[0] !== dir[0] || pick[1] !== dir[1]) { run = 1; runMax = 2 + Math.floor(R() * 6); } else run++;
+        dir = pick;
+        const c = lc + pick[0], r = lr + pick[1];
+        owner[r * cols + c] = id; path.push([c, r]);
+      }
+    }
+
+    for (;;) {
+      let best = Infinity, starts = [];
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        if (!open(c, r)) continue;
+        const f = freeN(c, r);
+        if (f < best) { best = f; starts = [[c, r]]; } else if (f === best) starts.push([c, r]);
+      }
+      if (!starts.length) break;
+      const s = starts[Math.floor(R() * starts.length)];
+      const id = paths.length;
+      const path = [s];
+      owner[s[1] * cols + s[0]] = id;
+      const target = Math.max(2, Math.floor(3 + R() * (maxLen - 2)));
+      extend(path, id, target);
+      if (path.length < target) { path.reverse(); extend(path, id, target); }
+      paths.push(path);
+    }
+
+    // Merge single cells into a neighbouring path end where possible.
+    for (let pass = 0; pass < 3; pass++) {
+      for (let i = 0; i < paths.length; i++) {
+        const p = paths[i];
+        if (!p || p.length !== 1) continue;
+        const [c, r] = p[0];
+        for (const [dx, dy] of DIRS) {
+          if (!inside(c + dx, r + dy)) continue;
+          const j = owner[(r + dy) * cols + c + dx];
+          if (j < 0 || j === i || !paths[j] || paths[j].length >= maxLen + 4) continue;
+          const q = paths[j];
+          const first = q[0], last = q[q.length - 1];
+          if (first[0] === c + dx && first[1] === r + dy) { q.unshift([c, r]); }
+          else if (last[0] === c + dx && last[1] === r + dy) { q.push([c, r]); }
+          else continue;
+          owner[r * cols + c] = j; paths[i] = null; break;
+        }
+      }
+    }
+    return paths.filter(Boolean);
+  }
+
+  const laneFree = (cells, dir, occ, cols, rows, self) => {
+    const [hc, hr] = cells[cells.length - 1];
+    for (let c = hc + dir[0], r = hr + dir[1]; c >= 0 && r >= 0 && c < cols && r < rows; c += dir[0], r += dir[1]) {
+      const o = occ[r * cols + c];
+      if (o >= 0 && o !== self) return false;
+    }
+    return true;
+  };
+  const headDir = (cells, fallback) => cells.length >= 2
+    ? [cells[cells.length - 1][0] - cells[cells.length - 2][0], cells[cells.length - 1][1] - cells[cells.length - 2][1]]
+    : fallback;
+
+  // Step 2: point each path, preferring the end that looks deeper into the picture (harder),
+  // then repair until a full clearing order exists.
+  function orientAndRepair(cfg, paths, R, bias) {
+    const { cols, rows, mask } = cfg;
+    const maskAhead = (cell, dir) => {
+      let n = 0;
+      for (let c = cell[0] + dir[0], r = cell[1] + dir[1]; c >= 0 && r >= 0 && c < cols && r < rows; c += dir[0], r += dir[1]) if (mask[r * cols + c]) n++;
+      return n;
+    };
+    const lines = paths.map(p => {
+      if (p.length === 1) {
+        const opts = DIRS.slice().sort((a, b) => maskAhead(p[0], b) - maskAhead(p[0], a));
+        return { cells: p, dir: R() < bias ? opts[0] : opts[Math.floor(R() * 4)] };
+      }
+      const rev = p.slice().reverse();
+      const dA = headDir(p), dB = headDir(rev);
+      const aDeep = maskAhead(p[p.length - 1], dA) >= maskAhead(rev[rev.length - 1], dB);
+      const useA = R() < bias ? aDeep : !aDeep;
+      return useA ? { cells: p, dir: dA } : { cells: rev, dir: dB };
+    });
+
+    const N = cols * rows;
+    for (let guard = 0; guard < 5000; guard++) {
+      // Greedy clearing is safe: removing a line only ever frees lanes.
+      const occ = new Int32Array(N).fill(-1);
+      const alive = new Set(lines.map((_, i) => i));
+      lines.forEach((l, i) => l.cells.forEach(([c, r]) => occ[r * cols + c] = i));
+      for (let progress = true; progress;) {
+        progress = false;
+        for (const i of alive) {
+          if (laneFree(lines[i].cells, lines[i].dir, occ, cols, rows, i)) {
+            lines[i].cells.forEach(([c, r]) => occ[r * cols + c] = -1); alive.delete(i); progress = true;
+          }
+        }
+      }
+      if (!alive.size) return lines;
+      const stuck = [...alive];
+      for (let i = stuck.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [stuck[i], stuck[j]] = [stuck[j], stuck[i]]; }
+
+      // a) flip a stuck line if its other end can leave
+      let fixed = false;
+      for (const i of stuck) {
+        const L = lines[i];
+        if (L.cells.length < 2) continue;
+        const rev = L.cells.slice().reverse(), d = headDir(rev);
+        if (laneFree(rev, d, occ, cols, rows, i)) { lines[i] = { cells: rev, dir: d }; fixed = true; break; }
+      }
+      if (fixed) continue;
+      // b) peel an end cell off a stuck line if it can leave in some direction
+      for (const i of stuck) {
+        const L = lines[i];
+        if (L.cells.length < 3) continue;
+        for (const atHead of [false, true]) {
+          const cell = atHead ? L.cells[L.cells.length - 1] : L.cells[0];
+          for (const d of DIRS) {
+            if (!laneFree([cell], d, occ, cols, rows, i)) continue;
+            const rest = atHead ? L.cells.slice(0, -1) : L.cells.slice(1);
+            lines[i] = { cells: rest, dir: headDir(rest, L.dir) };
+            lines.push({ cells: [cell], dir: d });
+            fixed = true; break;
+          }
+          if (fixed) break;
+        }
+        if (fixed) break;
+      }
+      if (fixed) continue;
+      // c) always works: the top-most stuck cell can leave upward on its own
+      let top = null;
+      for (const i of stuck) lines[i].cells.forEach((cell, k) => { if (!top || cell[1] < top.cell[1]) top = { i, k, cell }; });
+      const L = lines[top.i];
+      const a = L.cells.slice(0, top.k), b = L.cells.slice(top.k + 1);
+      lines.splice(top.i, 1);
+      if (a.length) lines.push({ cells: a, dir: headDir(a, [a[0][0] - top.cell[0], a[0][1] - top.cell[1]]) });
+      if (b.length) lines.push({ cells: b, dir: headDir(b, [b[0][0] - top.cell[0], b[0][1] - top.cell[1]]) });
+      lines.push({ cells: [top.cell], dir: [0, -1] });
+    }
+    return null;
+  }
+
+  // Layers: how many rounds of "clear everything currently free" the board needs.
+  function analyse(lines, cols, rows) {
+    const occ = new Int32Array(cols * rows).fill(-1);
+    lines.forEach((l, i) => l.cells.forEach(([c, r]) => occ[r * cols + c] = i));
+    const alive = new Set(lines.map((_, i) => i));
+    let depth = 0, initialFree = -1;
+    while (alive.size) {
+      const free = [...alive].filter(i => laneFree(lines[i].cells, lines[i].dir, occ, cols, rows, i)
+        || (lines[i].both && laneFree([lines[i].cells[0]], lines[i].tdir, occ, cols, rows, i)));
+      if (!free.length) return { solvable: false, depth, initialFree };
+      if (initialFree < 0) initialFree = free.length;
+      for (const i of free) { lines[i].cells.forEach(([c, r]) => occ[r * cols + c] = -1); alive.delete(i); }
+      depth++;
+    }
+    return { solvable: true, depth, initialFree };
+  }
+
+  // The repair step can leave one-cell arrows. Fold each into a neighbouring line's end
+  // whenever the board stays solvable, so big boards don't fill up with stray ticks.
+  function mergeSingles(best, cfg) {
+    const { cols, rows } = cfg;
+    let lines = best.lines;
+    const at = new Map();
+    const index = () => { at.clear(); lines.forEach((l, i) => l.cells.forEach(([c, r]) => at.set(r * cols + c, i))); };
+    index();
+    for (let i = 0; i < lines.length; i++) {
+      const s = lines[i];
+      if (s.cells.length !== 1) continue;
+      const [c, r] = s.cells[0];
+      let done = false;
+      for (const [dx, dy] of DIRS) {
+        const j = at.get((r + dy) * cols + c + dx);
+        if (j === undefined || j === i) continue;
+        const L = lines[j];
+        const tail = L.cells[0], head = L.cells[L.cells.length - 1];
+        const cands = [];
+        if (tail[0] === c + dx && tail[1] === r + dy) cands.push({ cells: [[c, r], ...L.cells], dir: L.cells.length > 1 ? L.dir : [dx, dy] });
+        if (head[0] === c + dx && head[1] === r + dy) cands.push({ cells: [...L.cells, [c, r]], dir: [-dx, -dy] });
+        for (const m of cands) {
+          const trial = lines.slice();
+          trial[j] = m; trial.splice(i, 1);
+          const st = analyse(trial, cols, rows);
+          if (st.solvable) { lines = trial; best.depth = st.depth; best.initialFree = st.initialFree; done = true; break; }
+        }
+        if (done) break;
+      }
+      if (done) { index(); i--; }
+    }
+    best.lines = lines;
+  }
+
+  // Two-headed lines can leave from either end. That only adds ways out, so the board stays
+  // solvable; the challenge is picking the right end. Favour lines whose back end starts blocked.
+  function markTwoHeaded(lines, cols, rows, rate, R) {
+    if (!rate) return;
+    const occ = new Int32Array(cols * rows).fill(-1);
+    lines.forEach((l, i) => l.cells.forEach(([c, r]) => occ[r * cols + c] = i));
+    lines.forEach((l, i) => {
+      if (l.cells.length < 3) return;
+      const tdir = [l.cells[0][0] - l.cells[1][0], l.cells[0][1] - l.cells[1][1]];
+      const tailBlocked = !laneFree([l.cells[0]], tdir, occ, cols, rows, i);
+      if (R() < rate * (tailBlocked ? 1.6 : 0.4)) { l.both = true; l.tdir = tdir; }
+    });
+  }
+
+  function generateLevel(level, opts = {}) {
+    const cfg = levelConfig(level, opts);
+    const baseSeed = (opts.daily || opts.demo) ? opts.seed : level * 7919 + 13;
+    const bias = opts.daily ? 0.85 : level <= 2 ? 0.35 : Math.min(0.9, 0.55 + level * 0.02);
+    const tries = opts.demo ? 1 : cfg.cols > 30 ? 2 : cfg.cols > 20 ? 3 : 5;
+    let best = null;
+    for (let a = 0; a < tries; a++) {
+      const R = mulberry(baseSeed + a * 104729);
+      const lines = orientAndRepair(cfg, partition(cfg, R), R, bias);
+      if (!lines) continue;
+      const st = analyse(lines, cfg.cols, cfg.rows);
+      if (!st.solvable) continue;
+      const singles = lines.filter(l => l.cells.length === 1).length;
+      // Harder boards need more rounds and start with a smaller share of free lines.
+      const score = st.depth - 6 * st.initialFree / lines.length - 4 * singles / lines.length;
+      if (!best || score > best.score) best = { lines, score, depth: st.depth, initialFree: st.initialFree };
+    }
+    if (!opts.demo) {
+      mergeSingles(best, cfg);
+      const rate = opts.daily ? 0.12 : level >= 6 ? Math.min(0.14, 0.06 + (level - 6) * 0.003) : 0;
+      markTwoHeaded(best.lines, cfg.cols, cfg.rows, rate, mulberry(baseSeed ^ 0x2c1b3c6d));
+      const st = analyse(best.lines, cfg.cols, cfg.rows);
+      best.depth = st.depth; best.initialFree = st.initialFree;
+    }
+    return { cols: cfg.cols, rows: cfg.rows, lines: best.lines, depth: best.depth, initialFree: best.initialFree,
+      name: cfg.name, emoji: cfg.emoji, draw: cfg.draw, level };
+  }
+
+  // ================= Game state =================
+  const $ = (id) => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d'), stage = $('stage');
+  window.__mainCtx = ctx;
+  let W = 0, H = 0, dpr = 1;
+  let G = null, lines = [], occ = null;
+  let mode = 'level', dailyKey = '';
+  let drops = 3, hints = 3, showGrid = false;
+  let hintId = -1, hintUntil = 0, guide = null, pressed = -1;
+  let particles = [];
+  let layout = { cs: 20, ox: 0, oy: 0 };
+  const view = { s: 1, x: 0, y: 0 };
+  let undos = 1, bumps = [];
+  let busyEnd = false, removed = 0, streak = 0, lastClear = 0, revealT = -1, shake = 0;
+  let colors = {};
+
+  function readColors() {
+    const s = getComputedStyle(document.documentElement);
+    const g = (n) => s.getPropertyValue(n).trim();
+    colors = { ink: g('--ink'), accent: g('--accent'), danger: g('--danger'), line: g('--line'), panel: g('--panel'), muted: g('--muted'), title: g('--title') };
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', colors.panel);
+  }
+  function hexRgb(h) {
+    h = h.trim().replace('#', '');
+    if (h.length === 3) h = h.split('').map(x => x + x).join('');
+    return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16));
+  }
+  function mix(a, b, t) {
+    try { const A = hexRgb(a), B = hexRgb(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',')})`; }
+    catch (e) { return a; }
+  }
+
+  function rebuildOcc() {
+    occ = new Int32Array(G.cols * G.rows).fill(-1);
+    for (const l of lines) {
+      if (l.state === 'exit' || l.state === 'gone') continue;
+      for (const [c, r] of l.cells) occ[r * G.cols + c] = l.id;
+    }
+  }
+  function laneBlocker(l) {
+    const [hc, hr] = l.cells[l.cells.length - 1];
+    let k = 1;
+    for (let c = hc + l.dir[0], r = hr + l.dir[1]; c >= 0 && r >= 0 && c < G.cols && r < G.rows; c += l.dir[0], r += l.dir[1], k++) {
+      const o = occ[r * G.cols + c];
+      if (o >= 0 && o !== l.id) return k;
+    }
+    return -1;
+  }
+  function tailBlocker(l) {
+    const [tc, tr] = l.cells[0];
+    let k = 1;
+    for (let c = tc + l.tdir[0], r = tr + l.tdir[1]; c >= 0 && r >= 0 && c < G.cols && r < G.rows; c += l.tdir[0], r += l.tdir[1], k++) {
+      const o = occ[r * G.cols + c];
+      if (o >= 0 && o !== l.id) return k;
+    }
+    return -1;
+  }
+  const freeEnd = (l) => laneBlocker(l) < 0 ? 'head' : (l.both && tailBlocker(l) < 0 ? 'tail' : null);
+  // Make the chosen end of a two-headed line its head (the drawing shows both arrows either way).
+  function swapEnds(l) { l.cells = l.cells.slice().reverse(); const d = l.dir; l.dir = l.tdir; l.tdir = d; }
+  const laneCell = (l, k) => {
+    const [hc, hr] = l.cells[l.cells.length - 1];
+    return (hr + l.dir[1] * k) * G.cols + (hc + l.dir[0] * k);
+  };
+
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function startLevel(n, opts = {}) {
+    mode = opts.daily ? 'daily' : 'level';
+    if (mode === 'level') { save.level = n; save.maxLevel = Math.max(save.maxLevel, n); persist(); }
+    else dailyKey = todayKey();
+    G = generateLevel(n, mode === 'daily' ? { daily: true, seed: hashStr('daily:' + dailyKey) } : {});
+    lines = G.lines.map((l, i) => ({ id: i, cells: l.cells, dir: l.dir, both: !!l.both, tdir: l.tdir, state: 'idle', s: 0, v: 0, t: 0, flash: 0, glow: 0, path: null }));
+    rebuildOcc();
+    drops = 3; hints = 3; undos = 1; bumps = []; hintId = -1; guide = null; pressed = -1; particles = [];
+    busyEnd = false; removed = 0; streak = 0; revealT = -1; shake = 0;
+    view.s = 1; view.x = 0; view.y = 0; zoomAnim = null;
+    $('levelTitle').textContent = mode === 'daily' ? 'Daily puzzle' : `Level ${n}`;
+    ['winVeil', 'loseVeil', 'levelsVeil'].forEach(v => $(v).classList.remove('show'));
+    hideHome();
+    fit(); renderDrops(); renderHud();
+    const tips = {
+      1: 'Tap a line. It slides out the way its arrow points.',
+      2: 'A line that hits another one costs a 💧.',
+      3: 'Hold a line to see where it will go.'
+    };
+    let tip = mode === 'level' ? tips[n] : null;
+    if (!tip && !save.seenBothTip && lines.some(l => l.both)) { tip = 'Lines with two arrows can leave either way. Tap near the end you want.'; save.seenBothTip = true; persist(); }
+    if (!tip && G.cols >= 16 && !save.seenZoomTip) { tip = 'Pinch, scroll or double-tap to zoom in.'; save.seenZoomTip = true; persist(); }
+    if (tip) toast(tip, 3200);
+  }
+
+  function renderDrops() {
+    const el = $('drops');
+    el.innerHTML = '';
+    for (let i = 0; i < 3; i++) el.appendChild(dropSvg(i >= drops));
+  }
+  function dropSvg(lost) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const s = document.createElementNS(ns, 'svg');
+    s.setAttribute('viewBox', '0 0 18 24'); s.setAttribute('class', 'drop' + (lost ? ' lost' : ''));
+    s.innerHTML = '<path d="M9 1C9 1 1.5 10 1.5 15.3A7.5 7.5 0 0 0 16.5 15.3C16.5 10 9 1 9 1Z" fill="#3b8fd9"/><ellipse cx="6" cy="15" rx="1.8" ry="3" fill="#fff" opacity=".55"/>';
+    return s;
+  }
+  function renderHud() {
+    $('leftCount').textContent = `${lines.length - removed} left`;
+    const b = $('hintBadge');
+    b.textContent = hints; b.classList.toggle('zero', hints === 0);
+    const u = $('undoBadge');
+    u.textContent = undos; u.classList.toggle('zero', undos === 0 || !bumps.length);
+  }
+  let toastTimer = 0;
+  function toast(msg, ms = 1600) {
+    const t = $('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+  }
+
+  // ================= Layout & view =================
+  let zoomAnim = null;
+  function fit() {
+    const r = stage.getBoundingClientRect();
+    dpr = window.devicePixelRatio || 1;
+    W = r.width; H = r.height;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    if (!G) return;
+    const pad = 16;
+    const cs = Math.max(6, Math.min(56, Math.min((W - pad * 2) / G.cols, (H - pad * 2) / G.rows)));
+    layout = { cs, ox: (W - cs * G.cols) / 2, oy: (H - cs * G.rows) / 2 };
+    clampView();
+  }
+  let lastKey = '';
+  const onResize = () => {
+    const r = stage.getBoundingClientRect();
+    const k = `${Math.round(r.width)}x${Math.round(r.height)}@${window.devicePixelRatio}`;
+    if (k !== lastKey) { lastKey = k; fit(); }
+  };
+  if (window.ResizeObserver) new ResizeObserver(onResize).observe(stage);
+  window.addEventListener('resize', onResize);
+
+  // Drawing target: the game board by default, swapped to the home-page demo while it draws.
+  let dg = null, dlay = null;
+  const LAY = () => dlay || layout;
+  const px = (c) => LAY().ox + (c + 0.5) * LAY().cs;
+  const py = (r) => LAY().oy + (r + 0.5) * LAY().cs;
+  const toWorld = (x, y) => [(x - view.x) / view.s, (y - view.y) / view.s];
+  function clampView() {
+    view.s = Math.max(1, Math.min(5, view.s));
+    if (view.s <= 1.001) { view.s = 1; view.x = 0; view.y = 0; return; }
+    if (!G) return;
+    const bw = layout.cs * G.cols, bh = layout.cs * G.rows;
+    view.x = Math.max(W * 0.5 - (layout.ox + bw) * view.s, Math.min(W * 0.5 - layout.ox * view.s, view.x));
+    view.y = Math.max(H * 0.5 - (layout.oy + bh) * view.s, Math.min(H * 0.5 - layout.oy * view.s, view.y));
+  }
+  // Computes the clamped view for a zoom around (sx, sy) and optionally animates to it.
+  function zoomTo(sx, sy, ns, animate = true) {
+    const from = { ...view };
+    const [wx, wy] = toWorld(sx, sy);
+    view.s = Math.max(1, Math.min(5, ns));
+    view.x = sx - wx * view.s; view.y = sy - wy * view.s;
+    clampView();
+    if (animate) { const to = { ...view }; Object.assign(view, from); zoomAnim = { from, to, t: 0 }; }
+  }
+  function panTo(c, r) {
+    const from = { ...view };
+    view.x = W / 2 - px(c) * view.s; view.y = H / 2 - py(r) * view.s;
+    clampView();
+    const to = { ...view }; Object.assign(view, from); zoomAnim = { from, to, t: 0 };
+  }
+
+  function buildPath(l) {
+    const P = l.cells.map(([c, r]) => [c, r]);
+    const [hc, hr] = l.cells[l.cells.length - 1];
+    const extra = Math.max(G.cols, G.rows) + l.cells.length + 4;
+    for (let i = 1; i <= extra; i++) P.push([hc + l.dir[0] * i, hr + l.dir[1] * i]);
+    return P;
+  }
+  function stepsToExit(l) {
+    const [hc, hr] = l.cells[l.cells.length - 1];
+    let k = 0;
+    for (let c = hc, r = hr; c >= 0 && r >= 0 && c < G.cols && r < G.rows; c += l.dir[0], r += l.dir[1]) k++;
+    return k - 1 + l.cells.length + 1;
+  }
+
+  // ================= Actions =================
+  function tapLine(l, end = 'head') {
+    if (l.state !== 'idle' || busyEnd) return;
+    if (l.both && end === 'tail') swapEnds(l);
+    const k = laneBlocker(l);
+    l.path = buildPath(l);
+    if (hintId === l.id) hintId = -1;
+    if (k < 0) {
+      l.state = 'exit'; l.s = 0; l.v = 6; l.goal = stepsToExit(l);
+      removed++;
+      const now = performance.now();
+      streak = now - lastClear < 2200 ? streak + 1 : 0;
+      lastClear = now;
+      rebuildOcc();
+      whoosh(l.cells.length);
+      pluck(noteHz(Math.min(streak, 14)), 0.09, 0.02);
+      vibe(6);
+      renderHud();
+    } else {
+      l.state = 'bump'; l.t = 0; l.reach = Math.max(0.2, k - 1 + 0.22);
+      const other = lines.find(o => o.id === occ[laneCell(l, k)]);
+      if (other) other.flash = 1.1;
+      l.flash = 1.6;
+      drops--; streak = 0; bumps.push(l.id);
+      thud(); vibe([25, 30, 25]);
+      shake = 1;
+      renderDrops();
+      const el = $('drops').children[Math.max(0, drops)];
+      if (el) el.classList.add('shake');
+      renderHud();
+      if (drops <= 0) {
+        busyEnd = true;
+        setTimeout(() => {
+          if (drops > 0) return;
+          $('loseUndo').hidden = !(undos > 0 && bumps.length);
+          $('loseVeil').classList.add('show');
+        }, 700);
+      }
+    }
+  }
+
+  function useUndo() {
+    if (undos <= 0) { toast('Undo is used up on this board'); return; }
+    if (!bumps.length) { toast('Undo gives back the 💧 from your last bump'); return; }
+    const id = bumps.pop();
+    undos--; drops = Math.min(3, drops + 1);
+    const l = lines[id];
+    if (l) { l.flash = 0; l.glow = 1.2; }
+    busyEnd = false;
+    $('loseVeil').classList.remove('show');
+    renderDrops(); renderHud();
+    pluck(noteHz(4), 0.08); pluck(noteHz(7), 0.07, 0.07);
+    toast('Bump taken back 💧');
+  }
+
+  function useHint() {
+    if (busyEnd) return;
+    if (hints <= 0) { toast('No hints left on this board'); return; }
+    const free = lines.filter(l => l.state === 'idle' && freeEnd(l));
+    if (!free.length) return;
+    let best = free[0], bestScore = -1;
+    for (const f of free) {
+      const set = new Set(f.cells.map(([c, r]) => r * G.cols + c));
+      let score = 0;
+      for (const o of lines) {
+        if (o.state !== 'idle' || o === f) continue;
+        const k = laneBlocker(o);
+        if (k > 0 && set.has(laneCell(o, k))) score++;
+      }
+      if (score > bestScore) { bestScore = score; best = f; }
+    }
+    if (freeEnd(best) === 'tail') swapEnds(best);
+    hints--; hintId = best.id; hintUntil = performance.now() + 4500;
+    if (view.s > 1.01) { const [c, r] = best.cells[best.cells.length - 1]; panTo(c, r); }
+    hintSound(); renderHud();
+  }
+
+  function checkWin() {
+    if (busyEnd || !lines.every(l => l.state === 'gone')) return;
+    busyEnd = true;
+    winSound(); vibe([15, 40, 15, 40, 30]);
+    zoomTo(W / 2, H / 2, 1);
+    revealT = 0;
+    let text;
+    if (mode === 'daily') {
+      save.daily[dailyKey] = Math.max(save.daily[dailyKey] || 0, drops);
+      text = 'Daily puzzle solved. A new one arrives tomorrow.';
+      $('nextBtn').textContent = `Continue level ${save.level}`;
+    } else {
+      const n = save.level;
+      save.best[n] = Math.max(save.best[n] || 0, drops);
+      save.maxLevel = Math.max(save.maxLevel, n + 1);
+      text = drops === 3 ? 'No bumps at all.' : `Level ${n} cleared. Replay it without a bump for all three drops.`;
+      $('nextBtn').textContent = 'Next level';
+    }
+    let isNew = false;
+    if (G.emoji) {
+      const prev = save.album[G.emoji];
+      isNew = !prev;
+      save.album[G.emoji] = { name: G.name, level: mode === 'level' ? save.level : (prev ? prev.level : null), drops: Math.max(prev ? prev.drops : 0, drops) };
+      if (isNew) text = `New picture for your album! ${text}`;
+    }
+    persist();
+    $('winPic').textContent = G.emoji || '🎉';
+    $('winTitle').textContent = drops === 3 ? 'Perfect!' : 'Board clear!';
+    const wd = $('winDrops'); wd.innerHTML = '';
+    for (let i = 0; i < 3; i++) wd.appendChild(dropSvg(i >= drops));
+    $('winText').textContent = text;
+    setTimeout(() => {
+      for (let i = 0; i < 70; i++) particles.push({ x: W / 2, y: H * 0.45, vx: (Math.random() - 0.5) * 11, vy: (Math.random() - 1) * 10, life: 1, size: 4 + Math.random() * 4,
+        color: ['#3b8fd9', colors.title, colors.ink, '#e25c4a', '#4cb783'][i % 5], rot: Math.random() * 6 });
+    }, 500);
+    setTimeout(() => $('winVeil').classList.add('show'), 1700);
+  }
+
+  // ================= Input =================
+  function lineAt(sx, sy) {
+    const [wx, wy] = toWorld(sx, sy);
+    const { cs, ox, oy } = layout;
+    const fc = (wx - ox) / cs - 0.5, fr = (wy - oy) / cs - 0.5;
+    const rad = Math.max(0.8, 15 / (cs * view.s));
+    const span = Math.ceil(rad);
+    let best = null, bd = rad;
+    const c0 = Math.round(fc), r0 = Math.round(fr);
+    for (let r = r0 - span; r <= r0 + span; r++) for (let c = c0 - span; c <= c0 + span; c++) {
+      if (c < 0 || r < 0 || c >= G.cols || r >= G.rows) continue;
+      const id = occ[r * G.cols + c];
+      if (id < 0) continue;
+      const d = Math.hypot(c - fc, r - fr);
+      if (d < bd) { bd = d; best = lines[id]; }
+    }
+    return best;
+  }
+
+  // For a two-headed line, the half of the line you touch picks the end it leaves from.
+  function endFor(l, sx, sy) {
+    if (!l.both) return 'head';
+    const [wx, wy] = toWorld(sx, sy);
+    let bi = 0, bd = Infinity;
+    l.cells.forEach(([c, r], i) => { const d = Math.hypot(px(c) - wx, py(r) - wy); if (d < bd) { bd = d; bi = i; } });
+    return bi < (l.cells.length - 1) / 2 ? 'tail' : 'head';
+  }
+
+  const ptrs = new Map();
+  let gest = null, lastEmptyTap = 0;
+  const local = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+
+  cv.addEventListener('pointerdown', (e) => {
+    if (!G) return;
+    audio();
+    try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+    const [x, y] = local(e);
+    ptrs.set(e.pointerId, [x, y]);
+    if (ptrs.size === 1) {
+      const l = busyEnd ? null : lineAt(x, y);
+      pressed = l ? l.id : -1;
+      gest = { type: 'tap', x, y, l, end: l ? endFor(l, x, y) : 'head', long: false, timer: 0 };
+      if (l) gest.timer = setTimeout(() => {
+        if (gest && gest.type === 'tap' && gest.l && gest.l.state === 'idle') { gest.long = true; guide = { id: gest.l.id, end: gest.end }; vibe(8); }
+      }, 300);
+    } else if (ptrs.size === 2) {
+      if (gest) clearTimeout(gest.timer);
+      guide = null; pressed = -1;
+      const [a, b] = [...ptrs.values()];
+      gest = { type: 'pinch', d0: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, s0: view.s, mid: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], vx: view.x, vy: view.y };
+    }
+  });
+  cv.addEventListener('pointermove', (e) => {
+    if (!ptrs.has(e.pointerId) || !gest) return;
+    const [x, y] = local(e);
+    ptrs.set(e.pointerId, [x, y]);
+    if (gest.type === 'pinch' && ptrs.size >= 2) {
+      const [a, b] = [...ptrs.values()];
+      const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+      const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      const ns = Math.max(1, Math.min(5, gest.s0 * d / gest.d0));
+      const wx = (gest.mid[0] - gest.vx) / gest.s0, wy = (gest.mid[1] - gest.vy) / gest.s0;
+      view.s = ns; view.x = mid[0] - wx * ns; view.y = mid[1] - wy * ns;
+      zoomAnim = null; clampView();
+    } else if (gest.type === 'tap') {
+      if (!gest.long && Math.hypot(x - gest.x, y - gest.y) > 9) {
+        clearTimeout(gest.timer); pressed = -1;
+        gest = view.s > 1.01 ? { type: 'pan', x: gest.x, y: gest.y, vx: view.x, vy: view.y } : { type: 'none' };
+      }
+    } else if (gest.type === 'pan') {
+      view.x = gest.vx + (x - gest.x); view.y = gest.vy + (y - gest.y); zoomAnim = null; clampView();
+    }
+  });
+  function endPointer(e, cancelled) {
+    if (!ptrs.has(e.pointerId)) return;
+    ptrs.delete(e.pointerId);
+    if (!gest) return;
+    if (gest.type === 'tap') {
+      clearTimeout(gest.timer);
+      if (!cancelled && !gest.long) {
+        if (gest.l) tapLine(gest.l, gest.end);
+        else {
+          const now = performance.now();
+          if (now - lastEmptyTap < 320) { zoomTo(gest.x, gest.y, view.s > 1.01 ? 1 : 2.5); lastEmptyTap = 0; }
+          else lastEmptyTap = now;
+        }
+      }
+      guide = null; gest = null; pressed = -1;
+    } else if (gest.type === 'pinch') {
+      if (ptrs.size === 0) gest = null;
+      else { const [p] = [...ptrs.values()]; gest = { type: 'pan', x: p[0], y: p[1], vx: view.x, vy: view.y }; }
+    } else if (ptrs.size === 0) { gest = null; guide = null; pressed = -1; }
+  }
+  cv.addEventListener('pointerup', (e) => endPointer(e, false));
+  cv.addEventListener('pointercancel', (e) => endPointer(e, true));
+  cv.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const [x, y] = local(e);
+    zoomAnim = null;
+    zoomTo(x, y, view.s * Math.exp(-e.deltaY * 0.0022), false);
+  }, { passive: false });
+
+  // ================= Drawing =================
+  function pointAt(P, s) {
+    const i = Math.max(0, Math.min(P.length - 2, Math.floor(s)));
+    const t = s - i;
+    return [P[i][0] + (P[i + 1][0] - P[i][0]) * t, P[i][1] + (P[i + 1][1] - P[i][1]) * t];
+  }
+  // Draws a line occupying path positions [s, s + len - 1] with its arrowhead at the front.
+  function drawLine(l, P, s, color, width, withHead = true) {
+    const { cs } = LAY();
+    const ctx = dg || window.__mainCtx;
+    const len = l.cells.length;
+    let pts, dx = l.dir[0], dy = l.dir[1];
+    if (len === 1) {
+      const h = P.length > 1 ? pointAt(P, s) : P[0];
+      pts = [[h[0] - dx * 0.38, h[1] - dy * 0.38], h];
+    } else {
+      const a = s, b = s + len - 1;
+      pts = [pointAt(P, a)];
+      for (let i = Math.floor(a) + 1; i < b; i++) pts.push(P[i]);
+      pts.push(pointAt(P, b));
+      const j = Math.max(0, Math.min(P.length - 2, Math.floor(b + 1e-6)));
+      if (P.length > len) { dx = P[j + 1][0] - P[j][0]; dy = P[j + 1][1] - P[j][1]; }
+    }
+    ctx.beginPath();
+    ctx.moveTo(px(pts[0][0]), py(pts[0][1]));
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(px(pts[i][0]), py(pts[i][1]));
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.stroke();
+    if (!withHead) return;
+    const h = pts[pts.length - 1];
+    arrowHead(ctx, px(h[0]), py(h[1]), dx, dy, cs, width, color);
+    if (l.both && pts.length > 1) {
+      const t0 = pts[0], t1 = pts[1];
+      const ex = t0[0] - t1[0], ey = t0[1] - t1[1], n = Math.hypot(ex, ey) || 1;
+      arrowHead(ctx, px(t0[0]), py(t0[1]), ex / n, ey / n, cs, width, color);
+    }
+  }
+  function arrowHead(ctx, hx, hy, dx, dy, cs, width, color) {
+    const tip = Math.min(cs * 0.36, 11), back = cs * 0.02, half = Math.max(width * 1.7, Math.min(cs * 0.17, 6));
+    ctx.beginPath();
+    ctx.moveTo(hx + dx * tip, hy + dy * tip);
+    ctx.lineTo(hx - dx * back - dy * half, hy - dy * back + dx * half);
+    ctx.lineTo(hx - dx * back + dy * half, hy - dy * back - dx * half);
+    ctx.closePath();
+    ctx.fillStyle = color; ctx.strokeStyle = color; ctx.lineWidth = width * 0.5;
+    ctx.fill(); ctx.stroke();
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    requestAnimationFrame(frame);
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (homeOn) { drawDemo(dt, now); return; }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    if (!G) return;
+
+    if (zoomAnim) {
+      zoomAnim.t = Math.min(1, zoomAnim.t + dt * 4);
+      const e = 1 - Math.pow(1 - zoomAnim.t, 3);
+      for (const k of ['s', 'x', 'y']) view[k] = zoomAnim.from[k] + (zoomAnim.to[k] - zoomAnim.from[k]) * e;
+      if (zoomAnim.t >= 1) zoomAnim = null;
+    }
+    shake = Math.max(0, shake - dt * 3.2);
+    const sx = shake > 0 ? Math.sin(now / 22) * 5 * shake * shake : 0;
+    ctx.setTransform(dpr * view.s, 0, 0, dpr * view.s, dpr * (view.x + sx), dpr * view.y);
+    const { cs, ox, oy } = layout;
+    const lw = Math.max(1 / view.s, Math.min(cs * 0.1, 3));
+
+    if (showGrid) {
+      ctx.fillStyle = colors.line;
+      const rr = Math.max(0.9 / view.s, cs * 0.07);
+      for (let r = 0; r < G.rows; r++) for (let c = 0; c < G.cols; c++) {
+        ctx.beginPath(); ctx.arc(px(c), py(r), rr, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    // Finished picture fades in over the empty board.
+    if (revealT >= 0) {
+      revealT = Math.min(1, revealT + dt * 1.1);
+      const e = 1 - Math.pow(1 - revealT, 3);
+      ctx.save();
+      ctx.globalAlpha = e;
+      if (G.emoji && G.draw) {
+        const k = cs / RS;
+        const bx = ox + G.cols * cs / 2, by = oy + G.rows * cs / 2;
+        const sc = 0.82 + 0.18 * e + Math.sin(e * Math.PI) * 0.05;
+        ctx.translate(bx, by); ctx.scale(sc, sc); ctx.translate(-bx, -by);
+        ctx.font = `${G.draw.font * k}px ${EMOJI_FONT}`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(G.emoji, ox + G.draw.cx * k, oy + G.draw.cy * k);
+      }
+      ctx.restore();
+    }
+
+    // Long-press lane preview
+    if (guide) {
+      const l = lines[guide.id];
+      if (l && l.state === 'idle') {
+        const fromTail = l.both && guide.end === 'tail';
+        const k = fromTail ? tailBlocker(l) : laneBlocker(l);
+        const [hc, hr] = fromTail ? l.cells[0] : l.cells[l.cells.length - 1];
+        const d = fromTail ? l.tdir : l.dir;
+        const steps = k < 0 ? Math.max(G.cols, G.rows) : k - 0.5;
+        ctx.save();
+        ctx.setLineDash([cs * 0.22, cs * 0.26]);
+        ctx.strokeStyle = k < 0 ? colors.accent : colors.danger;
+        ctx.lineWidth = Math.max(1.6 / view.s, lw * 0.9); ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(px(hc + d[0] * 0.5), py(hr + d[1] * 0.5));
+        ctx.lineTo(px(hc + d[0] * steps), py(hr + d[1] * steps));
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    const hintOn = hintId >= 0 && now < hintUntil;
+    let anyGone = false;
+    for (const l of lines) {
+      if (l.state === 'gone') continue;
+      l.flash = Math.max(0, l.flash - dt * 1.3);
+      let color = l.flash > 0 ? mix(colors.ink, colors.danger, Math.min(1, l.flash)) : colors.ink;
+      let width = lw;
+
+      if (l.state === 'idle') {
+        if (hintOn && l.id === hintId) {
+          const pulse = 0.5 + 0.5 * Math.sin(now / 150);
+          ctx.globalAlpha = 0.18 + 0.22 * pulse;
+          drawLine(l, l.cells, 0, colors.accent, lw * 4, false);
+          if (l.both) {
+            // Mark which end is free.
+            const [hc, hr] = l.cells[l.cells.length - 1];
+            ctx.beginPath(); ctx.arc(px(hc + l.dir[0] * 0.3), py(hr + l.dir[1] * 0.3), cs * (0.45 + 0.15 * pulse), 0, Math.PI * 2);
+            ctx.fillStyle = colors.accent; ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+          color = colors.accent;
+        }
+        if (l.glow > 0) {
+          l.glow = Math.max(0, l.glow - dt);
+          ctx.globalAlpha = Math.min(1, l.glow) * 0.45;
+          drawLine(l, l.cells, 0, colors.accent, lw * 4, false);
+          ctx.globalAlpha = 1;
+        }
+        if (guide && guide.id === l.id) { color = colors.accent; width = lw * 1.45; }
+        else if (pressed === l.id) width = lw * 1.45;
+        drawLine(l, l.cells, 0, color, width);
+      } else if (l.state === 'exit') {
+        // Ease in, then accelerate hard off the board.
+        l.v = Math.min(80, l.v + (20 + l.v * 3.2) * dt);
+        l.s += l.v * dt;
+        const leave = (l.s - (l.goal - l.cells.length)) / l.cells.length;
+        ctx.globalAlpha = Math.max(0, Math.min(1, 1 - leave));
+        drawLine(l, l.path, l.s, colors.ink, lw);
+        ctx.globalAlpha = 1;
+        if (l.s >= l.goal) { l.state = 'gone'; anyGone = true; }
+      } else if (l.state === 'bump') {
+        // Quick hit on the blocker, then a springy settle back.
+        l.t += dt;
+        const hitT = 0.11 + l.reach * 0.02, T = hitT + 0.42;
+        let s;
+        if (l.t < hitT) { const u = l.t / hitT; s = l.reach * u * u; }
+        else { const u = (l.t - hitT) / (T - hitT); s = l.reach * Math.exp(-5 * u) * Math.cos(u * 9); }
+        drawLine(l, l.path, Math.max(0, s), color, lw);
+        if (l.t >= T) l.state = 'idle';
+      }
+    }
+    if (anyGone) { renderHud(); checkWin(); }
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.vy += 20 * dt; p.x += p.vx; p.y += p.vy; p.life -= dt * 0.55; p.rot += 0.18;
+      if (p.life <= 0 || p.y > H + 20) { particles.splice(i, 1); continue; }
+      ctx.save(); ctx.globalAlpha = Math.min(1, p.life * 1.5);
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+      ctx.restore();
+    }
+  }
+
+  // ================= Menus, themes & settings =================
+  const THEMES = ['paper', 'night', 'sage'];
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-skin', t);
+    save.theme = t; persist(); readColors();
+  }
+  let initialTheme = save.theme;
+  if (!initialTheme) {
+    const host = document.documentElement.getAttribute('data-theme');
+    let dark = host === 'dark';
+    if (!host) { try { dark = matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {} }
+    initialTheme = dark ? 'night' : 'paper';
+  }
+  document.documentElement.setAttribute('data-skin', initialTheme);
+  readColors();
+
+  function dailyStreak() {
+    const d = new Date();
+    const key = (x) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
+    if (save.daily[key(d)] === undefined) d.setDate(d.getDate() - 1);
+    let n = 0;
+    while (save.daily[key(d)] !== undefined) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  function renderMenu() {
+    const cleared = Object.keys(save.best).length;
+    const perfect = Object.values(save.best).filter(v => v === 3).length;
+    const streak = dailyStreak();
+    $('menuLevel').innerHTML = `Level ${save.level} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`;
+    $('levelsSub').textContent = `${cleared} cleared`;
+    const k = todayKey();
+    $('dailySub').textContent = save.daily[k] !== undefined ? `Solved · ${'💧'.repeat(save.daily[k])}` : 'New today';
+    const parts = [];
+    if (cleared) parts.push(`${cleared} level${cleared === 1 ? '' : 's'} cleared`);
+    if (perfect) parts.push(`${perfect} perfect`);
+    if (streak) parts.push(`🔥 ${streak}-day daily streak`);
+    $('stats').textContent = parts.length ? parts.join(' · ') : 'Your progress is saved on this device.';
+    const found = PICTURES.filter(([e]) => save.album[e]).length;
+    $('albumSub').textContent = `${found} / ${PICTURES.length}`;
+  }
+  function renderAlbum() {
+    const grid = $('albumGrid');
+    grid.innerHTML = '';
+    let found = 0;
+    for (const [emoji, name] of PICTURES) {
+      const got = save.album[emoji];
+      if (got) found++;
+      const b = document.createElement('button');
+      b.className = 'pic' + (got ? '' : ' locked');
+      b.disabled = !(got && got.level);
+      b.setAttribute('aria-label', got ? `${name}${got.level ? `, level ${got.level}` : ', daily puzzle'}` : 'Not found yet');
+      b.innerHTML = `<span>${emoji}</span><small>${got ? name : '???'}</small>` +
+        `<small class="dots">${got ? `${got.level ? 'Lv ' + got.level : 'Daily'} ${'●'.repeat(got.drops)}` : ''}</small>`;
+      if (got && got.level) b.addEventListener('click', () => { $('albumVeil').classList.remove('show'); startLevel(got.level); });
+      grid.appendChild(b);
+    }
+    $('albumCount').textContent = found
+      ? `${found} of ${PICTURES.length} pictures found. Tap one to replay its level.`
+      : 'Clear a board to reveal its picture. Every picture you find is kept here.';
+  }
+
+  // ---------- Home page with a self-playing demo board ----------
+  let homeOn = true, demo = null;
+  const home = $('home'), demoCv = $('demoCv'), dctx = demoCv.getContext('2d');
+  let dW = 0, dH = 0;
+  function sizeDemo() {
+    const r = $('demo').getBoundingClientRect();
+    dW = r.width; dH = r.height - 18;
+    demoCv.width = Math.round(r.width * dpr); demoCv.height = Math.round(r.height * dpr);
+    demoCv.style.width = r.width + 'px'; demoCv.style.height = r.height + 'px';
+    if (demo) layoutDemo();
+  }
+  function layoutDemo() {
+    const cs = Math.min((dW - 8) / demo.cols, (dH - 8) / demo.rows);
+    demo.lay = { cs, ox: (dW - cs * demo.cols) / 2, oy: (dH - cs * demo.rows) / 2 };
+  }
+  if (window.ResizeObserver) new ResizeObserver(sizeDemo).observe($('demo'));
+  function newDemo() {
+    const g = generateLevel(0, { demo: true, seed: Math.floor(Math.random() * 1e9) });
+    demo = { cols: g.cols, rows: g.rows, emoji: g.emoji, draw: g.draw, name: g.name, t: 0, wait: 0.9, reveal: -1,
+      lines: g.lines.map((l, i) => ({ id: i, cells: l.cells, dir: l.dir, state: 'idle', s: 0, v: 0 })) };
+    $('demoName').textContent = '';
+    layoutDemo();
+  }
+  function demoFree(l) {
+    const [hc, hr] = l.cells[l.cells.length - 1];
+    for (let c = hc + l.dir[0], r = hr + l.dir[1]; c >= 0 && r >= 0 && c < demo.cols && r < demo.rows; c += l.dir[0], r += l.dir[1]) {
+      if (demo.lines.some(o => o !== l && o.state === 'idle' && o.cells.some(([x, y]) => x === c && y === r))) return false;
+    }
+    return true;
+  }
+  function drawDemo(dt, now) {
+    if (!demo) { sizeDemo(); newDemo(); }
+    dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dctx.clearRect(0, 0, dW, dH + 18);
+    demo.t += dt;
+    const idle = demo.lines.filter(l => l.state === 'idle');
+    if (idle.length && demo.t > demo.wait) {
+      const free = idle.filter(demoFree);
+      const l = free[Math.floor(Math.random() * free.length)];
+      if (l) {
+        l.state = 'exit'; l.v = 6;
+        const [hc, hr] = l.cells[l.cells.length - 1];
+        l.path = l.cells.map(p => p.slice());
+        for (let i = 1; i <= Math.max(demo.cols, demo.rows) + l.cells.length + 4; i++) l.path.push([hc + l.dir[0] * i, hr + l.dir[1] * i]);
+        let k = 0; for (let c = hc, r = hr; c >= 0 && r >= 0 && c < demo.cols && r < demo.rows; c += l.dir[0], r += l.dir[1]) k++;
+        l.goal = k - 1 + l.cells.length + 1;
+      }
+      demo.t = 0; demo.wait = 0.16 + Math.random() * 0.12;
+    }
+    dg = dctx; dlay = demo.lay;
+    const cs = demo.lay.cs, lw = Math.max(1, Math.min(cs * 0.1, 2.6));
+    if (demo.reveal >= 0) {
+      demo.reveal += dt;
+      const e = Math.min(1, demo.reveal / 0.8);
+      dctx.save(); dctx.globalAlpha = e * (demo.reveal > 2.4 ? Math.max(0, 1 - (demo.reveal - 2.4) / 0.4) : 1);
+      if (demo.emoji && demo.draw) {
+        const k = cs / RS;
+        dctx.font = `${demo.draw.font * k}px ${EMOJI_FONT}`; dctx.textAlign = 'center'; dctx.textBaseline = 'middle';
+        dctx.fillText(demo.emoji, demo.lay.ox + demo.draw.cx * k, demo.lay.oy + demo.draw.cy * k);
+      }
+      dctx.restore();
+      if (demo.reveal > 2.8) newDemo();
+    }
+    for (const l of demo.lines) {
+      if (l.state === 'idle') drawLine(l, l.cells, 0, colors.ink, lw);
+      else if (l.state === 'exit') {
+        l.v = Math.min(80, l.v + (20 + l.v * 3.2) * dt); l.s += l.v * dt;
+        const leave = (l.s - (l.goal - l.cells.length)) / l.cells.length;
+        dctx.globalAlpha = Math.max(0, Math.min(1, 1 - leave));
+        drawLine(l, l.path, l.s, colors.ink, lw);
+        dctx.globalAlpha = 1;
+        if (l.s >= l.goal) l.state = 'gone';
+      }
+    }
+    dg = null; dlay = null;
+    if (demo.reveal < 0 && demo.lines.every(l => l.state === 'gone')) { demo.reveal = 0; $('demoName').textContent = demo.name; }
+  }
+  function showHome() {
+    renderMenu();
+    homeOn = true; home.classList.add('show');
+    ['winVeil', 'loseVeil'].forEach(v => $(v).classList.remove('show'));
+    requestAnimationFrame(sizeDemo);
+  }
+  function hideHome() { homeOn = false; home.classList.remove('show'); }
+  function renderLevels() {
+    const grid = $('levelsGrid');
+    grid.innerHTML = '';
+    const top = Math.max(save.maxLevel + 10, 30);
+    for (let i = 1; i <= top; i++) {
+      const b = document.createElement('button');
+      b.className = 'lv' + (i === save.level ? ' cur' : '');
+      b.disabled = i > save.maxLevel;
+      const best = save.best[i];
+      b.innerHTML = `${i}<small>${best !== undefined ? '●'.repeat(best) : ''}</small>`;
+      b.addEventListener('click', () => startLevel(i));
+      grid.appendChild(b);
+    }
+    requestAnimationFrame(() => { const cur = grid.querySelector('.cur'); if (cur) cur.scrollIntoView({ block: 'center' }); });
+  }
+
+  const restart = () => mode === 'daily' ? startLevel(0, { daily: true }) : startLevel(save.level);
+  $('themeBtn').addEventListener('click', () => applyTheme(THEMES[(THEMES.indexOf(save.theme || initialTheme) + 1) % THEMES.length]));
+  $('gridBtn').addEventListener('click', () => { showGrid = !showGrid; $('gridBtn').classList.toggle('on', showGrid); });
+  $('hintBtn').addEventListener('click', useHint);
+  $('undoBtn').addEventListener('click', useUndo);
+  $('loseUndo').addEventListener('click', useUndo);
+  $('albumBtn').addEventListener('click', () => { renderAlbum(); $('albumVeil').classList.add('show'); });
+  $('albumClose').addEventListener('click', () => $('albumVeil').classList.remove('show'));
+  $('homeBtn').addEventListener('click', showHome);
+  $('winHome').addEventListener('click', () => { if (mode === 'level') save.level = Math.max(save.level, Math.min(save.maxLevel, save.level + 1)); persist(); G = null; showHome(); });
+  $('loseHome').addEventListener('click', () => { G = null; showHome(); });
+  $('homeTheme').addEventListener('click', () => $('themeBtn').click());
+  $('homeSettings').addEventListener('click', () => $('setVeil').classList.add('show'));
+  $('playBtn').addEventListener('click', () => {
+    audio();
+    if (mode === 'level' && G && G.level === save.level && !busyEnd) { hideHome(); fit(); }
+    else startLevel(save.level);
+  });
+  $('levelsBtn').addEventListener('click', () => { renderLevels(); $('levelsVeil').classList.add('show'); });
+  $('levelsClose').addEventListener('click', () => { $('levelsVeil').classList.remove('show'); });
+  $('dailyBtn').addEventListener('click', () => { audio(); startLevel(0, { daily: true }); });
+  $('nextBtn').addEventListener('click', () => startLevel(mode === 'daily' ? save.level : save.level + 1));
+  $('replayBtn').addEventListener('click', restart);
+  $('retryBtn').addEventListener('click', restart);
+  $('settingsBtn').addEventListener('click', () => $('setVeil').classList.add('show'));
+  $('setClose').addEventListener('click', () => $('setVeil').classList.remove('show'));
+  $('restartBtn').addEventListener('click', () => { $('setVeil').classList.remove('show'); restart(); });
+  const sw = (id, key) => {
+    const el = $(id);
+    el.classList.toggle('on', !!save[key]);
+    el.addEventListener('click', () => { save[key] = !save[key]; el.classList.toggle('on', save[key]); persist(); });
+  };
+  sw('swSound', 'sound'); sw('swVibe', 'vibe');
+
+  // Boot on the home page.
+  onResize();
+  showHome();
+  requestAnimationFrame(frame);
+
+  // Hooks for automated checks.
+  window.__laneOut = { generateLevel, analyse, levelConfig, debug: () => ({ layout, view, removed, cols: G.cols, rows: G.rows, lines: lines.map(l => ({ id: l.id, state: l.state, cells: l.cells, dir: l.dir, both: l.both, tdir: l.tdir })) }) };
+})();
+</script>
+</body>
+</html>
