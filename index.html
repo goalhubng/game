@@ -274,6 +274,14 @@
       transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index: 50; white-space: nowrap; text-align: center;
     }
 
+    .tut-text { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); width: calc(100% - 40px); z-index: 60; pointer-events: none;
+      background: rgba(255,255,255,0.95); color: #2a1440; font-weight: 800; font-size: 14px; line-height: 1.35; text-align: center;
+      padding: 10px 14px; border-radius: 16px; box-shadow: 0 6px 0 rgba(0,0,0,0.25), 0 12px 24px rgba(0,0,0,0.35); animation: tutIn 0.3s ease-out; }
+    .tut-hand { position: absolute; z-index: 61; font-size: 44px; line-height: 1; pointer-events: none; transform: translate(-20%, -10%);
+      filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); animation: tutSwipe 1.6s ease-in-out infinite; left: var(--x1); top: var(--y1); }
+    @keyframes tutSwipe { 0%, 15% { left: var(--x1); top: var(--y1); } 55%, 75% { left: var(--x2); top: var(--y2); } 100% { left: var(--x1); top: var(--y1); } }
+    .tut-text.bottom { top: auto; bottom: 14px; }
+    @keyframes tutIn { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } }
     .booster-dock { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; width: 100%; max-width: 460px; }
     .booster-btn {
       position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px 7px; border-radius: 20px; cursor: pointer;
@@ -527,7 +535,7 @@
           <span class="lv-badge" id="hudLevel">LV 1</span>
           <span class="stage-name" id="hudStageName">Marina Crossing</span>
         </div>
-        <button class="icon-btn" onclick="openPause()" aria-label="Pause">⏸</button>
+        <button class="icon-btn" onclick="openPause()" aria-label="Pause" style="font-size:14px; letter-spacing:-2px;">❚❚</button>
       </div>
 
       <div class="hud-card">
@@ -559,6 +567,8 @@
       <div id="canvas-box">
         <canvas id="canvas" width="440" height="440"></canvas>
         <div id="gameBanner"></div>
+        <div id="tutText" class="tut-text" hidden></div>
+        <div id="tutHand" class="tut-hand" hidden aria-hidden="true">👆</div>
       </div>
 
       <div class="booster-dock">
@@ -855,7 +865,7 @@
     const freshSave = () => ({
       unlocked: 1, stars: {}, hiScore: 0, coins: 2450, blitzHiScore: 0, lives: 5, lastLifeLostTime: null,
       hammers: 3, swaps: 2, rowBlasts: 1, shuffles: 2, startStripes: 1, startBombs: 0, lastSpinDate: null, activeLevel: null,
-      settings: { sfxVol: 1, musicVol: 0.7, vibrate: true, reduceFx: false, hints: true },
+      settings: { sfxVol: 1, musicVol: 0.7, vibrate: true, reduceFx: false, hints: true }, seenTips: [], tutorialDone: {},
       conesSmashed: 0, coneBountyBase: 0, passBountyDate: null, bombsMade: 0, claimedSouvenirs: [],
       equippedSkin: 'classic', ownedSkins: ['classic'], equippedHorn: 'classic', ownedHorns: ['classic'],
       perks: { turbo: false, bumper: false, magnet: false }, souvenirsClaimed: false,
@@ -881,6 +891,8 @@
     if (!userSave.perks) userSave.perks = { turbo: false, bumper: false, magnet: false };
     if (!Array.isArray(userSave.claimedAchievements)) userSave.claimedAchievements = [];
     if (!Array.isArray(userSave.claimedSouvenirs)) userSave.claimedSouvenirs = [];
+    if (!Array.isArray(userSave.seenTips)) userSave.seenTips = [];
+    if (!userSave.tutorialDone || typeof userSave.tutorialDone !== 'object') userSave.tutorialDone = {};
     userSave.settings = Object.assign({ sfxVol: 1, musicVol: 0.7, vibrate: true, reduceFx: false, hints: true }, userSave.settings || {});
 
     function persistState() {
@@ -961,6 +973,7 @@
     function startStage() {
       closeModal('introModal');
       if (userSave.lives <= 0) { toast("💔 Out of lives! Wait for a refill or buy one."); openModal('shopModal'); return; }
+      introTips.forEach(k => { if (!userSave.seenTips.includes(k)) userSave.seenTips.push(k); });
       if (preBoosts.stripe && userSave.startStripes > 0) userSave.startStripes--; else preBoosts.stripe = false;
       if (preBoosts.bomb && userSave.startBombs > 0) userSave.startBombs--; else preBoosts.bomb = false;
       pendingPreBoosts = { ...preBoosts };
@@ -968,6 +981,92 @@
       startMatchGame(introLvl);
     }
     window.togglePreBoost = togglePreBoost; window.startStage = startStage;
+
+    // ONE-TIME TIPS the first time a new goal or obstacle shows up
+    const FEATURE_TIPS = {
+      jelly: ['🟩 Jelly', 'Make matches on top of the green jelly tiles to clear them.'],
+      choc: ['🍫 Chocolate', 'Match on top of chocolate, or right next to it, to melt it.'],
+      cones: ['🚧 Traffic cones', 'Cones block the road. Two matches next to a cone knock it over.'],
+      cages: ['🔒 Cages', "Caged candies can't be moved. Match them once to break the cage."],
+      ingredient: ['🥥 Ingredients', 'Drop 🥥 and 🌶️ to the bottom row. You can always swap them down one row.'],
+      collect: ['🎯 Collect a colour', 'Clear candies of the colour shown until the counter reaches zero.'],
+      boss: ['👹 Boss stage', 'Score points to drain the boss HP. Watch out: it attacks every 3 moves!'],
+      shape: ['🕳️ Holes in the road', 'Candies fall straight past the gaps in this board.'],
+      spread: ['🍫 Spreading chocolate', "If you go two turns without clearing chocolate, it grows. Keep melting it!"]
+    };
+    function stageFeatures(cfg) {
+      const f = [];
+      const t = cfg.objectiveType;
+      if (t === 'JELLY' || t === 'DUAL') f.push('jelly');
+      if ((t === 'CHOCOLATE' || t === 'DUAL' || cfg.chocCount > 0) && !userSave.perks.bumper) f.push('choc');
+      if (cfg.chocSpreads) f.push('spread');
+      if (t === 'INGREDIENT') f.push('ingredient');
+      if (t === 'COLLECT') f.push('collect');
+      if (cfg.isBoss) f.push('boss');
+      if (cfg.coneCount > 0) f.push('cones');
+      if (cfg.cageCount > 0) f.push('cages');
+      if (cfg.shape) f.push('shape');
+      return f;
+    }
+    let introTips = [];
+    function renderIntroTip(cfg) {
+      introTips = stageFeatures(cfg).filter(k => !userSave.seenTips.includes(k)).slice(0, 2);
+      const box = document.getElementById('introTip');
+      if (!box) return;
+      box.hidden = !introTips.length;
+      box.innerHTML = introTips.map(k => `<div><strong>New: ${FEATURE_TIPS[k][0]}</strong><br>${FEATURE_TIPS[k][1]}</div>`).join('<div style="height:8px"></div>');
+    }
+
+    // GUIDED TUTORIAL on the first three stages: a hand shows a move until you make one
+    const TUTORIAL = {
+      1: ['Swipe a candy to line up 3 of the same colour!', 'Nice! Clear all the green jelly to win. 🟩'],
+      2: ['Match 4 in a row to make a striped candy. It blasts a whole line! ⚡', 'Keep going: reach the target score to win.'],
+      3: ['Chocolate hides under candies. Match on it or next to it to melt it. 🍫', 'Match 5 in a row for a colour bomb 💣']
+    };
+    let tutorialActive = false;
+    const isDailyActive = () => typeof dailyActive !== 'undefined' && dailyActive;
+    function findTutorialMove() {
+      if (currentLvl === 2) {
+        // Prefer a swap that makes 4 or more in a row
+        for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) for (const b of [{ r, c: c + 1 }, { r: r + 1, c }]) {
+          const a = { r, c };
+          if (!canSwap(a) || !canSwap(b)) continue;
+          const A = grid[a.r][a.c], B = grid[b.r][b.c];
+          grid[a.r][a.c] = B; grid[b.r][b.c] = A;
+          const big = findRuns().some(run => run.cells.length >= 4);
+          grid[a.r][a.c] = A; grid[b.r][b.c] = B;
+          if (big) return [a, b];
+        }
+      }
+      return findMove();
+    }
+    function showTutorialIfNeeded() {
+      if (isBlitzActive || isDailyActive() || !TUTORIAL[currentLvl] || userSave.tutorialDone[currentLvl] || tutorialActive) return;
+      const m = findTutorialMove();
+      if (!m) return;
+      tutorialActive = true;
+      const text = document.getElementById('tutText'), hand = document.getElementById('tutHand');
+      text.innerText = TUTORIAL[currentLvl][0]; text.hidden = false;
+      // Keep the message clear of the move it is pointing at
+      text.classList.toggle('bottom', Math.min(m[0].r, m[1].r) <= 2);
+      const pos = p => `calc(8px + (100% - 16px) * ${((p.c + 0.5) / COLS).toFixed(3)})`;
+      const posY = p => `calc(8px + (100% - 16px) * ${((p.r + 0.5) / ROWS).toFixed(3)})`;
+      hand.style.setProperty('--x1', pos(m[0])); hand.style.setProperty('--y1', posY(m[0]));
+      hand.style.setProperty('--x2', pos(m[1])); hand.style.setProperty('--y2', posY(m[1]));
+      hand.hidden = false;
+      hintMove = m;
+    }
+    function hideTutorial(done) {
+      const text = document.getElementById('tutText'), hand = document.getElementById('tutHand');
+      if (hand) hand.hidden = true;
+      if (!tutorialActive) { if (text && !done) text.hidden = true; return; }
+      tutorialActive = false;
+      if (done) {
+        userSave.tutorialDone[currentLvl] = true; persistState();
+        text.innerText = TUTORIAL[currentLvl][1];
+        clearTimeout(hideTutorial.t); hideTutorial.t = setTimeout(() => { text.hidden = true; }, 3500);
+      } else text.hidden = true;
+    }
     window.launchLevel = launchLevel;
 
     // PAUSE MENU
@@ -1802,6 +1901,7 @@
       selectedTile = null; swapAnim = null; pendingClear = []; lastSwap = null; effects = []; particles = []; hintMove = null;
       winPending = false; rushBonus = 0; displayScore = 0; shake = 0; safeSetText('scoreVal', '0');
       lastInteraction = Date.now(); activateBooster(null);
+      tutorialActive = false; hideTutorial(false);
 
       safeSetText('dossierTitle', currentCfg.name);
       safeSetText('dossierIcon', currentCfg.icon);
@@ -2049,6 +2149,7 @@
           if (userSave.activeLevel !== currentLvl) { userSave.activeLevel = currentLvl; persistState(); }
         }
         lastSwap = [a, b]; combo = 0; state = 'CLEARING';
+        if (tutorialActive) hideTutorial(true);
         // A plain ingredient drop has nothing to clear: run the landing step so it can be collected
         if (ingredientDrop && !triggered && !analyzeMatches().hasMatch) state = 'DROPPING';
       } else {
@@ -2315,7 +2416,7 @@
           for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c] && grid[r][c].special !== 'NONE' && grid[r][c].special !== 'INGREDIENT') pendingClear.push(key(r, c));
           combo = 0; lastSwap = null; state = 'CLEARING';
         }
-      } else if (state === 'IDLE' && !isVictoryLocked && !hintMove && userSave.settings.hints && Date.now() - lastInteraction > 6000) {
+      } else if (state === 'IDLE' && !isVictoryLocked && !hintMove && !tutorialActive && userSave.settings.hints && Date.now() - lastInteraction > 6000) {
         hintMove = findMove();
       }
     }
@@ -2401,6 +2502,7 @@
         if (turnPending) { turnPending = false; afterTurn(); }
         if (ensurePlayableBoard()) return;
         state = 'IDLE';
+        showTutorialIfNeeded();
       }
     }
 
