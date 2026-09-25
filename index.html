@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Sugar Scramble Deluxe // 1,000-Stage Tour</title>
+  <title>Sugar Scramble Deluxe</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -31,6 +31,7 @@
     @keyframes drift { to { transform: translate(4%, -3%) rotate(6deg); } }
     @media (prefers-reduced-motion: reduce) { body::before, .moves-ring.low { animation: none; } }
     html { background: #020704; }
+    :root { color-scheme: dark; }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     body {
       background: radial-gradient(circle at 18% 12%, rgba(0, 240, 255, 0.15) 0%, transparent 40%),
@@ -43,7 +44,7 @@
     header {
       width: 100%; max-width: 1240px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;
       background: rgba(6, 18, 12, 0.85); backdrop-filter: blur(28px) saturate(190%); -webkit-backdrop-filter: blur(28px) saturate(190%);
-      border-bottom: 1px solid var(--glass-border-light); box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: sticky; top: 0; z-index: 1000;
+      border-bottom: 1px solid var(--glass-border-light); box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 1000;
     }
     .brand { font-size: 20px; font-weight: 900; cursor: pointer; letter-spacing: 0.5px; text-shadow: 0 0 18px var(--primary-glow); }
     .brand span { color: var(--gold); }
@@ -298,7 +299,7 @@
     .music-icon.off { opacity: 0.4; text-decoration: line-through; }
 
     .bottom-nav {
-      position: fixed; bottom: 54px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 540px;
+      position: fixed; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 540px;
       background: rgba(8, 26, 16, 0.94); backdrop-filter: blur(32px) saturate(200%); -webkit-backdrop-filter: blur(32px) saturate(200%);
       border: 1.5px solid var(--glass-border-light); border-radius: 32px; display: flex; justify-content: space-around; align-items: center;
       padding: 10px 14px; z-index: 999999; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
@@ -633,6 +634,17 @@
     </div>
   </div>
 
+  <div id="quitModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 style="font-size:26px; font-weight:900; color:var(--gold);">QUIT THIS STAGE?</h2>
+      <p style="color:#b8e2cd; font-size:14px; margin: 10px 0 18px;">You've already made a move, so leaving now costs 1 ❤️.</p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="btn-action" onclick="cancelQuit()">KEEP PLAYING</button>
+        <button class="dock-btn" style="width:100%; justify-content:center;" onclick="confirmQuit()">Quit stage (−1 ❤️)</button>
+      </div>
+    </div>
+  </div>
+
   <div id="gameResultModal" class="modal-overlay">
     <div class="modal-card">
       <h2 id="resTitle" style="font-size:26px; font-weight:900; color:var(--gold);">STAGE CLEARED!</h2>
@@ -779,8 +791,8 @@
       const leavingGame = viewId !== 'game-view' && document.getElementById('game-view')?.classList.contains('active');
       if (leavingGame && winPending) finalizeWin();
       if (leavingGame && levelInProgress()) {
-        if (!confirm("Quit this stage? You'll lose a life.")) return;
-        isVictoryLocked = true; state = 'OVER'; loseLife(); persistState();
+        // Ask in-game (browser confirm() dialogs are blocked in some embeds)
+        pendingNav = viewId; openModal('quitModal'); return;
       }
       if (isBlitzActive && viewId !== 'game-view') stopBlitzTimer();
       document.querySelectorAll('.view-screen').forEach(s => s.classList.remove('active'));
@@ -795,6 +807,15 @@
       if (viewId === 'map-view') { document.getElementById('nav-map')?.classList.add('active'); jumpToCurrentLevelSector(); }
     }
     window.navigate = navigate;
+
+    let pendingNav = null;
+    function confirmQuit() {
+      closeModal('quitModal');
+      isVictoryLocked = true; state = 'OVER'; loseLife(); persistState();
+      navigate(pendingNav || 'map-view'); pendingNav = null;
+    }
+    function cancelQuit() { closeModal('quitModal'); pendingNav = null; }
+    window.confirmQuit = confirmQuit; window.cancelQuit = cancelQuit;
 
     function openModal(id) { initAudio(); document.getElementById(id)?.classList.add('active'); }
     function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
